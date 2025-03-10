@@ -65,7 +65,7 @@ export default function GameRules() {
                     <li>Each round, players must choose between two doors: Valhalla or Hel</li>
                     <li>You have 2 minutes to make your choice each round</li>
                     <li>The game consists of 10 rounds</li>
-                    <li>Your team's performance is tracked by doors opened</li>
+                    <li>Your teams performance is tracked by doors opened</li>
                     <li>Choose wisely - your fate depends on it!</li>
                   </ul>
                 </section>

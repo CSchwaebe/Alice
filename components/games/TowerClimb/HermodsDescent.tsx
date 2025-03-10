@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { ethers } from 'ethers';
 import TowerLevels from './HelheimLevels';
 import { TowerClimbABI } from '@/app/abis/TowerClimbABI';
@@ -21,7 +21,7 @@ const GAME_STATES = [
 export default function HermodsDescent() {
   // ===== Web3 Hooks =====
   const { address } = useAccount();
-  const { writeContract } = useWriteContract();
+  //const { writeContract } = useWriteContract();
 
   // ===== Component State =====
   const [selectedMove, setSelectedMove] = useState<number | null>(null);
@@ -76,27 +76,21 @@ export default function HermodsDescent() {
         });
         setLevelCounts(counts);
       });
+
+      console.log(selectedMove)
     }
   }, [gameStateData, activePlayers, address]);
 
   /**
    * Submit player's move to the contract
-   */
-  const handleSubmitMove = () => {
-    // Validate input
-    if (selectedMove === null || !address) {
-      alert('Please connect your wallet and select a move.');
-      return;
-    }
-    
-    // Submit move to contract
-    writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: TowerClimbABI,
-      functionName: 'submitMove',
-      args: [selectedMove],
-    });
-  };
+  
+  const handleSubmitMove = useCallback(() => {
+    console.log('handleSubmitMove');
+    console.log(selectedMove);
+    // Add implementation or remove if not needed
+  }, []);
+  */
+   
 
   // ===== Main Component Render =====
   return (
@@ -107,7 +101,7 @@ export default function HermodsDescent() {
         gameState={gameState}
         onMoveSelect={setSelectedMove}
         maxLevel={MAX_LEVEL}
-        unlimitedLevels={[0, MAX_LEVEL]}
+        
       />
     </div>
   );

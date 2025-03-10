@@ -30,7 +30,7 @@ export default function ProfilePage() {
                   <p className="text-lg text-blood-300">Not played</p>
                 </div>
                 <div className="bg-dark-600 p-3 rounded">
-                  <p className="text-sm text-gray-300">Freya's Fortune</p>
+                  <p className="text-sm text-gray-300">Freyas Fortune</p>
                   <p className="text-lg text-amber-300">Not played</p>
                 </div>
               </div>

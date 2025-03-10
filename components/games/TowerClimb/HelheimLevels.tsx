@@ -13,7 +13,6 @@ interface HelheimLevelsProps {
   gameState: string;            // Current state of the game
   onMoveSelect: (move: number) => void;  // Callback when player selects a move
   maxLevel: number;             // Maximum level in the game (typically 21)
-  unlimitedLevels: number[];    // Levels that can hold unlimited players (typically [0, 21])
 }
 
 // Game configuration constants
@@ -34,7 +33,6 @@ export default function HelheimLevels({
   gameState, 
   onMoveSelect,
   maxLevel,
-  unlimitedLevels 
 }: HelheimLevelsProps) {
   // Component state
   const containerRef = useRef<HTMLDivElement>(null);

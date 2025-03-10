@@ -83,7 +83,7 @@ export default function GameRules() {
 
                 <div className="mt-8 p-4 bg-dark-800 rounded-lg border border-dark-400">
                   <p className="text-blood-300 font-semibold">
-                    Remember: Strategic movement and timing are key to reaching Helheim's summit!
+                    Remember: Strategic movement and timing are key to reaching Helheim&apos;s summit!
                   </p>
                 </div>
               </div>

@@ -109,6 +109,7 @@ export default function DemoWrapper() {
    */
   const handleMoveSelect = (move: number) => {
     setSelectedMove(move);
+    console.log(selectedMove);
   };
 
   // Show loading state while initializing
@@ -138,7 +139,6 @@ export default function DemoWrapper() {
           gameState={gameState}
           onMoveSelect={handleMoveSelect}
           maxLevel={MAX_LEVEL}
-          unlimitedLevels={[0, MAX_LEVEL]}
         />
         
         {/* Demo Controls Panel */}
