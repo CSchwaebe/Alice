@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import HamburgerMenu from "./HamburgerMenu";
-import { ConnectButton } from "@/components/ConnectButton";
+import { ConnectButton } from "@/components/walletconnect/ConnectButton";
 
 export default function Header() {
   return (

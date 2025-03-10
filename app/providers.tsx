@@ -8,6 +8,7 @@ import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { sonic, sonicBlazeTestnet } from "wagmi/chains";
 import type { AppKitNetwork } from '@reown/appkit/networks';
+import { CloudAuthSIWX } from '@reown/appkit-siwx'
 
 // AppKit Configuration
 const projectId = "7f02c5df8e9d779de7cfa8d56660538f";
@@ -30,7 +31,7 @@ export const wagmiAdapter = new WagmiAdapter({
 const metadata = {
   name: 'Ragnarok Games',
   description: 'Norse-themed blockchain games',
-  url: 'http://localhost:3000',
+  url: 'https://ragnarok-eight.vercel.app/',
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 };
 
@@ -40,6 +41,7 @@ export const modal = createAppKit({
   projectId,
   networks,
   metadata,
+  siwx: new CloudAuthSIWX(),
   themeMode: 'dark',
   features: {
     analytics: true
