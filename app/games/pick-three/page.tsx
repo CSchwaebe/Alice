@@ -1,16 +1,21 @@
 "use client";
 
-import DoorSelection from '@/components/games/PickThree/DoorSelection';
-import PlayerList from '@/components/games/PickThree/PlayerList';
+import { GameTimer } from "@/components/games/GameTimer";
+import PickThreeGame from "@/components/games/PickThree/PickThreeGame";
+import { Silkscreen } from 'next/font/google';
+
+const silkscreen = Silkscreen({ 
+  weight: '400',
+  subsets: ['latin']
+});
 
 export default function PickThreePage() {
   return (
-    <div className="p-4 flex flex-col items-center">
-      <h1 className="text-4xl md:text-5xl text-neon-300 font-bold mb-8 tracking-wider">
-        Pick Three
-      </h1>
-      <DoorSelection />
-      <PlayerList />
+    <div className="flex flex-col items-center w-full p-4">
+      <div className={`text-4xl md:text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}>
+        <GameTimer seconds={60} />
+      </div>
+      <PickThreeGame />
     </div>
   );
 } 

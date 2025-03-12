@@ -132,7 +132,7 @@ export default function DemoWrapper() {
         </div>
       </div>
       <div className="flex flex-col gap-6">
-        {/* Tower visualization */}
+        {/* Only render TowerLevels once */}
         <TowerLevels 
           levelCounts={levelCounts}
           currentLevel={currentLevel}
@@ -194,16 +194,6 @@ export default function DemoWrapper() {
             </button>
           </div>
         </div>
-      </div>
-      <div className="tower-climb-container">
-        {gameLoaded ? (
-          <HermodsDescent />
-        ) : (
-          <div className="loading-container">
-            <div className="animate-spin h-10 w-10 border-4 border-neon-300 rounded-full border-t-transparent"></div>
-            <p className="mt-4 text-neon-300">Loading game...</p>
-          </div>
-        )}
       </div>
     </div>
   );

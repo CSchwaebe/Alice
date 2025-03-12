@@ -1,68 +1,105 @@
 "use client";
 
-import { useState } from 'react';
-import ViewportDrawer from '@/components/ui/ViewportDrawer';
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+import ViewportDrawer from "../../ui/ViewportDrawer";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DiamondGridProps {
-  onNumberSelect: (number: number) => void;
+  onNumberSelect?: (number: number) => void;
+  className?: string;
 }
 
-export default function DiamondGrid({ onNumberSelect }: DiamondGridProps) {
+export default function DiamondGrid({
+  onNumberSelect,
+  className,
+}: DiamondGridProps) {
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null);
-
+  const [showDrawer, setShowDrawer] = useState(false);
+  const [visibleSquares, setVisibleSquares] = useState<number[]>([]);
+  
+  // Generate and animate squares in random order
+  useEffect(() => {
+    const indexes = Array.from({ length: 100 }, (_, i) => i);
+    const shuffled = indexes.sort(() => Math.random() - 0.5);
+    
+    // Show squares one by one
+    shuffled.forEach((index, i) => {
+      setTimeout(() => {
+        setVisibleSquares(prev => [...prev, index]);
+      }, i * 100); // 50ms between each square
+    });
+  }, []);
+  
   const handleNumberClick = (number: number) => {
     setSelectedNumber(number);
+    setShowDrawer(true);
   };
-
+  
   const handleConfirm = () => {
-    if (selectedNumber !== null) {
+    if (selectedNumber !== null && onNumberSelect) {
       onNumberSelect(selectedNumber);
-      setSelectedNumber(null);
     }
+    setShowDrawer(false);
   };
-
+  
+  const handleClose = () => {
+    setSelectedNumber(null);
+    setShowDrawer(false);
+  };
+  
+  // Generate numbers 1-100
+  const numbers = Array.from({ length: 100 }, (_, i) => i + 1);
+  
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      {/* Grid of numbers */}
-      <div className="grid grid-cols-5 md:grid-cols-10">
-        {Array.from({ length: 100 }, (_, i) => i + 1).map((number) => (
-          <button
+    <div className={cn("flex flex-col items-center w-full", className)}>
+      <div className="grid grid-cols-10 gap-1 w-full max-w-3xl mb-4">
+        {numbers.map((number, i) => (
+          <motion.button
             key={number}
+            initial={{ 
+              opacity: 0,
+              scale: 1.5,
+            }}
+            animate={{ 
+              opacity: visibleSquares.includes(i) ? 1 : 0,
+              scale: visibleSquares.includes(i) ? 1 : 4.5,
+            }}
+            transition={{
+              duration: 1,
+              ease: [0.19, 1, 0.22, 1], // Custom easing for a snappy feel
+            }}
             onClick={() => handleNumberClick(number)}
-            className="aspect-square bg-dark-700 hover:bg-dark-600 
-                     border border-dark-400
-                     flex items-center justify-center
-                     text-sm sm:text-base text-gray-300
-                     transition-colors duration-200"
+            className="aspect-square flex items-center justify-center bg-gray-800 hover:bg-gray-700 text-white font-bold rounded transition-colors"
           >
             {number}
-          </button>
+          </motion.button>
         ))}
       </div>
-
-      {/* Selection Popup */}
-      <ViewportDrawer
-        isOpen={selectedNumber !== null}
-        onClose={() => setSelectedNumber(null)}
+      
+      {/* Use the existing ViewportDrawer */}
+      <ViewportDrawer 
+        isOpen={showDrawer} 
+        onClose={handleClose}
+        
       >
-        <div className="p-4 text-center">
-          <h3 className="text-xl text-neon-300 mb-6">
-            Choose {selectedNumber}?
-          </h3>
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={() => setSelectedNumber(null)}
-              className="px-6 py-2 rounded-lg bg-dark-600 text-gray-300 
-                       hover:bg-dark-500 transition-colors duration-200"
-            >
-              Cancel
-            </button>
+        <div className="p-4 flex flex-col items-center">
+          <p className="text-white text-lg mb-4">
+            Confirm selection: <span className="font-bold text-neon-300">{selectedNumber}</span>
+          </p>
+          
+          <div className="flex gap-4">
             <button
               onClick={handleConfirm}
-              className="px-6 py-2 rounded-lg bg-neon-600 text-white
-                       hover:bg-neon-500 transition-colors duration-200"
+              className="bg-neon-300 hover:bg-neon-400 text-black font-bold py-2 px-6 rounded-lg transition-colors"
             >
               Confirm
+            </button>
+            <button
+              onClick={handleClose}
+              className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+            >
+              Cancel
             </button>
           </div>
         </div>
