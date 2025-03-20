@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { ethers } from 'ethers';
 import TowerLevels from './HelheimLevels';
-import { TowerClimbABI } from '@/app/abis/TowerClimbABI';
+import { TowerClimbABI } from '@/app/abis/GameMasterABI';
 
 // ===== Configuration Constants =====
 const CONTRACT_ADDRESS = '0xYourDeployedContractAddress';  // Replace with actual contract

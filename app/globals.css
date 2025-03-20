@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0A0A0B;
+  --background: #000000;
+  --dark-900: #000000;
   --foreground: #F7F7F8;
 }
 
@@ -16,7 +17,7 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -54,4 +55,155 @@ body {
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+/* Add this at the very top of the file */
+html, body {
+  background-color: #000000 !important;
+}
+
+/* Add these styles to your globals.css file */
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
+.glitch-text {
+  position: relative;
+  animation: glitch 500ms infinite;
+  color: #fff;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  left: 2px;
+  text-shadow: -1px 0 #fff;
+  animation: glitch 650ms infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+  opacity: 0.8;
+}
+
+.glitch-text::after {
+  left: -2px;
+  text-shadow: -1px 0 #fff;
+  animation: glitch 375ms infinite;
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+  opacity: 0.8;
+}
+
+.perspective-500 {
+  perspective: 500px;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes grow {
+  0% { width: 0%; }
+  50% { width: 100%; }
+  100% { width: 0%; }
+}
+
+@keyframes typewriter {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+.animate-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid transparent;
+}
+
+@keyframes typewriter-slow {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+
+.animate-typewriter-slow {
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0;
+  display: inline-block;
+  animation: typewriter-slow 0.8s steps(40, end) forwards;
+}
+
+@keyframes terminal-type {
+  from { 
+    width: 0;
+    opacity: 0.3;
+  }
+  to { 
+    width: 100%;
+    opacity: 1;
+  }
+}
+
+.animate-terminal-type {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  animation: terminal-type 1s steps(30, end) forwards;
+  width: 0;
+}
+
+@keyframes interface-reveal {
+  0% { 
+    opacity: 0;
+    transform: scale(0.95) translateY(10px); 
+    filter: blur(10px);
+  }
+  30% {
+    filter: blur(0);
+  }
+  100% { 
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-interface-reveal {
+  animation: interface-reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }

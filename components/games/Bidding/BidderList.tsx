@@ -1,99 +1,135 @@
 "use client";
 
 import { useState } from 'react';
-import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/solid';
+import { motion } from 'framer-motion';
+import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 
 interface Bidder {
   address: string;
-  lastBid: number;
-  tokensRemaining: number;
+  name: string;
+  last_bid: number;
+  tokens_remaining: number;
 }
 
-// Helper function to shorten address
-const shortenAddress = (address: string) => {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
+interface BidderListProps {
+  bidders: Bidder[];
+}
 
-// Generate dummy bidders with random data
-const dummyBidders: Bidder[] = Array.from({ length: 20 }, () => ({
-  address: `0x${Array.from({ length: 40 }, () => 
-    Math.floor(Math.random() * 16).toString(16)
-  ).join('')}`,
-  lastBid: Math.floor(Math.random() * 10_000_000) + 1_000_000,
-  tokensRemaining: Math.floor(Math.random() * 100_000_000) + 10_000_000
-}));
+type SortField = 'last_bid' | 'tokens_remaining';
+type SortDirection = 'asc' | 'desc';
 
-export default function BidderList() {
-  const [bidders, setBidders] = useState<Bidder[]>(dummyBidders);
-  const [sortField, setSortField] = useState<'lastBid' | 'tokensRemaining'>('lastBid');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+export default function BidderList({ bidders }: BidderListProps) {
+  const [sortField, setSortField] = useState<SortField>('last_bid');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-  const toggleSort = (field: 'lastBid' | 'tokensRemaining') => {
+  const handleSort = (field: SortField) => {
     if (field === sortField) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
       setSortDirection('desc');
     }
-
-    setBidders(prev => [...prev].sort((a, b) => {
-      const multiplier = sortDirection === 'asc' ? 1 : -1;
-      return (a[field] - b[field]) * multiplier;
-    }));
   };
 
-  return (
-    <div className="w-full max-w-4xl mt-12">
-      <h2 className="text-xl text-neon-300 font-bold mb-4 tracking-wider">Active Bidders</h2>
-      <div className="bg-dark-700 rounded-lg border border-dark-400 p-4">
-        <div className="w-full">
-          {/* Table Headers */}
-          <div className="grid grid-cols-12 gap-4 mb-2 px-3 text-sm text-gray-400 font-semibold">
-            <div className="col-span-6">Address</div>
-            <div 
-              className="col-span-3 flex items-center justify-end gap-2 cursor-pointer" 
-              onClick={() => toggleSort('lastBid')}
-            >
-              <span>Last Bid</span>
-              {sortField === 'lastBid' && (
-                sortDirection === 'asc' 
-                  ? <ArrowUpIcon className="w-4 h-4" />
-                  : <ArrowDownIcon className="w-4 h-4" />
-              )}
-            </div>
-            <div 
-              className="col-span-3 flex items-center justify-end gap-2 cursor-pointer"
-              onClick={() => toggleSort('tokensRemaining')}
-            >
-              <span>Remaining</span>
-              {sortField === 'tokensRemaining' && (
-                sortDirection === 'asc' 
-                  ? <ArrowUpIcon className="w-4 h-4" />
-                  : <ArrowDownIcon className="w-4 h-4" />
-              )}
-            </div>
-          </div>
+  const sortedBidders = [...bidders].sort((a, b) => {
+    const multiplier = sortDirection === 'asc' ? 1 : -1;
+    return (a[sortField] - b[sortField]) * multiplier;
+  });
 
-          {/* Table Rows */}
-          <div className="space-y-1">
-            {bidders.map((bidder, index) => (
-              <div 
-                key={index}
-                className="grid grid-cols-12 gap-4 bg-dark-800 rounded p-3 items-center"
+  return (
+    <div className="bg-black/40 backdrop-blur-sm border border-white/20 rounded-lg overflow-hidden">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-white/5 to-transparent p-4 border-b border-white/20">
+        <div className="flex items-center">
+          <motion.div 
+            className="w-1.5 h-1.5 bg-white rounded-full mr-2"
+            animate={{ opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+          <h3 className="text-sm font-mono text-white uppercase tracking-wider">
+            Active Bidders
+          </h3>
+        </div>
+      </div>
+      
+      {/* Table Header */}
+      <div className="grid grid-cols-12 gap-4 p-4 text-xs font-mono text-white/70 border-b border-white/10">
+        <div className="col-span-5">Address</div>
+        <button 
+          className={`col-span-3 flex items-center gap-1 ${sortField === 'last_bid' ? 'text-white' : ''}`}
+          onClick={() => handleSort('last_bid')}
+        >
+          Last Bid
+          {sortField === 'last_bid' && (
+            <span className="ml-1">
+              {sortDirection === 'asc' ? 
+                <ArrowUpIcon className="w-3 h-3" /> : 
+                <ArrowDownIcon className="w-3 h-3" />
+              }
+            </span>
+          )}
+        </button>
+        <button 
+          className={`col-span-4 flex items-center gap-1 ${sortField === 'tokens_remaining' ? 'text-white' : ''}`}
+          onClick={() => handleSort('tokens_remaining')}
+        >
+          Tokens Remaining
+          {sortField === 'tokens_remaining' && (
+            <span className="ml-1">
+              {sortDirection === 'asc' ? 
+                <ArrowUpIcon className="w-3 h-3" /> : 
+                <ArrowDownIcon className="w-3 h-3" />
+              }
+            </span>
+          )}
+        </button>
+      </div>
+      
+      {/* Bidder List */}
+      <div className="max-h-96 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-black/20">
+        {sortedBidders.length === 0 ? (
+          <div className="text-center py-8 text-white/50 font-mono">
+            No active bidders
+          </div>
+        ) : (
+          <div className="divide-y divide-white/10">
+            {sortedBidders.map((bidder, index) => (
+              <motion.div
+                key={bidder.address}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="grid grid-cols-12 gap-4 p-4 text-sm font-mono hover:bg-white/5"
               >
-                <div className="col-span-6 font-mono text-sm text-gray-300 truncate" title={bidder.address}>
-                  <span className="hidden sm:inline">{bidder.address}</span>
-                  <span className="sm:hidden">{shortenAddress(bidder.address)}</span>
+                <div className="col-span-5 text-white/90">
+                  <div className="truncate" title={bidder.address}>
+                    {bidder.address}
+                  </div>
+                  <div className="text-xs text-white/50 mt-1">
+                    {bidder.name}
+                  </div>
                 </div>
-                <div className="col-span-3 font-mono text-sm text-gray-300 text-right">
-                  {bidder.lastBid.toLocaleString()}
+                <div className="col-span-3 text-white/90">
+                  {bidder.last_bid.toLocaleString()}
                 </div>
-                <div className="col-span-3 font-mono text-sm text-gray-300 text-right">
-                  {bidder.tokensRemaining.toLocaleString()}
+                <div className="col-span-4 text-white/90">
+                  {bidder.tokens_remaining.toLocaleString()}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
+        )}
+      </div>
+      
+      {/* Footer */}
+      <div className="border-t border-white/20 p-3 bg-white/5">
+        <div className="flex justify-between items-center text-[10px] font-mono text-white/50">
+          <div>TOTAL BIDDERS: {bidders.length}</div>
+          <motion.div 
+            className="h-0.5 w-8 bg-gradient-to-r from-white/30 to-white/60 rounded-full"
+            animate={{ opacity: [0.4, 0.8, 0.4] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
         </div>
       </div>
     </div>

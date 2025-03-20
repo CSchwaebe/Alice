@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import AnimatedSymbols from './AnimatedSymbols';
+import PlayerList from './PlayerList';
 
 export default function PickThreeGame() {
   const [selectedDoor, setSelectedDoor] = useState<number | null>(null);
@@ -12,14 +13,15 @@ export default function PickThreeGame() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
+    <div className="flex flex-col items-center justify-center w-full">
       <AnimatedSymbols 
         onSymbolClick={handleSymbolClick}
-        className="max-w-2xl w-full"
+        className="max-w-4xl w-full"
       />
       {selectedDoor !== null && (
-        <p className="mt-4">You selected symbol {selectedDoor + 1}</p>
+        <p className="mt-4 mb-8">You selected symbol {selectedDoor + 1}</p>
       )}
+      <PlayerList />
     </div>
   );
 } 

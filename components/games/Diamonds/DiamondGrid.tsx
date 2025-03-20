@@ -27,7 +27,7 @@ export default function DiamondGrid({
     shuffled.forEach((index, i) => {
       setTimeout(() => {
         setVisibleSquares(prev => [...prev, index]);
-      }, i * 100); // 50ms between each square
+      }, i * 50); // 50ms between each square
     });
   }, []);
   

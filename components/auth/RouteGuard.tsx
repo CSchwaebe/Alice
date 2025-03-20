@@ -2,17 +2,30 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function RouteGuard({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount();
   const router = useRouter();
+  const [wasConnected, setWasConnected] = useState(false);
 
   useEffect(() => {
+    // Check for disconnection (was connected but now isn't)
+    if (wasConnected && !isConnected) {
+      router.push('/');
+      return;
+    }
+
+    // Update wasConnected state
+    if (isConnected && !wasConnected) {
+      setWasConnected(true);
+    }
+
+    // Initial connection check
     if (!isConnected) {
       router.push('/');
     }
-  }, [isConnected, router]);
+  }, [isConnected, router, wasConnected]);
 
   if (!isConnected) {
     return (

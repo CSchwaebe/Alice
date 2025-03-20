@@ -85,22 +85,22 @@ export default function HamburgerMenu() {
         aria-label="Menu"
       >
         {isOpen ? (
-          <XMarkIcon className="w-6 h-6 text-neon-300" />
+          <XMarkIcon className="w-6 h-6 text-white" />
         ) : (
-          <Bars3Icon className="w-6 h-6 text-neon-300" />
+          <Bars3Icon className="w-6 h-6 text-white" />
         )}
       </button>
 
       {/* Menu Overlay */}
       <div 
-        className={`fixed inset-0 bg-dark-900/80 backdrop-blur-sm transition-opacity duration-300
+        className={`fixed inset-0 bg-black backdrop-blur-sm transition-opacity duration-300
                     ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsOpen(false)}
       />
 
       {/* Menu Panel */}
       <div 
-        className={`fixed top-0 left-0 h-full w-64 bg-dark-700 shadow-lg transform transition-transform duration-300 ease-in-out
+        className={`fixed top-0 left-0 h-full w-64 bg-black shadow-lg transform transition-transform duration-300 ease-in-out
                     ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="pt-16 px-4 pb-6 h-full flex flex-col">

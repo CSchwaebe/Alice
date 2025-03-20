@@ -1,6 +1,6 @@
 "use client";
 
-import { GameTimer } from "@/components/games/GameTimer";
+import { GameTimer } from "@/components/ui/GameTimer";
 import PickThreeGame from "@/components/games/PickThree/PickThreeGame";
 import { Silkscreen } from 'next/font/google';
 

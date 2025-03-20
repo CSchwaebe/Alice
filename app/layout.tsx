@@ -21,13 +21,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = headersList.get('cookie');
 
   return (
-    <html lang="en" className="bg-dark-900 text-gray-100">
-      <body className={`min-h-screen bg-dark-900 ${aboreto.className}`}>
+    <html lang="en" className="bg-black">
+      <body className={`min-h-screen bg-black ${aboreto.className}`} style={{ backgroundColor: 'black' }}>
         <Providers cookies={cookieStore}>
-          <Header />
-          <main>
-            {children}
-          </main>
+          <div className="opacity-0 animate-fade-in">
+            <main>
+              {children}
+            </main>
+          </div>
         </Providers>
       </body>
     </html>

@@ -77,20 +77,17 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
   const getTrianglePath = () => {
     const size = 180;
     const height = SYMBOL_HEIGHT;
-    const x = 200;
+    const x = 200; // Triangle in middle
     const y = BASE_Y;
     return `M ${x + size/2} ${y} L ${x + size} ${y + height} L ${x} ${y + height} Z`;
   };
 
-  // Helper function to create X path
-  const getXPath = () => {
+  // Helper function to create square path
+  const getSquarePath = () => {
     const size = SYMBOL_HEIGHT;
-    const x = 410;
+    const x = 410; // Square on right
     const y = BASE_Y;
-    return `
-      M ${x} ${y} L ${x + size} ${y + size}
-      M ${x} ${y + size} L ${x + size} ${y}
-    `;
+    return `M ${x} ${y} h ${size} v ${size} h -${size} Z`;
   };
 
   return (
@@ -102,7 +99,7 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
         key={animationKey}
         className={className}
       >
-        {/* Circle Group */}
+        {/* Circle Group (index 0) - Left position */}
         <g 
           onClick={() => handleSymbolClick(0)} 
           onMouseEnter={() => setHoveredSymbol(0)}
@@ -124,7 +121,6 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
               />
             )}
           </AnimatePresence>
-          {/* Invisible hit area */}
           <rect
             x={100 - SYMBOL_HEIGHT/2 - CLICK_PADDING}
             y={BASE_Y - CLICK_PADDING}
@@ -133,7 +129,6 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
             fill="transparent"
             pointerEvents="all"
           />
-          {/* Main shape */}
           <motion.circle
             cx="100"
             cy={BASE_Y + SYMBOL_HEIGHT/2}
@@ -147,7 +142,7 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
           />
         </g>
 
-        {/* Triangle Group */}
+        {/* Triangle Group (index 1) - Middle position */}
         <g 
           onClick={() => handleSymbolClick(1)}
           onMouseEnter={() => setHoveredSymbol(1)}
@@ -167,7 +162,6 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
               />
             )}
           </AnimatePresence>
-          {/* Invisible hit area */}
           <rect
             x={200 - CLICK_PADDING}
             y={BASE_Y - CLICK_PADDING}
@@ -176,7 +170,6 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
             fill="transparent"
             pointerEvents="all"
           />
-          {/* Main shape */}
           <motion.path
             d={getTrianglePath()}
             stroke="#4ff0b7"
@@ -188,7 +181,7 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
           />
         </g>
 
-        {/* X Group */}
+        {/* Square Group (index 2) - Right position */}
         <g 
           onClick={() => handleSymbolClick(2)}
           onMouseEnter={() => setHoveredSymbol(2)}
@@ -198,7 +191,7 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
           <AnimatePresence mode="wait" initial={false}>
             {shouldShowGlow(2) && (
               <motion.path
-                d={getXPath()}
+                d={getSquarePath()}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 0.6 }}
                 exit={{ opacity: 0, transition: { duration: 0.1 } }}
@@ -208,7 +201,6 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
               />
             )}
           </AnimatePresence>
-          {/* Invisible hit area */}
           <rect
             x={410 - CLICK_PADDING}
             y={BASE_Y - CLICK_PADDING}
@@ -217,9 +209,8 @@ export default function AnimatedSymbols({ onSymbolClick, className }: AnimatedSy
             fill="transparent"
             pointerEvents="all"
           />
-          {/* Main shape */}
           <motion.path
-            d={getXPath()}
+            d={getSquarePath()}
             stroke="#0d63f8"
             variants={variants}
             custom={2}

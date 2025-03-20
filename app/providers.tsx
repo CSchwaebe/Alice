@@ -3,7 +3,7 @@
 import { cookieToInitialState, WagmiProvider, type Config, cookieStorage, createStorage } from 'wagmi'
 import { HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { sonic, sonicBlazeTestnet } from "wagmi/chains";
@@ -66,12 +66,14 @@ export const modal = createAppKit({
 
   networks,
   defaultNetwork: sonicBlazeTestnet,
+  defaultAccountTypes: {eip155:'smartAccount'},
   
   enableWalletConnect: false,
   siwx: new CloudAuthSIWX(),
   themeMode: 'dark',
   enableWalletGuide: false,
   allWallets: 'HIDE',
+
   featuredWalletIds: [
     '18388be9ac2d02726dbac9777c96efaac06d744b2f6d580fccdd4127a6d01fd1',
   ],
@@ -94,25 +96,22 @@ export const modal = createAppKit({
   
   
   themeVariables: {
-    '--w3m-accent': '#7B4FFF',
+    '--w3m-accent': 'black',
+    "--w3m-font-family": "Courier New",
   }
 });
 
 const queryClient = new QueryClient();
 
 export function Providers({ children, cookies }: { children: ReactNode; cookies: string | null }) {
-  const [mounted, setMounted] = useState(false);
   const initialState = cookieToInitialState(wagmiAdapter.wagmiConfig as Config, cookies);
-
-  // Prevent hydration issues
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <HeroUIProvider>{mounted && children}</HeroUIProvider>
+        <HeroUIProvider>
+          {children}
+        </HeroUIProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

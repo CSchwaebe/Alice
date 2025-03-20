@@ -12,6 +12,7 @@
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^2.7.4",
     "@rainbow-me/rainbowkit": "^2.2.4",
+    "@react-spring/web": "^9.7.5",
     "@reown/appkit": "^1.6.9",
     "@reown/appkit-adapter-wagmi": "^1.6.9",
     "@reown/appkit-siwx": "^1.6.9",

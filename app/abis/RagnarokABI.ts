@@ -1,6 +1,4 @@
-// abis/TowerClimbABI.ts
-
-export const TowerClimbABI = [
+export const RagnarokABI = [
     {
       "inputs": [],
       "stateMutability": "nonpayable",
@@ -29,65 +27,9 @@ export const TowerClimbABI = [
       "type": "error"
     },
     {
-      "inputs": [],
-      "name": "ReentrancyGuardReentrantCall",
-      "type": "error"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "winners",
-          "type": "address[]"
-        }
-      ],
-      "name": "GameEnded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "address[]",
-          "name": "players",
-          "type": "address[]"
-        }
-      ],
-      "name": "GameInitialized",
-      "type": "event"
-    },
-    {
       "anonymous": false,
       "inputs": [],
       "name": "GameReset",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [],
-      "name": "GameStarted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "player",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "move",
-          "type": "uint8"
-        }
-      ],
-      "name": "MoveSubmitted",
       "type": "event"
     },
     {
@@ -117,9 +59,15 @@ export const TowerClimbABI = [
           "internalType": "address",
           "name": "player",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
         }
       ],
-      "name": "PlayerEliminated",
+      "name": "PlayerRefunded",
       "type": "event"
     },
     {
@@ -130,9 +78,40 @@ export const TowerClimbABI = [
           "internalType": "address",
           "name": "player",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "playerNumber",
+          "type": "uint256"
         }
       ],
-      "name": "PlayerWon",
+      "name": "PlayerRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "RefundFailed",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [],
+      "name": "RegistrationClosed",
       "type": "event"
     },
     {
@@ -141,48 +120,16 @@ export const TowerClimbABI = [
         {
           "indexed": false,
           "internalType": "uint256",
-          "name": "roundNumber",
+          "name": "newFee",
           "type": "uint256"
         }
       ],
-      "name": "RoundStarted",
+      "name": "RegistrationFeeChanged",
       "type": "event"
     },
     {
       "inputs": [],
-      "name": "capPerFloor",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "currentLevel",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "currentRound",
+      "name": "MAX_PLAYERS",
       "outputs": [
         {
           "internalType": "uint256",
@@ -195,26 +142,19 @@ export const TowerClimbABI = [
     },
     {
       "inputs": [],
-      "name": "endRound",
+      "name": "closeRegistration",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "inputs": [],
-      "name": "gameStart",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "gameState",
+      "name": "getPlayerCount",
       "outputs": [
         {
-          "internalType": "enum TowerClimb.GameState",
+          "internalType": "uint256",
           "name": "",
-          "type": "uint8"
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -222,7 +162,7 @@ export const TowerClimbABI = [
     },
     {
       "inputs": [],
-      "name": "getActivePlayers",
+      "name": "getRegisteredPlayers",
       "outputs": [
         {
           "internalType": "address[]",
@@ -237,56 +177,11 @@ export const TowerClimbABI = [
       "inputs": [
         {
           "internalType": "address",
-          "name": "player",
-          "type": "address"
-        }
-      ],
-      "name": "getCurrentLevel",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getWinners",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address[]",
-          "name": "_players",
-          "type": "address[]"
-        }
-      ],
-      "name": "initializeGame",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
           "name": "",
           "type": "address"
         }
       ],
-      "name": "isActive",
+      "name": "isRegistered",
       "outputs": [
         {
           "internalType": "bool",
@@ -313,17 +208,69 @@ export const TowerClimbABI = [
     {
       "inputs": [
         {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "playerNumbers",
+      "outputs": [
+        {
           "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
       ],
-      "name": "players",
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "register",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "registeredPlayers",
       "outputs": [
         {
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "registrationClosed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "registrationFee",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -344,68 +291,16 @@ export const TowerClimbABI = [
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "startRound",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "submissionDeadline",
-      "outputs": [
+      "inputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "_newFee",
           "type": "uint256"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint8",
-          "name": "move",
-          "type": "uint8"
-        }
-      ],
-      "name": "submitMove",
+      "name": "setRegistrationFee",
       "outputs": [],
       "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "submittedMove",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "",
-          "type": "uint8"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "targetWinners",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -422,22 +317,10 @@ export const TowerClimbABI = [
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "winners",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
+      "inputs": [],
+      "name": "withdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
       "type": "function"
     }
   ]
