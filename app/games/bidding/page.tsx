@@ -192,7 +192,7 @@ export default function BiddingPage() {
   <div
           className={`text-4xl md:text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}
         >
-          <GameTimer seconds={60} />
+          <GameTimer endTime={60} />
         </div>
 
       {/* Code snippet background */}

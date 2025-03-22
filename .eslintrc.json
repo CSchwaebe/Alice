@@ -3,7 +3,11 @@
   "ignorePatterns": ["node_modules/", ".next/"],
   "rules": {
     "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
     "react/no-unescaped-entities": "off",
-    "@typescript-eslint/no-empty-function": "off"
+    "@typescript-eslint/no-empty-function": "off",
+    "react-hooks/exhaustive-deps": "off",
+    "unused-imports/no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "off"
   }
 } 

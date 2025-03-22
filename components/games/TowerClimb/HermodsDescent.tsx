@@ -1,13 +1,9 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract } from 'wagmi';
-import { ethers } from 'ethers';
 import TowerLevels from './HelheimLevels';
-import { TowerClimbABI } from '@/app/abis/GameMasterABI';
 
 // ===== Configuration Constants =====
-const CONTRACT_ADDRESS = '0xYourDeployedContractAddress';  // Replace with actual contract
 const MAX_LEVEL = 21;                                      // Maximum level in game
 const GAME_STATES = [
   'Uninitialized', 'Initialization', 'ReadyForRound', 
@@ -15,93 +11,65 @@ const GAME_STATES = [
 ];
 
 /**
- * HermodsDescent - Main web3-connected component for Tower Climb game
- * Connects to smart contract for gameplay and state management
+ * HermodsDescent - Main component for Tower Climb game
+ * Uses local state for gameplay and state management
  */
 export default function HermodsDescent() {
-  // ===== Web3 Hooks =====
-  const { address } = useAccount();
-  //const { writeContract } = useWriteContract();
-
   // ===== Component State =====
   const [selectedMove, setSelectedMove] = useState<number | null>(null);
-  const [gameState, setGameState] = useState<string>('Uninitialized');
+  const [gameState, setGameState] = useState<string>('ReadyForRound');
   const [levelCounts, setLevelCounts] = useState<number[]>(new Array(MAX_LEVEL + 1).fill(0));
+  const [currentLevel, setCurrentLevel] = useState<number>(5); // Mock current player level
 
-  // ===== Contract Data Fetching =====
-  // Get current game state
-  const { data: gameStateData } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: TowerClimbABI,
-    functionName: 'gameState',
-  });
-
-  // Get player's current level
-  const { data: currentLevel } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: TowerClimbABI,
-    functionName: 'getCurrentLevel',
-    args: [address],
-  });
-
-  // Get all active players
-  const { data: activePlayers } = useReadContract({
-    address: CONTRACT_ADDRESS,
-    abi: TowerClimbABI,
-    functionName: 'getActivePlayers',
-  });
-
-  /**
-   * Update local state based on contract data
-   */
+  // Generate mock data for level counts
   useEffect(() => {
-    // Update game state from contract
-    if (gameStateData !== undefined) {
-      setGameState(GAME_STATES[Number(gameStateData)]);
-    }
-    
-    // Update level counts by fetching all player positions
-    if (activePlayers && address) {
+    // Create mock player distribution
+    const generateMockLevelCounts = () => {
       const counts = new Array(MAX_LEVEL + 1).fill(0);
-      const provider = ethers.getDefaultProvider();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, TowerClimbABI, provider);
       
-      // Create batch request to get each player's level
-      Promise.all(
-        (activePlayers as string[]).map(player => contract.getCurrentLevel(player))
-      ).then(levels => {
-        // Count players at each level
-        levels.forEach((level: number) => {
-          if (level <= MAX_LEVEL) counts[level]++;
-        });
-        setLevelCounts(counts);
-      });
+      // Simulate some random distribution of players across levels
+      for (let i = 0; i < 50; i++) {
+        const level = Math.floor(Math.random() * (MAX_LEVEL + 1));
+        counts[level]++;
+      }
+      
+      // Ensure current player level is counted
+      counts[currentLevel]++;
+      
+      return counts;
+    };
+    
+    setLevelCounts(generateMockLevelCounts());
+  }, [currentLevel]);
 
-      console.log(selectedMove)
+  // Simulate game state changes
+  useEffect(() => {
+    // Cycle through game states every 30 seconds for demo purposes
+    const interval = setInterval(() => {
+      const currentIndex = GAME_STATES.indexOf(gameState);
+      const nextIndex = (currentIndex + 1) % GAME_STATES.length;
+      setGameState(GAME_STATES[nextIndex]);
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [gameState]);
+
+  // Log when move is selected
+  useEffect(() => {
+    if (selectedMove !== null) {
+      console.log('Selected move:', selectedMove);
     }
-  }, [gameStateData, activePlayers, address]);
-
-  /**
-   * Submit player's move to the contract
-  
-  const handleSubmitMove = useCallback(() => {
-    console.log('handleSubmitMove');
-    console.log(selectedMove);
-    // Add implementation or remove if not needed
-  }, []);
-  */
-   
+  }, [selectedMove]);
 
   // ===== Main Component Render =====
   return (
     <div>
       <TowerLevels 
         levelCounts={levelCounts} 
-        currentLevel={currentLevel ? Number(currentLevel) : undefined} 
+        currentLevel={currentLevel} 
         gameState={gameState}
         onMoveSelect={setSelectedMove}
         maxLevel={MAX_LEVEL}
-        
       />
     </div>
   );

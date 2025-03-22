@@ -1,6 +1,6 @@
 "use client";
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { GameMasterABI } from '@/app/abis/GameMasterABI';
@@ -13,6 +13,7 @@ import ChoicePopup from '@/components/games/Doors/ChoicePopup';
 import { GameTimer } from '@/components/ui/GameTimer';
 import GameChat from '@/components/chat/GameChat';
 import GameRules from '@/components/games/Doors/GameRules';
+import { Log } from 'viem';
 
 // Type for the player info returned from the contract
 type PlayerInfo = {
@@ -154,6 +155,8 @@ function DoorsGame() {
     }
   }, [gameInfo]);
 
+  // Add event listeners after other hooks
+
   // Handle door selection
   const handleDoorSelect = async () => {
     if (!gameId) return;
@@ -177,6 +180,7 @@ function DoorsGame() {
   useEffect(() => {
     if (isTxSuccess) {
       setTxStatus('success');
+      console.log('transaction success refetch');
       // Refetch player info and game info
       refetchPlayerInfo();
       refetchGameInfo();

@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged, User } from 'firebase/auth';
 import { app } from '@/config/firebase';
 
 export function useFirebaseAuth() {
   const { address } = useAccount();
-  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {

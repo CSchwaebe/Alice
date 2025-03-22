@@ -1,6 +1,6 @@
 // app/providers.tsx
 "use client"; // Required for client-side providers
-import { cookieToInitialState, WagmiProvider, type Config, cookieStorage, createStorage } from 'wagmi'
+import { cookieToInitialState, WagmiProvider, http, type Config, cookieStorage, createStorage } from 'wagmi'
 import { HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
@@ -23,6 +23,11 @@ export const wagmiAdapter = new WagmiAdapter({
     storage: cookieStorage
   }),
   ssr: true,
+  syncConnectedChain: true,
+  transports: {
+    [sonicBlazeTestnet.id]: http('https://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+    [sonic.id]: http('https://sonic-mainnet.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+  },
   projectId,
   networks
 });

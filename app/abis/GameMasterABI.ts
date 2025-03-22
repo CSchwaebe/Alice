@@ -174,7 +174,7 @@ export const GameMasterABI =  [
         "type": "string"
       }
     ],
-    "name": "endExpiredRound",
+    "name": "endExpiredGames",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -278,6 +278,25 @@ export const GameMasterABI =  [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "gameName",
+        "type": "string"
+      }
+    ],
+    "name": "initializeGame",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -454,26 +473,7 @@ export const GameMasterABI =  [
         "type": "string"
       }
     ],
-    "name": "startGame",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "gameName",
-        "type": "string"
-      }
-    ],
-    "name": "startRound",
+    "name": "startGames",
     "outputs": [
       {
         "internalType": "bool",

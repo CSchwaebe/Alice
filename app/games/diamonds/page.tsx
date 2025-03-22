@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import DiamondGrid from '@/components/games/Diamonds/DiamondGrid';
 import PlayerList from '@/components/games/Diamonds/PlayerList';
-import GameChat from '@/components/chat/GameChat';
 import { GameTimer } from "@/components/ui/GameTimer";
 import { Silkscreen } from 'next/font/google';
 
@@ -29,7 +28,7 @@ export default function DiamondsPage() {
   return (
     <div className="p-4 flex flex-col items-center w-full">
       <div className={`text-4xl md:text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}>
-        <GameTimer seconds={60} />
+        <GameTimer endTime={60} />
       </div>
 
       <div className="flex justify-between w-full max-w-4xl mb-4">
@@ -46,7 +45,6 @@ export default function DiamondsPage() {
 
       <DiamondGrid onNumberSelect={handleNumberSelect} />
       <PlayerList />
-      <GameChat gameId={gameInstanceId} gameName="Diamonds" />
     </div>
   );
 } 
