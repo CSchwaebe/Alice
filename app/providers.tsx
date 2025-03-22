@@ -11,7 +11,7 @@ import type { AppKitNetwork } from '@reown/appkit/networks';
 import { CloudAuthSIWX } from '@reown/appkit-siwx'
 
 // AppKit Configuration
-const projectId = "7f02c5df8e9d779de7cfa8d56660538f";
+const projectId = process.env.NEXT_PUBLIC_APPKIT_PROJECT_ID || '';
 const networks = [
   { ...sonic, name: 'Sonic' },
   { ...sonicBlazeTestnet, name: 'Sonic Testnet' }
