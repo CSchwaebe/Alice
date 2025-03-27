@@ -39,7 +39,7 @@ class ChatManager {
   private active = false;
   
   private constructor() {
-    // Private constructor to enforce singleton
+    // Private constructor to enforce singleton pattern
   }
   
   // Get the singleton instance
@@ -87,7 +87,7 @@ class ChatManager {
       onPlayers(this.players.get(gameId)!);
     }
     
-    // If we haven't set up listeners yet, do so now
+    // Setup listeners directly without waiting for auth
     if (!this.messagesRefs.has(gameId)) {
       this.setupListeners(gameId, address);
     } else if (address) {
@@ -136,6 +136,9 @@ class ChatManager {
     if (!address) return;
     
     try {
+      console.log(`Adding player ${address} to chat ${gameId}`);
+      
+      // Add the player to the players list
       const playerRef = ref(database, `chats/${gameId}/players/${address}`);
       set(playerRef, {
         address,
@@ -143,14 +146,7 @@ class ChatManager {
         name: this.shortenAddress(address),
       });
       
-      // Also add test player
-      const testAddress = "0x9e1Ef95b0CDAb7e3C9c28dD5e700A280bb7Bd202";
-      const testPlayerRef = ref(database, `chats/${gameId}/players/${testAddress}`);
-      set(testPlayerRef, {
-        address: testAddress,
-        lastActive: serverTimestamp(),
-        name: this.shortenAddress(testAddress),
-      });
+      console.log(`Successfully added player ${address} to chat`);
     } catch (error) {
       console.error("Error adding player:", error);
     }
@@ -220,17 +216,13 @@ class ChatManager {
     
     onValue(playersRef, (snapshot) => {
       try {
-        const testAddress = "0x9e1Ef95b0CDAb7e3C9c28dD5e700A280bb7Bd202";
         const playerData = snapshot.val();
         let playerList: string[] = [];
         
         if (playerData) {
           playerList = Object.keys(playerData);
-          if (!playerList.includes(testAddress)) {
-            playerList.push(testAddress);
-          }
-        } else {
-          playerList = address ? [address, testAddress] : [testAddress];
+        } else if (address) {
+          playerList = [address];
         }
         
         // Update internal state

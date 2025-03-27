@@ -12,7 +12,7 @@ const aboreto = Aboreto({
 });
 
 export const metadata = {
-  title: 'Ragnarok Games',
+  title: 'Alice',
   description: 'Norse-themed blockchain games',
 };
 

@@ -1,34 +1,133 @@
 "use client";
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { GameMasterABI } from '@/app/abis/GameMasterABI';
-import { DoorsABI } from '@/app/abis/DoorsABI';
-import GlitchTextBackground from "@/components/effects/GlitchTextBackground";
 import CyberscapeBackground from '@/components/effects/CyberscapeBackground';
 import RouteGuard from '@/components/auth/RouteGuard';
-import DoorChoice from '@/components/games/Doors/DoorChoice';
-import ChoicePopup from '@/components/games/Doors/ChoicePopup';
-import { GameTimer } from '@/components/ui/GameTimer';
 import GameChat from '@/components/chat/GameChat';
-import GameRules from '@/components/games/Doors/GameRules';
-import { Log } from 'viem';
+import './styles.css';
 
-// Type for the player info returned from the contract
-type PlayerInfo = {
-  playerAddress: `0x${string}`;
-  playerNumber: string;
-  isActive: boolean;
-  doorsOpened: bigint;
-};
+// Import custom hooks
+import { useDoorsGameData } from '@/hooks/useDoorsGameData';
+import { useDoorsGameEvents } from '@/hooks/useDoorsGameEvents';
+import { useDoorsGameTransactions } from '@/hooks/useDoorsGameTransactions';
+import { useGameRouteGuard } from '@/hooks/useGameRouteGuard';
 
-// Define proper type for GameInfo
-type GameInfo = {
-  state: number;
-  currentRound: bigint;
-  roundEndTime: bigint;
-};
+// Import components
+import GameContent from '@/components/games/Doors/GameContent';
+import PlayerList from '@/components/games/Doors/PlayerList';
+import TransactionStatus from '@/components/games/Doors/TransactionStatus';
+import LoadingScreen from '@/components/games/Doors/LoadingScreen';
+import DoorsGameInfo from '@/components/games/Doors/DoorsGameInfo';
+import GameNotification from '@/components/games/Doors/GameNotification';
+
+// Game completion screen component
+function GameCompletionScreen({ playerList, router }: { 
+  playerList: any[], 
+  router: any 
+}) {
+  // Sort players by number for consistent display
+  const sortedPlayers = [...playerList].sort((a, b) => a.playerNumber - b.playerNumber);
+
+  return (
+    <div className="w-full max-w-4xl mx-auto relative px-4">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden -z-10">
+        <div className="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl -top-20 -left-20 animate-pulse-slow"></div>
+        <div className="absolute w-96 h-96 bg-white/5 rounded-full blur-3xl -bottom-20 -right-20 animate-pulse-slow animation-delay-2000"></div>
+        <div className="absolute w-full h-full bg-grid-pattern opacity-10"></div>
+      </div>
+
+      {/* Title */}
+      <div className="relative text-center mb-12 pt-8 pb-4 border-b border-white/10">
+        <h1 className="text-5xl md:text-7xl font-bold text-white mb-2">
+          GAME COMPLETE
+        </h1>
+        <div className="w-32 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent mx-auto my-4"></div>
+        <p className="text-white/70 text-lg font-mono">
+          <span className="text-white/90">[</span> System Alert: Door Protocol Terminated <span className="text-white/90">]</span>
+        </p>
+      </div>
+
+      {/* Player Grid */}
+      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
+        {sortedPlayers.map((player, index) => (
+          <div 
+            key={index}
+            className={`relative overflow-hidden backdrop-blur-sm bg-black/80 border ${
+              player.isActive 
+                ? 'border-green-500/30' 
+                : 'border-red-500/30'
+            } p-4 rounded-lg transform transition-all duration-300 hover:scale-105`}
+          >
+            {/* Accent Line */}
+            <div className={`absolute top-0 left-0 w-1 h-full ${
+              player.isActive ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
+            
+            {/* Corner Decoration */}
+            <div className="absolute top-0 right-0 w-8 h-8">
+              <div className={`w-full h-full ${
+                player.isActive 
+                  ? 'bg-gradient-to-br from-green-500/20 to-transparent' 
+                  : 'bg-gradient-to-br from-red-500/20 to-transparent'
+              }`}></div>
+            </div>
+            
+            <div className="flex flex-col items-center relative">
+              {/* Player Number */}
+              <div className="text-2xl font-bold mb-2 text-white">#{player.playerNumber}</div>
+              
+              {/* Status Text */}
+              <div className={`text-sm font-mono ${
+                player.isActive ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {player.isActive ? 'SURVIVOR' : 'ELIMINATED'}
+              </div>
+              
+              {/* Status Indicator */}
+              <div className="mt-3 flex items-center gap-2">
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  player.isActive 
+                    ? 'bg-green-500 animate-pulse' 
+                    : 'bg-red-500'
+                }`}></div>
+                <div className={`h-px w-12 ${
+                  player.isActive 
+                    ? 'bg-gradient-to-r from-green-500/50 to-transparent' 
+                    : 'bg-gradient-to-r from-red-500/50 to-transparent'
+                }`}></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Return Button */}
+      <div className="text-center mb-8 relative">
+        <button 
+          onClick={() => router.push('/lobby')}
+          className="group relative overflow-hidden cyberpunk-button px-10 py-4 bg-black/60
+                    border border-white/30 text-white hover:text-white/90
+                    transition-all duration-300 font-mono uppercase tracking-wider"
+        >
+          <span className="relative z-10">Return to Digital Nexus</span>
+          <span className="absolute inset-0 bg-white/10
+                         opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+        </button>
+        
+        {/* Decorative elements */}
+        <div className="absolute top-1/2 transform -translate-y-1/2 -left-2 h-px w-16 bg-gradient-to-r from-white/30 to-transparent"></div>
+        <div className="absolute top-1/2 transform -translate-y-1/2 -right-2 h-px w-16 bg-gradient-to-l from-white/30 to-transparent"></div>
+      </div>
+      
+      {/* System Message */}
+      <div className="font-mono text-center text-xs text-white/50 mb-4">
+        System deactivated // Game protocol closed // Return to base
+      </div>
+    </div>
+  );
+}
 
 export default function DoorsGamePage() {
   return (
@@ -41,155 +140,52 @@ export default function DoorsGamePage() {
 function DoorsGame() {
   const { address, isConnected } = useAccount();
   const router = useRouter();
-  const [playerList, setPlayerList] = useState<PlayerInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [gameId, setGameId] = useState<bigint | null>(null);
-  const [txStatus, setTxStatus] = useState<'none' | 'pending' | 'success' | 'error'>('none');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [roundEndTime, setRoundEndTime] = useState<number>(0);
-  const [gameState, setGameState] = useState<number>(0);
-  const [currentRound, setCurrentRound] = useState<bigint>(BigInt(0));
-
-  // Get player info from GameMaster
-  const { data: playerInfo } = useReadContract({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: GameMasterABI,
-    functionName: 'getPlayerInfo',
-    args: [address],
-    query: {
-      enabled: isConnected && !!address
-    }
-  }) as { data: [string, bigint] | undefined };
-
-  // Add debug logs for playerInfo
-  useEffect(() => {
-    console.log('Connected Address:', address);
-    console.log('Player Info:', playerInfo);
-    if (playerInfo) {
-      console.log('Game Name:', playerInfo[0]);
-      console.log('Game ID:', playerInfo[1]?.toString());
-    }
-  }, [playerInfo, address]);
-
-  // Update to get game info using getGameInfo instead of getRoundInfo
-  const { data: gameInfo, refetch: refetchGameInfo } = useReadContract({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DOORS as `0x${string}`,
-    abi: DoorsABI,
-    functionName: 'getGameInfo',
-    args: [gameId],
-    query: {
-      enabled: !!gameId
-    }
-  }) as { data: GameInfo | undefined, refetch: () => void };
-
-  // Get player list from Doors contract using getPlayerInfo instead of getInfo
-  const { data: playerInfoList, refetch: refetchPlayerInfo } = useReadContract({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DOORS as `0x${string}`,
-    abi: DoorsABI,
-    functionName: 'getPlayerInfo',
-    args: [gameId],
-    query: {
-      enabled: !!gameId
-    }
+  
+  // Fetch game data
+  const {
+    gameId,
+    playerInfo,
+    playerList,
+    isLoading,
+    roundEndTime,
+    gameState,
+    currentRound,
+    refetchGameInfo,
+    refetchPlayerInfo,
+    setCurrentRound,
+    setRoundEndTime
+  } = useDoorsGameData({ address, isConnected });
+  
+  // Handle transactions
+  const {
+    handleDoorSelect,
+    txStatus,
+    errorMessage,
+    isPending,
+    isWaitingTx,
+    setTxStatus,
+    setErrorMessage
+  } = useDoorsGameTransactions(gameId, refetchPlayerInfo, refetchGameInfo);
+  
+  // Subscribe to game events and get notifications
+  const { notification } = useDoorsGameEvents({
+    gameId,
+    address,
+    refetchGameInfo,
+    refetchPlayerInfo,
+    setCurrentRound,
+    setRoundEndTime,
+    setTxStatus,
+    setErrorMessage
   });
-
-  // Add debug logs for player list
-  useEffect(() => {
-    console.log('Game ID for query:', gameId?.toString());
-    console.log('Raw Player Info List:', playerInfoList);
-    if (playerInfoList) {
-      console.log('Processed Player List:', playerList);
-    }
-  }, [gameId, playerInfoList, playerList]);
-
-  // Update gameId when playerInfo is fetched
-  useEffect(() => {
-    if (playerInfo?.[1]) {
-      setGameId(playerInfo[1]);
-    }
-  }, [playerInfo]);
-
-  // Update player list when data is fetched
-  useEffect(() => {
-    if (playerInfoList) {
-      const formattedPlayerList = (playerInfoList as any[]).map(player => ({
-        ...player,
-        // Convert bigint playerNumber to padded string
-        playerNumber: player.playerNumber.toString().padStart(3, '0')
-      }));
-      setPlayerList(formattedPlayerList);
-      setIsLoading(false);
-    }
-  }, [playerInfoList]);
-
-  // Verify player is in the correct game
-  useEffect(() => {
-    if (!isConnected) {
-      router.push('/');
-      return;
-    }
-
-    if (playerInfo?.[0]) {
-      if (playerInfo[0] !== 'DOORS') {
-        router.push(`/games/${playerInfo[0].toLowerCase()}`);
-      }
-    } else {
-      router.push('/');
-    }
-  }, [isConnected, playerInfo, router]);
-
-  // Add contract write hook
-  const { writeContract, isPending, data: hash } = useWriteContract();
-
-  // Add transaction wait hook
-  const { isLoading: isWaitingTx, isSuccess: isTxSuccess, isError: isTxError } = useWaitForTransactionReceipt({
-    hash,
+  
+  // Protect route - redirect if user is not in the correct game
+  useGameRouteGuard({
+    isConnected,
+    playerInfo,
+    expectedGameName: 'DOORS'
   });
-
-  // Update game info when data is fetched
-  useEffect(() => {
-    if (gameInfo) {
-      setRoundEndTime(Number(gameInfo.roundEndTime));
-      setGameState(gameInfo.state);
-      setCurrentRound(gameInfo.currentRound);
-    }
-  }, [gameInfo]);
-
-  // Add event listeners after other hooks
-
-  // Handle door selection
-  const handleDoorSelect = async () => {
-    if (!gameId) return;
-
-    try {
-      setTxStatus('pending');
-      await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DOORS as `0x${string}`,
-        abi: DoorsABI,
-        functionName: 'openDoor',
-        args: [],
-      });
-    } catch (error) {
-      console.error('Error opening door:', error);
-      setTxStatus('error');
-      setErrorMessage('Failed to open door. Please try again.');
-    }
-  };
-
-  // Watch for transaction status
-  useEffect(() => {
-    if (isTxSuccess) {
-      setTxStatus('success');
-      console.log('transaction success refetch');
-      // Refetch player info and game info
-      refetchPlayerInfo();
-      refetchGameInfo();
-    } else if (isTxError) {
-      setTxStatus('error');
-      setErrorMessage('Transaction failed. Please try again.');
-    }
-  }, [isTxSuccess, isTxError, refetchPlayerInfo, refetchGameInfo]);
-
+  
   // Check if player is active in the game
   const isActivePlayer = playerList.some(
     player => 
@@ -197,12 +193,21 @@ function DoorsGame() {
       player.isActive
   );
 
+  // Show loading screen until data is loaded
   if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Check if game is completed (gameState === 4)
+  const isGameCompleted = gameState === 4;
+
+  // Show game completion screen if game is over
+  if (isGameCompleted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-neon-300 rounded-full border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-300">Loading game data...</p>
+      <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
+        <CyberscapeBackground />
+        <div className="relative z-10 flex-1 flex items-center justify-center p-4">
+          <GameCompletionScreen playerList={playerList} router={router} />
         </div>
       </div>
     );
@@ -212,71 +217,41 @@ function DoorsGame() {
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
       <CyberscapeBackground />
       
+      {/* Game Notification */}
+      <GameNotification 
+        message={notification.message} 
+        type={notification.type} 
+      />
+      
       {/* Main content with responsive layout */}
       <div className="relative z-10 w-full p-4 md:flex md:flex-row md:gap-4 max-w-[1440px] mx-auto">
         {/* Game content - takes full width on mobile, shrinks on desktop to make room for chat */}
         <div className="w-full md:flex-1 pb-12 md:pb-0">
-          {gameState === 1 ? (
-            // Pre-game state - show game rules
-            <GameRules />
-          ) : (
-            // Active game state - show timer, round counter, and door choice
-            <>
-              {/* Timer */}
-              <div className="flex justify-center mb-8">
-                <GameTimer endTime={roundEndTime} />
-              </div>
-
-              {/* Round Counter */}
-              <div className="mb-8 flex justify-center">
-                <div className="text-2xl md:text-3xl text-white font-bold tracking-wider">
-                  Round {currentRound.toString()}/10
-                </div>
-              </div>
-
-              {/* Door Choice Component */}
-              <DoorChoice onDoorSelect={handleDoorSelect} />
-            </>
-          )}
+          {/* Game content (rules or active game) */}
+          <GameContent 
+            gameState={gameState}
+            roundEndTime={roundEndTime}
+            currentRound={currentRound}
+            onDoorSelect={handleDoorSelect}
+          />
 
           {/* Player List */}
-          <div className="font-mono text-sm bg-black/50 border border-white/20 p-6 mt-8">
-            <div className="text-white/70 mb-4 uppercase tracking-wider">Players</div>
-            
-            <div className="grid grid-cols-3 gap-4 text-xs mb-2 text-white/50 uppercase">
-              <div>Player</div>
-              <div>Status</div>
-              <div>Doors Opened</div>
-            </div>
-            
-            <div className="space-y-2">
-              {playerList.map((player) => (
-                <div 
-                  key={player.playerAddress}
-                  className={`grid grid-cols-3 gap-4 text-sm ${
-                    player.playerAddress.toLowerCase() === address?.toLowerCase()
-                      ? 'text-neon-300'
-                      : 'text-white/80'
-                  }`}
-                >
-                  <div className="truncate">
-                    {player.playerNumber}
-                  </div>
-                  <div>
-                    {player.isActive ? (
-                      <span className="text-green-400">Active</span>
-                    ) : (
-                      <span className="text-red-400">Eliminated</span>
-                    )}
-                  </div>
-                  <div>{player.doorsOpened.toString()}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <PlayerList 
+            playerList={playerList}
+            currentPlayerAddress={address}
+          />
+          
+          {/* Debug Info - set showDebug to true to see */}
+          <DoorsGameInfo
+            address={address}
+            playerInfo={playerInfo}
+            gameId={gameId}
+            playerList={playerList}
+            showDebug={false}
+          />
         </div>
         
-        {/* Game Chat - Only show for active players (now positioned in layout) */}
+        {/* Game Chat - Only show for active players */}
         {isActivePlayer && gameId && (
           <GameChat 
             gameId={`doors_${gameId.toString()}`}
@@ -286,24 +261,12 @@ function DoorsGame() {
         )}
 
         {/* Transaction Status */}
-        {(isPending || isWaitingTx) && (
-          <div className="fixed bottom-4 right-4 font-mono text-xs bg-black/80 border border-white/20 p-4">
-            <div className="flex items-center">
-              <div className="h-2 w-2 bg-white rounded-full animate-pulse mr-2"></div>
-              <span>Processing transaction...</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {txStatus === 'error' && (
-          <div className="fixed bottom-4 right-4 font-mono text-xs bg-red-900/20 border border-red-500/20 p-4">
-            <div className="flex items-center">
-              <div className="h-2 w-2 bg-red-400 rounded-full animate-pulse mr-2"></div>
-              <span>{errorMessage}</span>
-            </div>
-          </div>
-        )}
+        <TransactionStatus
+          isPending={isPending}
+          isWaitingTx={isWaitingTx}
+          txStatus={txStatus}
+          errorMessage={errorMessage}
+        />
       </div>
     </div>
   );

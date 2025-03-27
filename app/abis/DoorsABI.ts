@@ -305,7 +305,7 @@ export const DoorsABI = [
       {
         "components": [
           {
-            "internalType": "enum IGame.GameState",
+            "internalType": "enum GameState",
             "name": "state",
             "type": "uint8"
           },
@@ -352,7 +352,7 @@ export const DoorsABI = [
     "name": "getGameState",
     "outputs": [
       {
-        "internalType": "enum IGame.GameState",
+        "internalType": "enum GameState",
         "name": "",
         "type": "uint8"
       }
@@ -493,7 +493,7 @@ export const DoorsABI = [
             "type": "uint256"
           },
           {
-            "internalType": "enum IGame.GameState",
+            "internalType": "enum GameState",
             "name": "state",
             "type": "uint8"
           }

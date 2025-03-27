@@ -1,6 +1,6 @@
 // app/providers.tsx
 "use client"; // Required for client-side providers
-import { cookieToInitialState, WagmiProvider, http, type Config, cookieStorage, createStorage } from 'wagmi'
+import { cookieToInitialState, WagmiProvider, http, webSocket, type Config, cookieStorage, createStorage } from 'wagmi'
 import { HeroUIProvider } from "@heroui/react";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
@@ -9,6 +9,7 @@ import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { sonic, sonicBlazeTestnet } from "wagmi/chains";
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import { CloudAuthSIWX } from '@reown/appkit-siwx'
+import { ContractEventsProvider } from '@/lib/contract-events';
 
 // AppKit Configuration
 const projectId = process.env.NEXT_PUBLIC_APPKIT_PROJECT_ID || '';
@@ -25,8 +26,8 @@ export const wagmiAdapter = new WagmiAdapter({
   ssr: true,
   syncConnectedChain: true,
   transports: {
-    [sonicBlazeTestnet.id]: http('https://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
-    [sonic.id]: http('https://sonic-mainnet.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+    [sonicBlazeTestnet.id]: webSocket('wss://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+    [sonic.id]: webSocket('wss://sonic-mainnet.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
   },
   projectId,
   networks
@@ -114,9 +115,11 @@ export function Providers({ children, cookies }: { children: ReactNode; cookies:
   return (
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
-        <HeroUIProvider>
-          {children}
-        </HeroUIProvider>
+        <ContractEventsProvider>
+          <HeroUIProvider>
+            {children}
+          </HeroUIProvider>
+        </ContractEventsProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

@@ -1,4 +1,4 @@
-export const GameMasterABI =  [
+export const RagnarokGameMasterABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -43,6 +43,12 @@ export const GameMasterABI =  [
       }
     ],
     "name": "GameRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "GameReset",
     "type": "event"
   },
   {
@@ -101,11 +107,68 @@ export const GameMasterABI =  [
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "playerNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "PlayerEliminated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "number",
         "type": "uint256"
       }
     ],
     "name": "PlayerNumberAssigned",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "PlayerRefunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "playerNumber",
+        "type": "uint256"
+      }
+    ],
+    "name": "PlayerRegistered",
     "type": "event"
   },
   {
@@ -125,14 +188,52 @@ export const GameMasterABI =  [
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": true,
         "internalType": "address",
-        "name": "newAddress",
+        "name": "player",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "RagnarokAddressUpdated",
+    "name": "RefundFailed",
     "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "RegistrationClosed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "RegistrationFeeChanged",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "MAX_PLAYERS",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -169,6 +270,51 @@ export const GameMasterABI =  [
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "activePlayers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "closeRegistration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "eliminatedPlayers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "string",
         "name": "gameName",
         "type": "string"
@@ -177,6 +323,44 @@ export const GameMasterABI =  [
     "name": "endExpiredGames",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "gameName",
+        "type": "string"
+      }
+    ],
+    "name": "endGames",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "finalPlacements",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -200,7 +384,96 @@ export const GameMasterABI =  [
   },
   {
     "inputs": [],
+    "name": "getActivePlayerCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getActivePlayers",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getActivePlayersAndNumbers",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "players",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "numbers",
+        "type": "uint256[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEliminatedPlayerCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getEliminatedPlayers",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getPlayerCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "getPlayerFinalPlacement",
     "outputs": [
       {
         "internalType": "uint256",
@@ -230,6 +503,21 @@ export const GameMasterABI =  [
         "internalType": "uint256",
         "name": "gameId",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isActive",
+        "type": "bool"
+      },
+      {
+        "internalType": "enum GameState",
+        "name": "gameState",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint256",
+        "name": "playerNumber",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -256,12 +544,12 @@ export const GameMasterABI =  [
   },
   {
     "inputs": [],
-    "name": "getPlayers",
+    "name": "getRegisteredGames",
     "outputs": [
       {
-        "internalType": "address[]",
+        "internalType": "string[]",
         "name": "",
-        "type": "address[]"
+        "type": "string[]"
       }
     ],
     "stateMutability": "view",
@@ -269,12 +557,12 @@ export const GameMasterABI =  [
   },
   {
     "inputs": [],
-    "name": "getRegisteredGames",
+    "name": "getRegisteredPlayers",
     "outputs": [
       {
-        "internalType": "string[]",
+        "internalType": "address[]",
         "name": "",
-        "type": "string[]"
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -297,6 +585,25 @@ export const GameMasterABI =  [
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "isActivePlayer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -354,6 +661,19 @@ export const GameMasterABI =  [
     "inputs": [
       {
         "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "playerEliminated",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -370,35 +690,10 @@ export const GameMasterABI =  [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "players",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "ragnarokAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
+    "name": "register",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -415,13 +710,6 @@ export const GameMasterABI =  [
       }
     ],
     "name": "registerGame",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "registerPlayers",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -446,6 +734,51 @@ export const GameMasterABI =  [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "registeredPlayers",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registrationClosed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registrationFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
@@ -453,14 +786,21 @@ export const GameMasterABI =  [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "resetGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_ragnarok",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_newFee",
+        "type": "uint256"
       }
     ],
-    "name": "setRagnarokAddress",
+    "name": "setRegistrationFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -493,6 +833,13 @@ export const GameMasterABI =  [
       }
     ],
     "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

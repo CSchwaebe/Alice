@@ -1,13 +1,78 @@
 "use client";
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useWatchContractEvent } from 'wagmi';
-import { GameMasterABI } from '@/app/abis/GameMasterABI';
-import { RagnarokABI } from '@/app/abis/RagnarokABI';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
 import { useState, useEffect } from 'react';
+import type { ReactElement } from 'react';
 import OwnerGuard from '@/components/auth/OwnerGuard';
-import MatrixRain from "@/components/effects/GlitchTextBackground";
 import { parseEther } from 'viem';
+import { useContractEventSubscription, ContractEventType, ContractEvent } from '@/lib/contract-events';
 
+// Component for the registration progress bar
+function RegistrationProgressBar({ registeredPlayers }: { registeredPlayers: number }) {
+  const maxPlayers = 1000;
+  const percentage = Math.min((registeredPlayers / maxPlayers) * 100, 100);
+  
+  return (
+    <div className="font-mono text-xs mb-6">
+      <div className="flex justify-between mb-1">
+        <span className="text-white/70">Registration Progress</span>
+        <span className="text-neon-300">{registeredPlayers} / {maxPlayers} Players</span>
+      </div>
+      <div className="w-full bg-black/70 border border-white/30 h-4 relative">
+        <div 
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-600 to-neon-300"
+          style={{ width: `${percentage}%` }}
+        ></div>
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+          <span className="text-[10px] font-bold text-white drop-shadow-lg">
+            {percentage.toFixed(1)}%
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Component for the player status bar
+function PlayerStatusBar({ activePlayers, eliminatedPlayers }: { activePlayers: number; eliminatedPlayers: number }) {
+  const totalPlayers = activePlayers + eliminatedPlayers;
+  const activePercentage = (activePlayers / totalPlayers) * 100;
+  const eliminatedPercentage = (eliminatedPlayers / totalPlayers) * 100;
+  
+  return (
+    <div className="font-mono text-xs mb-6">
+      <div className="flex justify-between mb-1">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center">
+            <div className="h-2 w-2 rounded-full bg-green-500 mr-2"></div>
+            <span className="text-white/70">Active: {activePlayers}</span>
+          </div>
+          <div className="flex items-center">
+            <div className="h-2 w-2 rounded-full bg-red-500 mr-2"></div>
+            <span className="text-white/70">Eliminated: {eliminatedPlayers}</span>
+          </div>
+        </div>
+        <span className="text-white/70">Total: {activePlayers + eliminatedPlayers}</span>
+      </div>
+      <div className="w-full h-4 bg-black/70 border border-white/30 relative overflow-hidden">
+        <div 
+          className="absolute top-0 left-0 h-full bg-green-500/50"
+          style={{ width: `${activePercentage}%` }}
+        ></div>
+        <div 
+          className="absolute top-0 right-0 h-full bg-red-500/50"
+          style={{ width: `${eliminatedPercentage}%` }}
+        ></div>
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+          <span className="text-[10px] font-bold text-white drop-shadow-lg">
+            {activePercentage.toFixed(1)}% Active
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function GameMasterPage() {
   return (
@@ -17,7 +82,7 @@ export default function GameMasterPage() {
   );
 }
 
-function GameMasterDashboard() {
+function GameMasterDashboard(): ReactElement {
   const { address } = useAccount();
   
   // State for tabs
@@ -30,13 +95,61 @@ function GameMasterDashboard() {
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [newRegistrationFee, setNewRegistrationFee] = useState('');
   
+  // State for player counts
+  const [registeredPlayers, setRegisteredPlayers] = useState<number>(0);
+  const [activePlayers, setActivePlayers] = useState<number>(0);
+  const [eliminatedPlayers, setEliminatedPlayers] = useState<number>(0);
+  
+  // Get active players count from contract
+  const { data: activePlayerCount } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: RagnarokGameMasterABI,
+    functionName: 'getActivePlayerCount',
+    args: [],
+  }) as { data: bigint | undefined };
+
+  // Get eliminated players count from contract
+  const { data: eliminatedPlayerCount } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: RagnarokGameMasterABI,
+    functionName: 'getEliminatedPlayerCount',
+    args: [],
+  }) as { data: bigint | undefined };
+
+  // Update counts when they change
+  useEffect(() => {
+    if (activePlayerCount !== undefined && eliminatedPlayerCount !== undefined) {
+      const activeCount = Number(activePlayerCount);
+      const eliminatedCount = Number(eliminatedPlayerCount);
+      setActivePlayers(activeCount);
+      setEliminatedPlayers(eliminatedCount);
+      setRegisteredPlayers(activeCount + eliminatedCount);
+    }
+  }, [activePlayerCount, eliminatedPlayerCount]);
+  
+  // Get registration status
+  const { data: isRegistrationClosed } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: RagnarokGameMasterABI,
+    functionName: 'registrationClosed',
+    args: [],
+  });
+  
   // Get registered games
   const { data: games, refetch: refetchGames } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: GameMasterABI,
+    abi: RagnarokGameMasterABI,
     functionName: 'getRegisteredGames',
     args: [],
   }) as { data: string[] | undefined, refetch: () => void };
+  
+  // Get player count from contract
+  const { data: playerCount, refetch: refetchPlayerCount } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: RagnarokGameMasterABI,
+    functionName: 'getPlayerCount',
+    args: [],
+  }) as { data: bigint | undefined, refetch: () => void };
   
   // Write contract function
   const { writeContract, data: txHash, isPending, reset } = useWriteContract();
@@ -50,7 +163,8 @@ function GameMasterDashboard() {
   useEffect(() => {
     if (txSuccess) {
       setNotification({ type: 'success', message: 'Transaction successful' });
-      //refetchGames();
+      refetchGames();
+      refetchPlayerCount();
       
       // Clear form inputs
       setGameName('');
@@ -65,16 +179,71 @@ function GameMasterDashboard() {
       
       return () => clearTimeout(timer);
     }
-  }, [txSuccess, refetchGames, reset]);
+  }, [txSuccess, refetchGames, refetchPlayerCount, reset]);
 
-  useWatchContractEvent({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_RAGNAROK as `0x${string}`,
-    abi: RagnarokABI,
-    eventName: 'RegistrationFeeChanged',
-    onLogs(logs) {
-      console.log('New logs!', logs)
-    },
-  })
+  // Subscribe to relevant events for the Game Master page
+  const eventsToSubscribe: ContractEventType[] = [
+    { contract: 'GameMaster', event: 'RegistrationFeeChanged' },
+    { contract: 'GameMaster', event: 'PlayerRegistered' },
+    { contract: 'GameMaster', event: 'RegistrationClosed' },
+    { contract: 'GameMaster', event: 'GameRegistered' },
+    { contract: 'GameMaster', event: 'GameStarted' },
+    { contract: 'GameMaster', event: 'PlayersRegistered' }
+  ];
+  
+  // Handle contract events
+  const handleContractEvent = (event: ContractEvent) => {
+    console.log(`Game Master handling event: ${event.type.contract}.${event.type.event}`, event);
+    
+    // Take action based on event type
+    switch (event.type.event) {
+      case 'RegistrationFeeChanged':
+        // Update fee info
+        refetchGames();
+        setNotification({ 
+          type: 'success', 
+          message: 'Registration fee has been updated' 
+        });
+        break;
+        
+      case 'PlayerRegistered':
+        // Update player count
+        refetchPlayerCount();
+        setRegisteredPlayers(prev => prev + 1); // Optimistic update
+        setNotification({ 
+          type: 'success', 
+          message: 'A new player has registered' 
+        });
+        break;
+        
+      case 'GameRegistered':
+        // Update games list
+        refetchGames();
+        setNotification({ 
+          type: 'success', 
+          message: 'Game has been registered' 
+        });
+        break;
+        
+      case 'GameStarted':
+        // Update games in progress
+        refetchGames();
+        setNotification({ 
+          type: 'success', 
+          message: 'Game has started' 
+        });
+        break;
+        
+      // Add more event handlers as needed
+    }
+  };
+  
+  // Subscribe to relevant events
+  useContractEventSubscription(
+    eventsToSubscribe,
+    handleContractEvent,
+    [refetchGames, refetchPlayerCount] // Dependencies
+  );
   
   // Function to register a new game
   const handleRegisterGame = async () => {
@@ -84,7 +253,7 @@ function GameMasterDashboard() {
       setActiveFunction('registerGame');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
+        abi: RagnarokGameMasterABI,
         functionName: 'registerGame',
         args: [gameName, gameAddress as `0x${string}`],
       });
@@ -103,7 +272,7 @@ function GameMasterDashboard() {
       setActiveFunction('initializeGame');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
+        abi: RagnarokGameMasterABI,
         functionName: 'initializeGame',
         args: [gameName],
       });
@@ -114,22 +283,6 @@ function GameMasterDashboard() {
     }
   };
   
-  // Function to register players
-  const handleRegisterPlayers = async () => {
-    try {
-      setActiveFunction('registerPlayers');
-      await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
-        functionName: 'registerPlayers',
-        args: [],
-      });
-    } catch (error) {
-      console.error('Error registering players:', error);
-      setNotification({ type: 'error', message: 'Failed to register players' });
-      setActiveFunction(null);
-    }
-  };
   
   // Function to start a game
   const handleStartGames = async () => {
@@ -139,7 +292,7 @@ function GameMasterDashboard() {
       setActiveFunction('startGames');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
+        abi: RagnarokGameMasterABI,
         functionName: 'startGames',
         args: [gameName],
       });
@@ -158,7 +311,7 @@ function GameMasterDashboard() {
       setActiveFunction('endExpiredGames');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
+        abi: RagnarokGameMasterABI,
         functionName: 'endExpiredGames',
         args: [gameName],
       });
@@ -175,8 +328,8 @@ function GameMasterDashboard() {
     try {
       setActiveFunction('setRegistrationFee');
       await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_RAGNAROK as `0x${string}`,
-        abi: RagnarokABI,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+        abi: RagnarokGameMasterABI,
         functionName: 'setRegistrationFee',
         args: [parseEther(newRegistrationFee)],
       });
@@ -191,8 +344,8 @@ function GameMasterDashboard() {
     try {
       setActiveFunction('closeRegistration');
       await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_RAGNAROK as `0x${string}`,
-        abi: RagnarokABI,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+        abi: RagnarokGameMasterABI,
         functionName: 'closeRegistration',
         args: [],
       });
@@ -207,8 +360,8 @@ function GameMasterDashboard() {
     try {
       setActiveFunction('withdraw');
       await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_RAGNAROK as `0x${string}`,
-        abi: RagnarokABI,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+        abi: RagnarokGameMasterABI,
         functionName: 'withdraw',
         args: [],
       });
@@ -225,26 +378,9 @@ function GameMasterDashboard() {
   };
   
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
-      <MatrixRain />
-      
-      {/* Cross-lines */}
-      <div className="fixed inset-0 z-[1] pointer-events-none">
-        <div className="absolute top-0 left-[10%] w-px h-full bg-white/5"></div>
-        <div className="absolute top-0 left-[30%] w-px h-full bg-white/10"></div>
-        <div className="absolute top-0 left-[50%] w-px h-full bg-white/15"></div>
-        <div className="absolute top-0 left-[70%] w-px h-full bg-white/10"></div>
-        <div className="absolute top-0 left-[90%] w-px h-full bg-white/5"></div>
-        
-        <div className="absolute left-0 top-[10%] w-full h-px bg-white/5"></div>
-        <div className="absolute left-0 top-[30%] w-full h-px bg-white/10"></div>
-        <div className="absolute left-0 top-[50%] w-full h-px bg-white/15"></div>
-        <div className="absolute left-0 top-[70%] w-full h-px bg-white/10"></div>
-        <div className="absolute left-0 top-[90%] w-full h-px bg-white/5"></div>
-      </div>
-      
+    <div className="min-h-screen flex flex-col relative bg-black">
       {/* Content */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto p-4 my-8">
+      <div className="w-full max-w-5xl mx-auto p-4 my-8">
         {/* Header */}
         <div className="flex items-center justify-between w-full mb-8 px-2">
           <div className="flex items-center">
@@ -274,7 +410,7 @@ function GameMasterDashboard() {
         )}
         
         {/* Admin info panel */}
-        <div className="font-mono text-xs bg-black/50 border border-white/20 border-l-red-500
+        <div className="font-mono text-xs bg-black border border-white/20 border-l-red-500
                          pl-3 pr-2 py-3 text-white/90 mb-6">
           <div className="text-white/50 mb-1 uppercase tracking-wider">Admin Access</div>
           <div className="flex items-center mt-2">
@@ -313,146 +449,155 @@ function GameMasterDashboard() {
 
         {/* Registration Tab */}
         {activeTab === 'registration' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Register Game */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Register Game</div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 mb-1">Game Name</label>
-                  <input 
-                    type="text" 
-                    value={gameName} 
-                    onChange={(e) => setGameName(e.target.value)}
-                    className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white"
-                    placeholder="e.g. RAGNAROK"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-white/60 mb-1">Game Address</label>
-                  <input 
-                    type="text" 
-                    value={gameAddress} 
-                    onChange={(e) => setGameAddress(e.target.value)}
-                    className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white"
-                    placeholder="0x..."
-                  />
-                </div>
-                
-                <button 
-                  onClick={handleRegisterGame}
-                  disabled={isPending || txLoading || activeFunction !== null}
-                  className={`
-                    w-full font-mono text-white bg-transparent 
-                    border border-white/50 py-2 px-3 text-center
-                    focus:outline-none hover:bg-white/10
-                    ${activeFunction === 'registerGame' ? 'bg-white/20' : ''}
-                    ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                  `}
-                >
-                  {activeFunction === 'registerGame' ? 'Processing...' : 'Register Game'}
-                </button>
+          <>
+            {/* Registration Status */}
+            <div className="font-mono text-xs mb-6 flex items-center justify-between bg-black border border-white/20 p-4">
+              <div className="flex items-center">
+                <div className={`h-2 w-2 rounded-full mr-2 ${isRegistrationClosed ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                <span className="text-white/70 uppercase tracking-wider">Registration Status:</span>
               </div>
+              <span className={`${isRegistrationClosed ? 'text-red-400' : 'text-green-400'}`}>
+                {isRegistrationClosed ? 'CLOSED' : 'OPEN'}
+              </span>
             </div>
             
-            {/* Register Players */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Register Players</div>
-              
-              <div className="space-y-4">
-                <div className="text-white/60 mb-3">
-                  Register all players who have signed up through the Ragnarok contract.
-                </div>
-                
-                <button 
-                  onClick={handleRegisterPlayers}
-                  disabled={isPending || txLoading || activeFunction !== null}
-                  className={`
-                    w-full font-mono text-white bg-transparent 
-                    border border-white/50 py-2 px-3 text-center
-                    focus:outline-none hover:bg-white/10
-                    ${activeFunction === 'registerPlayers' ? 'bg-white/20' : ''}
-                    ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                  `}
-                >
-                  {activeFunction === 'registerPlayers' ? 'Processing...' : 'Register All Players'}
-                </button>
-              </div>
-            </div>
+            {/* Player Registration Progress Bar */}
+            <RegistrationProgressBar registeredPlayers={registeredPlayers} />
             
-            {/* Ragnarok Controls */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90 md:col-span-2">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Ragnarok Controls</div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 mb-1">New Registration Fee (SONIC)</label>
-                  <div className="flex gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Register Game */}
+              <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
+                <div className="text-white/70 mb-3 uppercase tracking-wider">Register Game</div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-white/60 mb-1">Game Name</label>
                     <input 
-                      type="number"
-                      step="0.000000000000000001"
-                      value={newRegistrationFee}
-                      onChange={(e) => setNewRegistrationFee(e.target.value)}
-                      className="flex-1 bg-black/70 border border-white/30 px-3 py-2 text-white"
-                      placeholder="0.1"
+                      type="text" 
+                      value={gameName} 
+                      onChange={(e) => setGameName(e.target.value)}
+                      className="w-full bg-black border border-white/30 px-3 py-2 text-white"
+                      placeholder="e.g. RAGNAROK"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-white/60 mb-1">Game Address</label>
+                    <input 
+                      type="text" 
+                      value={gameAddress} 
+                      onChange={(e) => setGameAddress(e.target.value)}
+                      className="w-full bg-black border border-white/30 px-3 py-2 text-white"
+                      placeholder="0x..."
+                    />
+                  </div>
+                  
+                  <button 
+                    onClick={handleRegisterGame}
+                    disabled={isPending || txLoading || activeFunction !== null}
+                    className={`
+                      w-full font-mono text-white bg-transparent 
+                      border border-white/50 py-2 px-3 text-center
+                      focus:outline-none hover:bg-white/10
+                      ${activeFunction === 'registerGame' ? 'bg-white/20' : ''}
+                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
+                    `}
+                  >
+                    {activeFunction === 'registerGame' ? 'Processing...' : 'Register Game'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Ragnarok Controls */}
+              <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
+                <div className="text-white/70 mb-3 uppercase tracking-wider">Ragnarok Controls</div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-white/60 mb-1">New Registration Fee (SONIC)</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="number"
+                        step="0.000000000000000001"
+                        value={newRegistrationFee}
+                        onChange={(e) => setNewRegistrationFee(e.target.value)}
+                        className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
+                        placeholder="0.1"
+                      />
+                      <button 
+                        onClick={handleSetRegistrationFee}
+                        disabled={isPending || txLoading || activeFunction !== null}
+                        className={`
+                          px-4 font-mono text-white bg-transparent 
+                          border border-white/50 text-center
+                          focus:outline-none hover:bg-white/10
+                          ${activeFunction === 'setRegistrationFee' ? 'bg-white/20' : ''}
+                          ${(isPending || txLoading) ? 'animate-pulse' : ''}
+                        `}
+                      >
+                        {activeFunction === 'setRegistrationFee' ? '...' : 'Set'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
                     <button 
-                      onClick={handleSetRegistrationFee}
+                      onClick={handleCloseRegistration}
                       disabled={isPending || txLoading || activeFunction !== null}
                       className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 text-center
+                        font-mono text-white bg-transparent 
+                        border border-white/50 py-2 px-3 text-center
                         focus:outline-none hover:bg-white/10
-                        ${activeFunction === 'setRegistrationFee' ? 'bg-white/20' : ''}
+                        ${activeFunction === 'closeRegistration' ? 'bg-white/20' : ''}
                         ${(isPending || txLoading) ? 'animate-pulse' : ''}
                       `}
                     >
-                      {activeFunction === 'setRegistrationFee' ? '...' : 'Set'}
+                      {activeFunction === 'closeRegistration' ? 'Processing...' : 'Close Registration'}
+                    </button>
+
+                    <button 
+                      onClick={handleWithdraw}
+                      disabled={isPending || txLoading || activeFunction !== null}
+                      className={`
+                        font-mono text-white bg-transparent 
+                        border border-white/50 py-2 px-3 text-center
+                        focus:outline-none hover:bg-white/10
+                        ${activeFunction === 'withdraw' ? 'bg-white/20' : ''}
+                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
+                      `}
+                    >
+                      {activeFunction === 'withdraw' ? 'Processing...' : 'Withdraw Funds'}
                     </button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={handleCloseRegistration}
-                    disabled={isPending || txLoading || activeFunction !== null}
-                    className={`
-                      font-mono text-white bg-transparent 
-                      border border-white/50 py-2 px-3 text-center
-                      focus:outline-none hover:bg-white/10
-                      ${activeFunction === 'closeRegistration' ? 'bg-white/20' : ''}
-                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                    `}
-                  >
-                    {activeFunction === 'closeRegistration' ? 'Processing...' : 'Close Registration'}
-                  </button>
-
-                  <button 
-                    onClick={handleWithdraw}
-                    disabled={isPending || txLoading || activeFunction !== null}
-                    className={`
-                      font-mono text-white bg-transparent 
-                      border border-white/50 py-2 px-3 text-center
-                      focus:outline-none hover:bg-white/10
-                      ${activeFunction === 'withdraw' ? 'bg-white/20' : ''}
-                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                    `}
-                  >
-                    {activeFunction === 'withdraw' ? 'Processing...' : 'Withdraw Funds'}
-                  </button>
+                {/* Instructions Panel */}
+                <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90 mt-6">
+                  <div className="text-white/70 mb-3 uppercase tracking-wider">Registration Instructions</div>
+                  <ol className="list-decimal list-inside space-y-2 text-white/80">
+                    <li>Make sure all games are registered, should happen on contract deployment</li>
+                    <li>Manually close registration</li>
+                    <li>Register players with the game master contract</li>
+                    <li>Make sure to withdraw funds</li>
+                    <li>Make sure to clear firebase chats</li>
+                  </ol>
                 </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Initialization Tab */}
         {activeTab === 'initialization' && (
           <div className="grid grid-cols-1 gap-6">
+            {/* Player Status Bar */}
+            <PlayerStatusBar 
+              activePlayers={activePlayers}
+              eliminatedPlayers={eliminatedPlayers}
+            />
+            
             {/* Games List */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
+            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
               <div className="text-white/50 mb-3 uppercase tracking-wider">Registered Games</div>
               
               {games && games.length > 0 ? (
@@ -461,7 +606,7 @@ function GameMasterDashboard() {
                   <select 
                     value={gameName}
                     onChange={handleGameSelect}
-                    className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white"
+                    className="w-full bg-black border border-white/30 px-3 py-2 text-white"
                   >
                     <option value="">Select a game...</option>
                     {games.map((game: string, index: number) => (
@@ -473,15 +618,15 @@ function GameMasterDashboard() {
                 <div className="text-white/60 italic mb-4">No games registered yet</div>
               )}
             </div>
-            
+      
             {/* Initialize Game */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
+            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
               <div className="text-white/70 mb-3 uppercase tracking-wider">Initialize Game</div>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-white/60 mb-1">Selected Game</label>
-                  <div className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white">
+                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
                     {gameName || 'No game selected'}
                   </div>
                 </div>
@@ -509,7 +654,7 @@ function GameMasterDashboard() {
         {activeTab === 'gamecontrols' && (
           <div className="grid grid-cols-1 gap-6">
             {/* Game Selection */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
+            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
               <div className="text-white/50 mb-3 uppercase tracking-wider">Select Game to Control</div>
               
               {games && games.length > 0 ? (
@@ -518,7 +663,7 @@ function GameMasterDashboard() {
                   <select 
                     value={gameName}
                     onChange={handleGameSelect}
-                    className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white"
+                    className="w-full bg-black border border-white/30 px-3 py-2 text-white"
                   >
                     <option value="">Select a game...</option>
                     {games.map((game: string, index: number) => (
@@ -532,13 +677,13 @@ function GameMasterDashboard() {
             </div>
             
             {/* Game Controls */}
-            <div className="font-mono text-xs bg-black/50 border border-white/20 p-4 text-white/90">
+            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
               <div className="text-white/70 mb-3 uppercase tracking-wider">Game Controls</div>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-white/60 mb-1">Selected Game</label>
-                  <div className="w-full bg-black/70 border border-white/30 px-3 py-2 text-white">
+                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
                     {gameName || 'No game selected'}
                   </div>
                 </div>

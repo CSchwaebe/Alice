@@ -26,15 +26,8 @@ export default function GlitchTextBackground() {
   
   const matrixChars = '日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ01123456789:・.=*+-<>';
 
-  // RAGNAROK character patterns (simplified ASCII art style)
-  const ragnarokPatterns = {
-    'R': [
-      [1,1,1,0],
-      [1,0,0,1],
-      [1,1,1,0],
-      [1,0,1,0],
-      [1,0,0,1]
-    ],
+  // ALICE character patterns (simplified ASCII art style)
+  const alicePatterns = {
     'A': [
       [0,1,0,0],
       [1,0,1,0],
@@ -42,33 +35,33 @@ export default function GlitchTextBackground() {
       [1,0,1,0],
       [1,0,1,0]
     ],
-    'G': [
+    'L': [
+      [1,0,0,0],
+      [1,0,0,0],
+      [1,0,0,0],
+      [1,0,0,0],
+      [1,1,1,0]
+    ],
+    'I': [
+      [1,1,1,0],
+      [0,1,0,0],
+      [0,1,0,0],
+      [0,1,0,0],
+      [1,1,1,0]
+    ],
+    'C': [
       [0,1,1,0],
       [1,0,0,0],
-      [1,0,1,1],
-      [1,0,0,1],
+      [1,0,0,0],
+      [1,0,0,0],
       [0,1,1,0]
     ],
-    'N': [
-      [1,0,0,1],
-      [1,1,0,1],
-      [1,0,1,1],
-      [1,0,0,1],
-      [1,0,0,1]
-    ],
-    'O': [
-      [0,1,1,0],
-      [1,0,0,1],
-      [1,0,0,1],
-      [1,0,0,1],
-      [0,1,1,0]
-    ],
-    'K': [
-      [1,0,0,1],
-      [1,0,1,0],
-      [1,1,0,0],
-      [1,0,1,0],
-      [1,0,0,1]
+    'E': [
+      [1,1,1,0],
+      [1,0,0,0],
+      [1,1,1,0],
+      [1,0,0,0],
+      [1,1,1,0]
     ]
   };
 
@@ -80,14 +73,14 @@ export default function GlitchTextBackground() {
     const centerRow = forceRagnarokRef.current ? Math.floor(rows * 0.25) : Math.floor(Math.random() * rows);
     const centerCol = forceRagnarokRef.current ? Math.floor(cols / 2) : Math.floor(Math.random() * cols);
     
-    // Decide shape type - force RAGNAROK shape if needed
+    // Decide shape type - force ALICE shape if needed
     const shapeType = forceRagnarokRef.current ? 5 : Math.floor(Math.random() * 5);
     
     if (shapeType === 5) {
-      // RAGNAROK text shape
+      // ALICE text shape
       const letterWidth = 6;
       const letterSpacing = 3;
-      const word = "RAGNAROK";
+      const word = "ALICE";
       const totalWidth = (word.length * letterWidth) + ((word.length - 1) * letterSpacing);
       
       // Center horizontally
@@ -97,7 +90,7 @@ export default function GlitchTextBackground() {
       // Generate points for each letter
       for (let letterIndex = 0; letterIndex < word.length; letterIndex++) {
         const letter = word[letterIndex];
-        const pattern = ragnarokPatterns[letter as keyof typeof ragnarokPatterns];
+        const pattern = alicePatterns[letter as keyof typeof alicePatterns];
         
         if (pattern) {
           for (let r = 0; r < pattern.length; r++) {

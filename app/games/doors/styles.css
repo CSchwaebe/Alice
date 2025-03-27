@@ -1,0 +1,205 @@
+@keyframes pulse {
+  0% { opacity: 0.6; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0.6; transform: scale(0.8); }
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+.pulse-animation-red {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-15px) translateX(10px); }
+  100% { transform: translateY(0) translateX(0); }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+@keyframes pulse-slow {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s infinite;
+}
+
+.glitch-text span {
+  position: relative;
+  display: inline-block;
+  color: #8EF5FA;
+  animation: glitch-skew 3s infinite linear alternate-reverse;
+}
+
+.glitch-text span::before,
+.glitch-text span::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text span::before {
+  left: 2px;
+  text-shadow: -2px 0 #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch-text span::after {
+  left: -2px;
+  text-shadow: -2px 0 #00fff9, 2px 2px #ff00c1;
+  clip: rect(44px, 450px, 56px, 0);
+  animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim {
+  0% { clip: rect(86px, 9999px, 38px, 0); transform: skew(0.17deg); }
+  5% { clip: rect(41px, 9999px, 67px, 0); transform: skew(0.04deg); }
+  10% { clip: rect(14px, 9999px, 10px, 0); transform: skew(0.94deg); }
+  15% { clip: rect(33px, 9999px, 95px, 0); transform: skew(0.7deg); }
+  20% { clip: rect(75px, 9999px, 5px, 0); transform: skew(0.38deg); }
+  25% { clip: rect(82px, 9999px, 33px, 0); transform: skew(0.03deg); }
+  30% { clip: rect(18px, 9999px, 71px, 0); transform: skew(0.02deg); }
+  35% { clip: rect(91px, 9999px, 40px, 0); transform: skew(0.06deg); }
+  40% { clip: rect(18px, 9999px, 80px, 0); transform: skew(0.91deg); }
+  45% { clip: rect(86px, 9999px, 99px, 0); transform: skew(0.09deg); }
+  50% { clip: rect(44px, 9999px, 39px, 0); transform: skew(0.67deg); }
+  55% { clip: rect(23px, 9999px, 56px, 0); transform: skew(0.83deg); }
+  60% { clip: rect(89px, 9999px, 76px, 0); transform: skew(0.93deg); }
+  65% { clip: rect(25px, 9999px, 70px, 0); transform: skew(0.34deg); }
+  70% { clip: rect(23px, 9999px, 51px, 0); transform: skew(0.05deg); }
+  75% { clip: rect(74px, 9999px, 51px, 0); transform: skew(0.36deg); }
+  80% { clip: rect(4px, 9999px, 79px, 0); transform: skew(0.34deg); }
+  85% { clip: rect(64px, 9999px, 98px, 0); transform: skew(0.99deg); }
+  90% { clip: rect(94px, 9999px, 100px, 0); transform: skew(0.14deg); }
+  95% { clip: rect(66px, 9999px, 96px, 0); transform: skew(0.95deg); }
+  100% { clip: rect(13px, 9999px, 63px, 0); transform: skew(0.7deg); }
+}
+
+@keyframes glitch-anim2 {
+  0% { clip: rect(95px, 9999px, 59px, 0); transform: skew(0.63deg); }
+  5% { clip: rect(93px, 9999px, 47px, 0); transform: skew(0.44deg); }
+  10% { clip: rect(60px, 9999px, 16px, 0); transform: skew(0.86deg); }
+  15% { clip: rect(94px, 9999px, 3px, 0); transform: skew(0.4deg); }
+  20% { clip: rect(67px, 9999px, 74px, 0); transform: skew(0.15deg); }
+  25% { clip: rect(69px, 9999px, 57px, 0); transform: skew(0.12deg); }
+  30% { clip: rect(45px, 9999px, 27px, 0); transform: skew(0.17deg); }
+  35% { clip: rect(35px, 9999px, 56px, 0); transform: skew(0.31deg); }
+  40% { clip: rect(96px, 9999px, 21px, 0); transform: skew(0.35deg); }
+  45% { clip: rect(62px, 9999px, 78px, 0); transform: skew(0.09deg); }
+  50% { clip: rect(31px, 9999px, 85px, 0); transform: skew(0.41deg); }
+  55% { clip: rect(68px, 9999px, 71px, 0); transform: skew(0.01deg); }
+  60% { clip: rect(21px, 9999px, 3px, 0); transform: skew(0.97deg); }
+  65% { clip: rect(23px, 9999px, 96px, 0); transform: skew(0.07deg); }
+  70% { clip: rect(30px, 9999px, 73px, 0); transform: skew(0.83deg); }
+  75% { clip: rect(80px, 9999px, 80px, 0); transform: skew(0.93deg); }
+  80% { clip: rect(89px, 9999px, 45px, 0); transform: skew(0.07deg); }
+  85% { clip: rect(32px, 9999px, 59px, 0); transform: skew(0.05deg); }
+  90% { clip: rect(90px, 9999px, 61px, 0); transform: skew(0.76deg); }
+  95% { clip: rect(71px, 9999px, 95px, 0); transform: skew(0.24deg); }
+  100% { clip: rect(83px, 9999px, 98px, 0); transform: skew(0.62deg); }
+}
+
+@keyframes glitch-skew {
+  0% { transform: skew(1deg); }
+  10% { transform: skew(-1deg); }
+  20% { transform: skew(0deg); }
+  30% { transform: skew(-1deg); }
+  40% { transform: skew(-1deg); }
+  50% { transform: skew(1deg); }
+  60% { transform: skew(-1deg); }
+  70% { transform: skew(0deg); }
+  80% { transform: skew(1deg); }
+  90% { transform: skew(0deg); }
+  100% { transform: skew(-1deg); }
+}
+
+.cyberpunk-button {
+  position: relative;
+  clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+}
+
+.holo-card {
+  position: relative;
+}
+
+.holo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(142, 245, 250, 0.1) 0%, rgba(142, 245, 250, 0) 70%);
+  pointer-events: none;
+}
+
+.cyberpunk-decoration {
+  background: radial-gradient(circle, rgba(142, 245, 250, 0.2) 0%, rgba(142, 245, 250, 0) 70%);
+}
+
+.cyberpunk-decoration-alt {
+  background: radial-gradient(circle, rgba(255, 76, 76, 0.2) 0%, rgba(255, 76, 76, 0) 70%);
+}
+
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(142, 245, 250, 0.4);
+}
+
+.typing-animation {
+  overflow: hidden;
+  border-right: 2px solid rgba(142, 245, 250, 0.5);
+  white-space: nowrap;
+  width: 0;
+  animation: typing 3.5s steps(40, end) forwards, blink 1s step-end infinite;
+  animation-delay: 0.5s;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent }
+  50% { border-color: rgba(142, 245, 250, 0.5) }
+} 
