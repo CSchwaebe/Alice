@@ -3,7 +3,7 @@
   background: linear-gradient(
     to bottom,
     transparent 50%,
-    rgba(255, 255, 255, 0.05) 50%
+    var(--scanlines) 50%
   );
   background-size: 100% 4px;
   animation: scanlines 10s linear infinite;
@@ -12,9 +12,9 @@
 /* Glitch text effect */
 .glitch-text {
   position: relative;
-  text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-              -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-              0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+  text-shadow: 0.05em 0 0 var(--glitch-primary),
+              -0.025em -0.05em 0 var(--glitch-secondary),
+              0.025em 0.05em 0 var(--glitch-tertiary);
   animation: glitch 500ms infinite;
 }
 
@@ -30,12 +30,12 @@
 }
 
 .glitch-text::before {
-  text-shadow: -1px 0 red;
+  text-shadow: -1px 0 var(--glitch-primary);
   animation: glitch-anim 2s infinite linear alternate-reverse;
 }
 
 .glitch-text::after {
-  text-shadow: 1px 0 blue;
+  text-shadow: 1px 0 var(--glitch-tertiary);
   animation: glitch-anim 3s infinite linear alternate-reverse;
 }
 
@@ -50,39 +50,39 @@
 
 @keyframes glitch {
   0% {
-    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-                0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: 0.05em 0 0 var(--glitch-primary),
+                -0.025em -0.05em 0 var(--glitch-secondary),
+                0.025em 0.05em 0 var(--glitch-tertiary);
   }
   14% {
-    text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75),
-                -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-                0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: 0.05em 0 0 var(--glitch-primary),
+                -0.025em -0.05em 0 var(--glitch-secondary),
+                0.025em 0.05em 0 var(--glitch-tertiary);
   }
   15% {
-    text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-                0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-                -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: -0.05em -0.025em 0 var(--glitch-primary),
+                0.025em 0.025em 0 var(--glitch-secondary),
+                -0.05em -0.05em 0 var(--glitch-tertiary);
   }
   49% {
-    text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-                0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-                -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: -0.05em -0.025em 0 var(--glitch-primary),
+                0.025em 0.025em 0 var(--glitch-secondary),
+                -0.05em -0.05em 0 var(--glitch-tertiary);
   }
   50% {
-    text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
-                0.05em 0 0 rgba(0, 255, 0, 0.75),
-                0 -0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: 0.025em 0.05em 0 var(--glitch-primary),
+                0.05em 0 0 var(--glitch-secondary),
+                0 -0.05em 0 var(--glitch-tertiary);
   }
   99% {
-    text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
-                0.05em 0 0 rgba(0, 255, 0, 0.75),
-                0 -0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: 0.025em 0.05em 0 var(--glitch-primary),
+                0.05em 0 0 var(--glitch-secondary),
+                0 -0.05em 0 var(--glitch-tertiary);
   }
   100% {
-    text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75),
-                -0.025em -0.025em 0 rgba(0, 255, 0, 0.75),
-                -0.025em -0.05em 0 rgba(0, 0, 255, 0.75);
+    text-shadow: -0.025em 0 0 var(--glitch-primary),
+                -0.025em -0.025em 0 var(--glitch-secondary),
+                -0.025em -0.05em 0 var(--glitch-tertiary);
   }
 }
 

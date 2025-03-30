@@ -68,16 +68,16 @@ export default function GameRules() {
   const styledText = displayText.split('\n').map((line, index) => {
     if (index === 0) {
       // Title styling
-      return `<span class="text-xl md:text-2xl font-bold text-neon-300 tracking-widest">${line}</span>`;
+      return `<span class="text-xl md:text-2xl font-bold text-foreground tracking-widest">${line}</span>`;
     } else if (line.startsWith("•")) {
       // List items get a subtle highlight
-      return `<span class="text-neon-100">${line}</span>`;
+      return `<span class="text-primary-800">${line}</span>`;
     } else if (line.startsWith("The rules")) {
       // Warning text
-      return `<span class="text-yellow-300 font-semibold">${line}</span>`;
-    }else if (line.startsWith("Game Overview:") || line.startsWith("Rules:")) {
+      return `<span class="text-primary-600 font-semibold">${line}</span>`;
+    } else if (line.startsWith("Game Overview:") || line.startsWith("Rules:")) {
       // Section headers
-      return `<span class="text-neon-200 font-semibold">${line}</span>`;
+      return `<span class="text-primary-900 font-semibold">${line}</span>`;
     }
     return line;
   }).join('\n');
@@ -95,19 +95,18 @@ export default function GameRules() {
         {/* Main content container with glow effect */}
         <div 
           ref={containerRef}
-          className="relative bg-gradient-to-b from-dark-900 to-black p-8 rounded-lg 
-                     shadow-[0_0_15px_rgba(0,255,255,0.15)]
-                    backdrop-blur-sm"
+          className="relative bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg 
+                     shadow-glow-sm backdrop-blur-sm"
         >
           {/* Animated corner accents */}
-          <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-neon-300"></div>
-          <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-neon-300"></div>
-          <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-neon-300"></div>
-          <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-neon-300"></div>
+          <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary-200"></div>
+          <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary-200"></div>
+          <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary-200"></div>
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-primary-200"></div>
           
           {/* Text content with HTML styling */}
           <pre 
-            className="font-mono text-sm text-white/80 whitespace-pre-wrap break-words overflow-hidden"
+            className="font-mono text-sm text-primary-700 whitespace-pre-wrap break-words overflow-hidden"
             dangerouslySetInnerHTML={{ __html: styledText }}
           />
           
@@ -122,12 +121,12 @@ export default function GameRules() {
                 repeat: Infinity, 
                 duration: 1.2 
               }}
-              className="inline-block ml-1 w-[3px] bg-neon-400"
+              className="inline-block ml-1 w-[3px] bg-foreground"
             />
           )}
           
           {/* Decorative horizontal line */}
-          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-neon-400/50 to-transparent mt-6"></div>
+          <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent mt-6"></div>
         </div>
       </motion.div>
     </AnimatePresence>

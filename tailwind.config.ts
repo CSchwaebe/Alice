@@ -6,71 +6,82 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        // Main dark theme colors
-        dark: {
-          900: "#0A0A0B", // Nearly black
-          800: "#121214", // Dark background
-          700: "#18181B", // Card background
-          600: "#1F1F23", // Elevated components
-          500: "#26262B", // Hover states
-          400: "#2D2D33", // Borders
+        border: {
+          DEFAULT: "var(--border)",
+          hover: "var(--border-hover)",
         },
-        // Neon purple accents
-        neon: {
-          900: "#2D1F6E",
-          800: "#4A2B9E",
-          700: "#6236CF",
-          600: "#7B4FFF", // Primary accent
-          500: "#9373FF",
-          400: "#AB96FF",
-          300: "#C3B9FF",
+        content: {
+          1: "var(--content-1)",
+          2: "var(--content-2)",
+          3: "var(--content-3)",
+          4: "var(--content-4)",
         },
-        // Blood red accents
-        blood: {
-          900: "#650012",
-          800: "#8A0018",
-          700: "#AF001E",
-          600: "#D40024", // Secondary accent
-          500: "#FF2E56",
-          400: "#FF5C7A",
-          300: "#FF8A9E",
+        
+        // Primary colors (white with varying opacity in dark mode, black in light mode)
+        primary: {
+          50: "var(--primary-50)",
+          100: "var(--primary-100)",
+          200: "var(--primary-200)",
+          300: "var(--primary-300)",
+          400: "var(--primary-400)",
+          500: "var(--primary-500)",
+          600: "var(--primary-600)",
+          700: "var(--primary-700)",
+          800: "var(--primary-800)",
+          900: "var(--primary-900)",
         },
-        // Override default colors
-        amber: {
-          500: "#FF2E56", // Redirect amber to blood red
+        
+        // Background overlays
+        overlay: {
+          light: "var(--overlay-light)",
+          medium: "var(--overlay-medium)",
+          dark: "var(--overlay-dark)",
         },
-        blue: {
-          500: "#7B4FFF", // Redirect blue to neon purple
+        
+        // Status colors
+        status: {
+          success: "var(--status-success)",
+          warning: "var(--status-warning)",
+          danger: "var(--status-danger)",
+          info: "var(--status-info)",
         },
-        gray: {
-          50: "#F7F7F8",
-          100: "#E9E9EB",
-          200: "#C6C6C9",
-          300: "#A3A3A7",
-          400: "#808085",
-          500: "#5D5D63",
-          600: "#3A3A3F",
-          700: "#26262B",
-          800: "#18181B",
-          900: "#0A0A0B",
+        
+        // Accent colors
+        accent: {
+          1: "var(--accent-1)",
+          2: "var(--accent-2)",
+          3: "var(--accent-3)",
+          4: "var(--accent-4)",
+        },
+
+        // UI Elements
+        ui: {
+          scrollbar: {
+            track: "var(--scrollbar-track)",
+            thumb: "var(--scrollbar-thumb)",
+            thumbHover: "var(--scrollbar-thumb-hover)",
+          }
         },
       },
       boxShadow: {
-        neon: "0 0 15px rgba(123, 79, 255, 0.5)",
-        blood: "0 0 15px rgba(255, 46, 86, 0.5)",
-        emerald: "0 0 15px rgba(16, 185, 129, 0.5)",
-        amber: "0 0 15px rgba(251, 191, 36, 0.5)",
+        'glow-sm': '0 0 10px var(--primary-100)',
+        'glow-md': '0 0 15px var(--primary-200)', 
+        'glow-lg': '0 0 20px var(--primary-300)',
       },
       animation: {
         "glow-purple": "glow-purple 2s ease-in-out infinite",
         "glow-red": "glow-red 2s ease-in-out infinite",
         "fade-in": "fadeIn 0.2s ease-in-out",
         "slide-up": "slideUp 0.3s ease-out",
+        "grow": "grow 2s ease-in-out infinite",
+        "interface-reveal": "interface-reveal 0.5s ease-out forwards",
+        "text-shimmer": "text-shimmer 2s linear infinite",
       },
       keyframes: {
         "glow-purple": {
@@ -89,10 +100,27 @@ const config: Config = {
           "0%": { transform: "translateY(100vh)" },
           "100%": { transform: "translateY(0)" },
         },
+        "grow": {
+          "0%, 100%": { width: "0%" },
+          "50%": { width: "100%" },
+        },
+        "interface-reveal": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "text-shimmer": {
+          "0%": { backgroundPosition: "0% 50%" },
+          "100%": { backgroundPosition: "100% 50%" },
+        },
       },
       fontFamily: {
         silkscreen: ["var(--font-silkscreen)"],
         sans: ["Aboreto", "sans-serif"],
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        'scanlines': 'linear-gradient(to bottom, transparent 50%, var(--scanlines) 50%)',
       },
     },
   },

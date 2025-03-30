@@ -4,6 +4,7 @@ import './globals.css'; // Tailwind styles
 import { Aboreto } from 'next/font/google';
 import Header from '@/components/ui/Header';
 import { headers } from 'next/headers';
+import { Analytics } from '@vercel/analytics/next';
 
 const aboreto = Aboreto({
   weight: '400',
@@ -21,12 +22,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const cookieStore = headersList.get('cookie');
 
   return (
-    <html lang="en" className="bg-black">
-      <body className={`min-h-screen bg-black ${aboreto.className}`} style={{ backgroundColor: 'black' }}>
+    <html lang="en" className="bg-background">
+      <body className={`min-h-screen bg-background ${aboreto.className}`}>
         <Providers cookies={cookieStore}>
           <div className="opacity-0 animate-fade-in">
             <main>
               {children}
+              <Analytics />
             </main>
           </div>
         </Providers>

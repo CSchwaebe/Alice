@@ -43,7 +43,7 @@ export default function RegisterWithGuard() {
   }) as { data: bigint | undefined };
 
   // Total player count
-  const { data: playerCount } = useReadContract({
+  const { data: playerCount, refetch: refetchPlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
     abi: RagnarokGameMasterABI,
     functionName: 'getPlayerCount',
@@ -51,7 +51,7 @@ export default function RegisterWithGuard() {
     query: {
       enabled: true
     }
-  }) as { data: bigint | undefined };
+  }) as { data: bigint | undefined, refetch: () => void };
 
   // Max players
   const { data: maxPlayers } = useReadContract({
@@ -164,13 +164,14 @@ export default function RegisterWithGuard() {
   useEffect(() => {
     if (isTxSuccess) {
       setTxStatus('success');
-      // Refetch player info after successful registration
+      // Refetch both player info and player count after successful registration
       refetchPlayerInfo();
+      refetchPlayerCount();
     } else if (isTxError) {
       setTxStatus('error');
       setErrorMessage('Transaction failed. Please try again.');
     }
-  }, [isTxSuccess, isTxError, refetchPlayerInfo]);
+  }, [isTxSuccess, isTxError, refetchPlayerInfo, refetchPlayerCount]);
 
   return (
     <RouteGuard>
@@ -184,26 +185,26 @@ export default function RegisterWithGuard() {
           
           {/* Cross-lines */}
           <div className="fixed inset-0 z-[1] pointer-events-none">
-            <div className="absolute top-0 left-[10%] w-px h-full bg-white/5"></div>
-            <div className="absolute top-0 left-[30%] w-px h-full bg-white/10"></div>
-            <div className="absolute top-0 left-[50%] w-px h-full bg-white/15"></div>
-            <div className="absolute top-0 left-[70%] w-px h-full bg-white/10"></div>
-            <div className="absolute top-0 left-[90%] w-px h-full bg-white/5"></div>
+            <div className="absolute top-0 left-[10%] w-px h-full bg-content-1"></div>
+            <div className="absolute top-0 left-[30%] w-px h-full bg-content-2"></div>
+            <div className="absolute top-0 left-[50%] w-px h-full bg-content-3"></div>
+            <div className="absolute top-0 left-[70%] w-px h-full bg-content-2"></div>
+            <div className="absolute top-0 left-[90%] w-px h-full bg-content-1"></div>
             
-            <div className="absolute left-0 top-[10%] w-full h-px bg-white/5"></div>
-            <div className="absolute left-0 top-[30%] w-full h-px bg-white/10"></div>
-            <div className="absolute left-0 top-[50%] w-full h-px bg-white/15"></div>
-            <div className="absolute left-0 top-[70%] w-full h-px bg-white/10"></div>
-            <div className="absolute left-0 top-[90%] w-full h-px bg-white/5"></div>
+            <div className="absolute left-0 top-[10%] w-full h-px bg-content-1"></div>
+            <div className="absolute left-0 top-[30%] w-full h-px bg-content-2"></div>
+            <div className="absolute left-0 top-[50%] w-full h-px bg-content-3"></div>
+            <div className="absolute left-0 top-[70%] w-full h-px bg-content-2"></div>
+            <div className="absolute left-0 top-[90%] w-full h-px bg-content-1"></div>
           </div>
           
           <div className="relative z-10 w-full max-w-2xl mx-auto px-4 flex flex-col">
             {/* Initial Terminal Phase */}
             {!interfaceReady && (
-              <div className="font-mono text-white text-[13px] bg-black/30 border border-white/20 p-4 text-center">
-                <div className="text-white/80 mb-2 text-center">[SYS::TERMINAL]</div>
+              <div className="font-mono text-foreground text-[13px] bg-background border border-border p-4 text-center">
+                <div className="text-foreground/80 mb-2 text-center">[SYS::TERMINAL]</div>
                 <div className="min-h-[24px] text-center">
-                  <span className="text-white/50">$</span> {terminalText}
+                  <span className="text-foreground/50">$</span> {terminalText}
                   <span className="animate-blink">_</span>
                 </div>
               </div>
@@ -215,30 +216,30 @@ export default function RegisterWithGuard() {
                 {/* Top interface HUD */}
                 <div className="flex items-center justify-between w-full mb-4 px-2">
                   <div className="flex items-center">
-                    <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
-                    <div className="ml-2 h-px w-10 bg-white/40"></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-pulse"></div>
+                    <div className="ml-2 h-px w-10 bg-content-4"></div>
                   </div>
                   
-                  <div className="font-mono text-xs text-white/70 tracking-widest text-center">
+                  <div className="font-mono text-xs text-foreground/70 tracking-widest text-center">
                     |..::ALICE::..|
                   </div>
                   
                   <div className="flex items-center">
-                    <div className="mr-2 h-px w-10 bg-white/40"></div>
-                    <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
+                    <div className="mr-2 h-px w-10 bg-content-4"></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-pulse"></div>
                   </div>
                 </div>
                 
                 {/* Status panel */}
-                <div className="font-mono text-xs bg-black/30 border border-l-2 border-white/20 border-l-white/60
-                               pl-3 pr-2 py-3 text-white/90 mb-4">
-                  <div className="text-white/50 mb-1 uppercase tracking-wider">System Status</div>
+                <div className="font-mono text-xs bg-background border border-l-2 border-border border-l-content-4
+                               pl-3 pr-2 py-3 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 mb-1 uppercase tracking-wider">System Status</div>
                   <div className="flex items-center mt-2">
-                    <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
-                    <span className="text-white uppercase">ACTIVE</span>
+                    <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
+                    <span className="text-foreground uppercase">ACTIVE</span>
                   </div>
                   <div className="mt-4 text-xs flex items-center">
-                    <span className="text-white/50">YOUR ADDRESS: </span>
+                    <span className="text-foreground/50">YOUR ADDRESS: </span>
                     <span className="ml-1 truncate text-[10px]">
                       {address}
                     </span>
@@ -246,16 +247,16 @@ export default function RegisterWithGuard() {
                 </div>
                 
                 {/* Players panel */}
-                <div className="font-mono text-xs bg-black/30 border border-l-2 border-white/20 border-l-white/60
-                               pl-3 pr-2 py-3 text-white/90 mb-4">
-                  <div className="text-white/50 uppercase tracking-wider">Registered Players</div>
+                <div className="font-mono text-xs bg-background border border-l-2 border-border border-l-content-4
+                               pl-3 pr-2 py-3 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 uppercase tracking-wider">Registered Players</div>
                   <div className="mt-3 flex items-end">
                     <div className="text-3xl font-bold">{playerCount?.toString() || '0'}</div>
-                    <div className="text-white/60 ml-1 mb-1">/{maxPlayers?.toString() || '?'}</div>
+                    <div className="text-foreground/60 ml-1 mb-1">/{maxPlayers?.toString() || '?'}</div>
                   </div>
-                  <div className="mt-3 w-full bg-white/20 h-1">
+                  <div className="mt-3 w-full bg-content-2 h-1">
                     <div 
-                      className="bg-white h-full" 
+                      className="bg-foreground h-full" 
                       style={{
                         width: `${playerCount && maxPlayers ? 
                           (Number(playerCount) / Number(maxPlayers) * 100) : 0}%`
@@ -265,44 +266,43 @@ export default function RegisterWithGuard() {
                 </div>
                 
                 {/* Registration panel */}
-                <div className="font-mono text-xs bg-black/40 border border-t-2 border-white/20 border-t-white/60
-                               px-3 py-4 text-white/90 mb-4">
-                  <div className="text-white/50 mb-2 uppercase tracking-wider">Join Game</div>
+                <div className="font-mono text-xs bg-background border border-t-2 border-border border-t-content-4
+                               px-3 py-4 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 mb-2 uppercase tracking-wider">Join Game</div>
                   <div className="grid grid-cols-[1fr_auto] gap-1 text-[11px]">
-                    <div className="text-white/60">FEE</div>
+                    <div className="text-foreground/60">TOTAL ENTRY FEE</div>
                     <div className="text-right">
-                      {formattedFee}<span className="text-white/60 ml-1">S</span>
+                      {formattedFee}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                     
-                    <div className="text-white/60 pl-2">PRIZE</div>
+                    <div className="text-foreground/60 pl-2">PRIZE POOL</div>
                     <div className="text-right">
-                      {prizePool}<span className="text-white/60 ml-1">S</span>
+                      {prizePool}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                     
-                    <div className="text-white/60 pl-2">PROTOCOL</div>
+                    <div className="text-foreground/60 pl-2">WONDERLAND CONTRIBUTION</div>
                     <div className="text-right">
-                      {protocolFee}<span className="text-white/60 ml-1">S</span>
+                      {protocolFee}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                   </div>
                 </div>
                 
                 {/* Input command section */}
-                <div className="mt-auto font-mono text-white text-sm">
-                  <div className="text-xs text-white/50 mb-1">[SYS::COMMAND]</div>
+                <div className="mt-auto font-mono text-foreground text-sm">
+                  <div className="text-xs text-foreground/50 mb-1">[SYS::COMMAND]</div>
                   
                   <div className="relative">
                     <button 
                       onClick={handleRegister}
                       disabled={isRegistering || isWaitingTx || !registrationFee}
                       className={`
-                        w-full font-mono text-white bg-transparent 
-                        border border-white/50 py-3 px-3 text-left
+                        w-full font-mono text-foreground bg-transparent 
+                        border border-border py-3 px-3 text-left
                         focus:outline-none hover:bg-white/10
-                        ${glitchEffect ? 'border-white' : ''}
                         ${(isRegistering || isWaitingTx) ? 'bg-white/10' : ''}
                       `}
                     >
-                      <span className="text-white/70">$</span> {isRegistering || isWaitingTx ? 
+                      <span className="text-foreground/70">$</span> {isRegistering || isWaitingTx ? 
                         'PROCESSING...' : 
                         'initialize_registration --confirm'
                       }
@@ -311,8 +311,8 @@ export default function RegisterWithGuard() {
                     {/* Transaction indicators */}
                     {(isRegistering || isWaitingTx) && (
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
-                        <div className="h-2 w-2 bg-white rounded-full animate-pulse"></div>
-                        <div className="ml-2 h-px w-4 bg-white/40"></div>
+                        <div className="h-2 w-2 bg-foreground rounded-full animate-pulse"></div>
+                        <div className="ml-2 h-px w-4 bg-content-4"></div>
                       </div>
                     )}
                   </div>
@@ -320,14 +320,14 @@ export default function RegisterWithGuard() {
                   {/* Transaction status */}
                   {(isRegistering || isWaitingTx) && (
                     <div className="mt-3 font-mono text-xs">
-                      <div className="flex justify-between text-white/70 mb-1">
+                      <div className="flex justify-between text-foreground/70 mb-1">
                         <span>TX_STATUS</span>
                         <span className="animate-pulse">PENDING</span>
                       </div>
-                      <div className="h-px w-full bg-white/20 mb-1">
-                        <div className="h-full bg-white animate-[grow_2s_ease-in-out_infinite]"></div>
+                      <div className="h-px w-full bg-content-2 mb-1">
+                        <div className="h-full bg-foreground animate-[grow_2s_ease-in-out_infinite]"></div>
                       </div>
-                      <div className="text-white/40 text-[10px] flex justify-between">
+                      <div className="text-foreground/40 text-[10px] flex justify-between">
                         <span>INITIALIZING</span>
                         <span>VALIDATING</span>
                         <span>CONFIRMING</span>
@@ -335,30 +335,11 @@ export default function RegisterWithGuard() {
                     </div>
                   )}
                   
-                  {/* Success/Error Messages */}
-                  {txStatus === 'success' && !isRegistered && (
-                    <div className="mt-3 font-mono text-xs text-green-400 bg-green-400/10 border border-green-400/20 p-3">
-                      <div className="flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse mr-2"></div>
-                        <span>REGISTRATION SUCCESSFUL - UPDATING STATUS...</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {txStatus === 'error' && (
-                    <div className="mt-3 font-mono text-xs text-red-400 bg-red-400/10 border border-red-400/20 p-3">
-                      <div className="flex items-center">
-                        <div className="w-2 h-2 rounded-full bg-red-400 animate-pulse mr-2"></div>
-                        <span>ERROR: {errorMessage}</span>
-                      </div>
-                    </div>
-                  )}
-                  
                   {/* Warning notice */}
-                  <div className="mt-3 text-xs text-white/50 flex items-center">
-                    <div className="h-px flex-grow bg-white/20"></div>
+                  <div className="mt-3 text-xs text-foreground/50 flex items-center">
+                    <div className="h-px flex-grow bg-content-2"></div>
                     <div className="mx-2 uppercase">Non-Refundable Entry</div>
-                    <div className="h-px flex-grow bg-white/20"></div>
+                    <div className="h-px flex-grow bg-content-2"></div>
                   </div>
                 </div>
               </div>
@@ -370,95 +351,95 @@ export default function RegisterWithGuard() {
                 {/* Top interface HUD */}
                 <div className="flex items-center justify-between w-full mb-4 px-2">
                   <div className="flex items-center">
-                    <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
-                    <div className="ml-2 h-px w-10 bg-white/40"></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-pulse"></div>
+                    <div className="ml-2 h-px w-10 bg-content-4"></div>
                   </div>
                   
-                  <div className="font-mono text-xs text-white/70 tracking-widest text-center">
+                  <div className="font-mono text-xs text-foreground/70 tracking-widest text-center">
                     |..::ALICE::..|
                   </div>
                   
                   <div className="flex items-center">
-                    <div className="mr-2 h-px w-10 bg-white/40"></div>
-                    <div className="h-2 w-2 rounded-full bg-white animate-pulse"></div>
+                    <div className="mr-2 h-px w-10 bg-content-4"></div>
+                    <div className="h-2 w-2 rounded-full bg-foreground animate-pulse"></div>
                   </div>
                 </div>
                 
                 {/* Player Number Panel - Glowing special highlight */}
-                <div className="font-mono bg-black/40 border-2 border-white p-6 text-center mb-6
+                <div className="font-mono bg-background border-2 border-foreground p-6 text-center mb-6
                                shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                  <div className="text-white/70 mb-2 uppercase tracking-widest">Welcome, Player</div>
+                  <div className="text-foreground/70 mb-2 uppercase tracking-widest">Welcome, Player</div>
                   <div className="flex justify-center items-center">
-                    <div className="text-7xl font-bold text-white tracking-widest" data-text={formattedPlayerNumber}>
+                    <div className="text-7xl font-bold text-foreground tracking-widest" data-text={formattedPlayerNumber}>
                       {formattedPlayerNumber}
                     </div>
                   </div>
-                  <div className="mt-4 text-xs text-white/70">
+                  <div className="mt-4 text-xs text-foreground/70">
                     TOTAL REGISTRATIONS: {formattedPlayerCount} / {maxPlayers?.toString() || '???'}
                   </div>
                 </div>
                 
                 {/* Game Information Panel */}
-                <div className="font-mono text-xs bg-black/30 border border-l-2 border-white/20 border-l-white/60
-                               pl-3 pr-2 py-4 text-white/90 mb-4">
-                  <div className="text-white/50 mb-2 uppercase tracking-wider">Game Schedule</div>
+                <div className="font-mono text-xs bg-background border border-l-2 border-border border-l-content-4
+                               pl-3 pr-2 py-4 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 mb-2 uppercase tracking-wider">Game Schedule</div>
                   
                   <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-                    <div className="text-white/80 flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
+                    <div className="text-foreground/80 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
                       <span>DAILY EXECUTION:</span>
                     </div>
-                    <div className="text-white">19:00 PST (7:00 PM)</div>
+                    <div className="text-foreground">19:00 PST (7:00 PM)</div>
                     
-                    <div className="text-white/80 flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
+                    <div className="text-foreground/80 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
                       <span>NOTIFICATION:</span>
                     </div>
-                    <div className="text-white">24 HOURS PRIOR TO GAME START</div>
+                    <div className="text-foreground">24 HOURS PRIOR TO GAME START</div>
                     
-                    <div className="text-white/80 flex items-center">
-                      <div className="w-2 h-2 rounded-full bg-white animate-pulse mr-2"></div>
+                    <div className="text-foreground/80 flex items-center">
+                      <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
                       <span>STATUS:</span>
                     </div>
-                    <div className="text-white text-right font-bold animate-pulse">AWAITING SELECTION</div>
+                    <div className="text-foreground text-right font-bold animate-pulse">AWAITING SELECTION</div>
                   </div>
                 </div>
                 
                 {/* Instructions Panel */}
-                <div className="font-mono text-xs bg-black/40 border-t border-white/20
-                               px-3 py-4 text-white/90 mb-4">
-                  <div className="text-white/50 mb-3 uppercase tracking-wider">Protocol Instructions</div>
+                <div className="font-mono text-xs bg-background/40 border-t border-border
+                               px-3 py-4 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 mb-3 uppercase tracking-wider">Protocol Instructions</div>
                   
                   <div className="space-y-3 leading-loose">
-                    <p>Your registration has been confirmed in the RAGNAROK protocol.</p>
+                    <p>Your registration has been confirmed.</p>
                     <p>When selected, you will receive a 24-hour notification prior to your scheduled game time.</p>
                     <p>Prepare accordingly. Your survival in the games depends on strategy and skill.</p>
-                    <p className="text-white/40 text-[10px] mt-2">
-                      SYSTEM NOTE: Participants who fail to appear for their scheduled game forfeit all entry fees.
+                    <p className="text-foreground/40 text-[10px] mt-2">
+                      SYSTEM NOTE: Participants who fail to appear for their scheduled game will be eliminated.
                     </p>
                   </div>
                 </div>
                 
                 {/* Return to Dashboard */}
-                <div className="mt-auto font-mono text-white text-sm">
-                  <div className="text-xs text-white/50 mb-1">[SYS::COMMAND]</div>
+                <div className="mt-auto font-mono text-foreground text-sm">
+                  <div className="text-xs text-foreground/50 mb-1">[SYS::COMMAND]</div>
                   
                   <div className="relative">
                     <button 
                       onClick={() => router.push('/lobby')}
-                      className="w-full font-mono text-white bg-transparent 
-                                border border-white/50 py-3 px-3 text-left
+                      className="w-full font-mono text-foreground bg-transparent 
+                                border border-border py-3 px-3 text-left
                                 focus:outline-none hover:bg-white/10"
                     >
-                      <span className="text-white/70">$</span> go --nexus
+                      <span className="text-foreground/70">$</span> go --nexus
                     </button>
                   </div>
                   
                   {/* Warning/Info */}
-                  <div className="mt-3 text-xs text-white/50 flex items-center">
-                    <div className="h-px flex-grow bg-white/20"></div>
+                  <div className="mt-3 text-xs text-foreground/50 flex items-center">
+                    <div className="h-px flex-grow bg-content-2"></div>
                     <div className="mx-2 uppercase">Stay Vigilant</div>
-                    <div className="h-px flex-grow bg-white/20"></div>
+                    <div className="h-px flex-grow bg-content-2"></div>
                   </div>
                 </div>
               </div>

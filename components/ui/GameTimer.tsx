@@ -50,7 +50,7 @@ export function GameTimer({ endTime }: GameTimerProps) {
   return (
     <div className="relative">
       {/* Main timer display */}
-      <div className={`text-4xl md:text-5xl font-bold tracking-wider ${silkscreen.className}`}>
+      <div className={`text-4xl md:text-5xl font-bold tracking-wider text-foreground ${silkscreen.className}`}>
         {timeString}
       </div>
 
@@ -72,7 +72,7 @@ export function GameTimer({ endTime }: GameTimerProps) {
                 duration: 0.2,
                 times: [0, 0.5, 1]
               }}
-              className="absolute inset-0 text-[#ff0080] mix-blend-screen"
+              className="absolute inset-0 text-[var(--glitch-primary)] mix-blend-screen"
             >
               {timeString}
             </motion.div>
@@ -91,7 +91,7 @@ export function GameTimer({ endTime }: GameTimerProps) {
                 duration: 0.2,
                 times: [0, 0.5, 1]
               }}
-              className="absolute inset-0 text-[#00ff00] mix-blend-screen"
+              className="absolute inset-0 text-[var(--glitch-secondary)] mix-blend-screen"
             >
               {timeString}
             </motion.div>

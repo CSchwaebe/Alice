@@ -1,4 +1,4 @@
-export const DoorsABI = [
+export const ThreesABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -25,31 +25,6 @@ export const DoorsABI = [
     ],
     "name": "OwnableUnauthorizedAccount",
     "type": "error"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "success",
-        "type": "bool"
-      }
-    ],
-    "name": "DoorOpened",
-    "type": "event"
   },
   {
     "anonymous": false,
@@ -135,6 +110,25 @@ export const DoorsABI = [
         "internalType": "address",
         "name": "player",
         "type": "address"
+      }
+    ],
+    "name": "PlayerCommitted",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
       },
       {
         "indexed": false,
@@ -156,13 +150,19 @@ export const DoorsABI = [
         "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
-        "name": "roundNumber",
+        "name": "choice",
         "type": "uint256"
       }
     ],
-    "name": "RoundEnded",
+    "name": "PlayerRevealed",
     "type": "event"
   },
   {
@@ -191,6 +191,19 @@ export const DoorsABI = [
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "commitment",
+        "type": "bytes32"
+      }
+    ],
+    "name": "commitChoice",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "endExpiredGames",
     "outputs": [],
@@ -203,7 +216,7 @@ export const DoorsABI = [
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "winners",
+        "name": "",
         "type": "address[]"
       }
     ],
@@ -237,25 +250,6 @@ export const DoorsABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      }
-    ],
-    "name": "getActivePlayers",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "getActivePlayers",
     "outputs": [
@@ -274,14 +268,9 @@ export const DoorsABI = [
         "internalType": "uint256",
         "name": "gameId",
         "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "player",
-        "type": "address"
       }
     ],
-    "name": "getDoorsOpened",
+    "name": "getCurrentRound",
     "outputs": [
       {
         "internalType": "uint256",
@@ -438,16 +427,21 @@ export const DoorsABI = [
           },
           {
             "internalType": "bool",
-            "name": "isActive",
+            "name": "hasCommitted",
             "type": "bool"
           },
           {
-            "internalType": "uint256",
-            "name": "doorsOpened",
-            "type": "uint256"
+            "internalType": "bool",
+            "name": "hasRevealed",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isActive",
+            "type": "bool"
           }
         ],
-        "internalType": "struct Doors.PlayerInfo[]",
+        "internalType": "struct Threes.ThreesPlayerInfo[]",
         "name": "",
         "type": "tuple[]"
       }
@@ -480,13 +474,7 @@ export const DoorsABI = [
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "gameId",
-        "type": "uint256"
-      }
-    ],
+    "inputs": [],
     "name": "getPlayers",
     "outputs": [
       {
@@ -499,13 +487,67 @@ export const DoorsABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getPlayers",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getRoundEndTime",
     "outputs": [
       {
-        "internalType": "address[]",
+        "internalType": "uint256",
         "name": "",
-        "type": "address[]"
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "hasPlayerCommitted",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "player",
+        "type": "address"
+      }
+    ],
+    "name": "hasPlayerRevealed",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -550,19 +592,6 @@ export const DoorsABI = [
   },
   {
     "inputs": [],
-    "name": "openDoor",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -596,6 +625,24 @@ export const DoorsABI = [
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "choice",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "salt",
+        "type": "bytes32"
+      }
+    ],
+    "name": "revealChoice",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

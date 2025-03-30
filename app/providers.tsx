@@ -2,6 +2,7 @@
 "use client"; // Required for client-side providers
 import { cookieToInitialState, WagmiProvider, http, webSocket, type Config, cookieStorage, createStorage } from 'wagmi'
 import { HeroUIProvider } from "@heroui/react";
+import { ToastProvider } from "@heroui/toast";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { createAppKit } from '@reown/appkit/react';
@@ -10,6 +11,7 @@ import { sonic, sonicBlazeTestnet } from "wagmi/chains";
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import { CloudAuthSIWX } from '@reown/appkit-siwx'
 import { ContractEventsProvider } from '@/lib/contract-events';
+import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
 // AppKit Configuration
 const projectId = process.env.NEXT_PUBLIC_APPKIT_PROJECT_ID || '';
@@ -35,7 +37,7 @@ export const wagmiAdapter = new WagmiAdapter({
 
 // Set up metadata for AppKit
 const metadata = {
-  name: 'Ragnarok Games',
+  name: 'Alice',
   description: 'Norse-themed blockchain games',
   url: 'https://ragnarok-eight.vercel.app/',
   icons: ['https://avatars.githubusercontent.com/u/179229932']
@@ -116,9 +118,25 @@ export function Providers({ children, cookies }: { children: ReactNode; cookies:
     <WagmiProvider config={wagmiAdapter.wagmiConfig as Config} initialState={initialState}>
       <QueryClientProvider client={queryClient}>
         <ContractEventsProvider>
-          <HeroUIProvider>
-            {children}
-          </HeroUIProvider>
+          <ThemeProvider>
+            <HeroUIProvider>
+              <ToastProvider
+                maxVisibleToasts={3}
+                placement="bottom-right"
+                toastProps={{
+                  radius: "sm",
+                  timeout: 2000,
+                  hideIcon: true,
+                  classNames: {
+                    base: "max-w-md bg-background border border-border shadow-glow-sm",
+                    title: "text-foreground font-bold",
+                    description: "text-foreground/80"
+                  }
+                }}
+              />
+              {children}
+            </HeroUIProvider>
+          </ThemeProvider>
         </ContractEventsProvider>
       </QueryClientProvider>
     </WagmiProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { useTheme } from '@/components/theme/useTheme';
 
 // Use a more complex structure for glitch sections
 interface GlitchPoint {
@@ -16,6 +17,7 @@ interface GlitchSection {
 }
 
 export default function GlitchTextBackground() {
+  const { theme } = useTheme();
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [glitchSections, setGlitchSections] = useState<GlitchSection[]>([]);
   const forceRagnarokRef = useRef<boolean>(false);
@@ -308,8 +310,12 @@ export default function GlitchTextBackground() {
     ctx.font = `${fontSize}px monospace`;
     
     const animate = (timestamp: number) => {
-      // Clear with black background
-      ctx.fillStyle = '#000000';
+      // Fill the canvas with the theme background color
+      if (theme === 'dark') {
+        ctx.fillStyle = 'rgb(0, 0, 0)'; // Black background for dark theme
+      } else {
+        ctx.fillStyle = 'rgb(255, 255, 255)'; // White background for light theme
+      }
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Remove expired glitch sections
@@ -368,19 +374,29 @@ export default function GlitchTextBackground() {
             }
           }
           
-          // Draw character with appropriate brightness
-          const colorValue = Math.floor(220 * brightness) + 0;
-          ctx.fillStyle = `rgb(${colorValue}, ${colorValue}, ${colorValue})`;
-          
-          // Add glow for brighter characters
-          if (brightness > 0.6) {
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
-            ctx.shadowBlur = 3;
-          } else {
-            ctx.shadowBlur = 0;
+          // Calculate color based on theme and brightness
+          if (brightness > 0) {
+            // For dark theme: use white text with varying opacity
+            // For light theme: use black text with varying opacity
+            const opacity = brightness;
+            const rgb = theme === 'dark' ? 255 : 0; // White for dark theme, black for light theme
+            
+            ctx.fillStyle = `rgba(${rgb}, ${rgb}, ${rgb}, ${opacity})`;
+            
+            // Add glow for brighter characters
+            if (brightness > 0.6) {
+              // Glow effect should match text color
+              ctx.shadowColor = theme === 'dark'
+                ? 'rgba(255, 255, 255, 0.5)'  // White glow in dark theme
+                : 'rgba(0, 0, 0, 0.5)';       // Black glow in light theme
+              ctx.shadowBlur = 3;
+            } else {
+              ctx.shadowBlur = 0;
+            }
+            
+            // Draw the character
+            ctx.fillText(char, x, y);
           }
-          
-          ctx.fillText(char, x, y);
         }
       }
       
@@ -394,7 +410,7 @@ export default function GlitchTextBackground() {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [dimensions, glitchSections]);
+  }, [dimensions, glitchSections, theme]);
   
   const getRandomChar = () => {
     return matrixChars[Math.floor(Math.random() * matrixChars.length)];
@@ -404,7 +420,7 @@ export default function GlitchTextBackground() {
     <canvas 
       id="matrix-canvas"
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ backgroundColor: 'black' }}
+      style={{ opacity: 0.7, backgroundColor: 'var(--background)' }}
     />
   );
 } 

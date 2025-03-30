@@ -4,10 +4,11 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { usePublicClient } from 'wagmi';
 import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
 import { DoorsABI } from '@/app/abis/DoorsABI';
-import type { Log } from 'viem';
+import { ThreesABI } from '@/app/abis/ThreesABI';
+import { Log, decodeEventLog } from 'viem';
 
 // Define contract names
-export type ContractName = 'GameMaster' | 'Doors';
+export type ContractName = 'GameMaster' | 'Doors' | 'Threes';
 
 // Define all the possible event types we'll handle
 export type ContractEventType = {
@@ -28,7 +29,11 @@ export type ContractEventType = {
     | 'DoorOpened'
     | 'PlayerEliminated'
     | 'RoundEnded'
-    | 'GameCompleted';
+    | 'GameCompleted'
+    
+    // Threes events
+    | 'PlayerCommitted'
+    | 'PlayerRevealed';
 };
 
 // Event data structure
@@ -59,6 +64,28 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
 
   // Helper function to process logs
   const processLog = (log: Log, contractAddress: string, contractType: ContractName, eventName: ContractEventType['event']) => {
+    let decodedData;
+    try {
+      const abi = contractType === 'GameMaster' ? RagnarokGameMasterABI :
+                  contractType === 'Doors' ? DoorsABI :
+                  contractType === 'Threes' ? ThreesABI : null;
+      
+      if (!abi) {
+        console.error('Unknown contract type:', contractType);
+        return;
+      }
+
+      decodedData = decodeEventLog({
+        abi,
+        data: log.data,
+        topics: log.topics,
+        eventName: eventName
+      });
+    } catch (error) {
+      console.error('Error decoding event log:', error);
+      return;
+    }
+
     addEvent({
       type: {
         contract: contractType,
@@ -66,7 +93,7 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
       },
       data: {
         address: contractAddress,
-        args: log.topics,
+        args: decodedData,
         blockNumber: log.blockNumber?.toString() ?? '0',
         transactionHash: log.transactionHash ?? '0x'
       },
@@ -137,6 +164,7 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
 
     const gameMasterAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`;
     const doorsAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DOORS as `0x${string}`;
+    const threesAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_THREES as `0x${string}`;
 
     const setupSubscriptions = async () => {
       try {
@@ -221,8 +249,52 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
           })
         ]);
 
+        // Subscribe to Threes events
+        const threesUnsubscribes = await Promise.all([
+          publicClient.watchContractEvent({
+            address: threesAddress,
+            abi: ThreesABI,
+            eventName: 'RoundStarted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, threesAddress, 'Threes', 'RoundStarted'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: threesAddress,
+            abi: ThreesABI,
+            eventName: 'PlayerCommitted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, threesAddress, 'Threes', 'PlayerCommitted'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: threesAddress,
+            abi: ThreesABI,
+            eventName: 'PlayerRevealed',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, threesAddress, 'Threes', 'PlayerRevealed'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: threesAddress,
+            abi: ThreesABI,
+            eventName: 'PlayerEliminated',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, threesAddress, 'Threes', 'PlayerEliminated'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: threesAddress,
+            abi: ThreesABI,
+            eventName: 'GameCompleted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, threesAddress, 'Threes', 'GameCompleted'));
+            }
+          })
+        ]);
+
         // Store unsubscribe functions
-        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes];
+        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes, ...threesUnsubscribes];
       } catch (error) {
         console.error('Error setting up event subscriptions:', error);
       }

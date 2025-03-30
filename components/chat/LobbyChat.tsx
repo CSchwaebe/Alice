@@ -22,24 +22,24 @@ const ChatInputForm = memo(({ onSendMessage, disabled }: {
   
   return (
     <div className="relative">
-      <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-300/30 to-transparent"></div>
-      <form onSubmit={handleSubmit} className="flex p-4 bg-black/60">
+      <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
+      <form onSubmit={handleSubmit} className="flex p-4 bg-background">
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="ENTER MESSAGE..."
-          className="flex-1 bg-black/60 font-mono border border-neon-300/30 
-                    px-4 py-2 text-sm text-white focus:outline-none focus:border-neon-300/60
-                    placeholder:text-white/30"
+          className="flex-1 bg-background font-mono border border-border 
+                    px-4 py-2 text-sm text-foreground focus:outline-none focus:border-primary-600
+                    placeholder:text-primary-300"
           disabled={disabled}
         />
         <button
           type="submit"
           disabled={!inputValue.trim() || disabled}
-          className="bg-black/60 text-neon-300 border border-neon-300/30 hover:border-neon-300/60 
+          className="bg-background text-foreground border border-border 
                    border-l-0 px-4 disabled:opacity-50 disabled:cursor-not-allowed transition-colors
-                   hover:bg-neon-300/10"
+                   hover:bg-foreground/10"
         >
           <PaperAirplaneIcon className="w-4 h-4" />
         </button>
@@ -85,17 +85,17 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-black/40 backdrop-blur-sm border border-neon-300/30">
+    <div className="flex flex-col h-full bg-background/40 backdrop-blur-sm border border-border">
       {/* Chat Header */}
       <div className="relative">
-        <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-300 to-transparent"></div>
-        <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-300/30 to-transparent"></div>
+        <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"></div>
+        <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 bg-neon-300/80 animate-pulse"></div>
-            <span className="font-mono text-neon-300/80 text-sm tracking-wider">NEXUS_COMMS</span>
+            <div className="h-2 w-2 bg-primary-700 animate-pulse"></div>
+            <span className="font-mono text-primary-700 text-sm tracking-wider">NEXUS_COMMS</span>
           </div>
-          <div className="font-mono text-white/40 text-xs">
+          <div className="font-mono text-primary-400 text-xs">
             {new Date().toLocaleTimeString('en-US', { hour12: false })}
           </div>
         </div>
@@ -105,20 +105,20 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
       <div 
         ref={chatContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-neon-300/20 
+        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-300 
                    scrollbar-track-transparent p-4 space-y-4"
       >
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin h-5 w-5 border-2 border-neon-300/30 border-t-neon-300"></div>
-              <div className="text-xs font-mono text-neon-300/60">LOADING COMMS...</div>
+              <div className="animate-spin h-5 w-5 border-2 border-content-3 border-t-primary-700"></div>
+              <div className="text-xs font-mono text-primary-500">LOADING COMMS...</div>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center gap-2">
-            <div className="text-neon-300/60 font-mono text-sm">COMMS ONLINE</div>
-            <div className="text-white/30 font-mono text-xs">AWAITING TRANSMISSION</div>
+            <div className="text-primary-500 font-mono text-sm">COMMS ONLINE</div>
+            <div className="text-primary-400 font-mono text-xs">AWAITING TRANSMISSION</div>
           </div>
         ) : (
           messages.map((msg) => (
@@ -131,16 +131,16 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
               <div className={`max-w-[80%] ${msg.sender === currentUser ? 'text-right' : ''}`}>
                 <div className={`inline-block p-3 font-mono ${
                   msg.sender === currentUser
-                    ? 'bg-neon-300/10 border border-neon-300/30'
-                    : 'bg-white/5 border border-white/10'
+                    ? 'bg-content-2 border border-border'
+                    : 'bg-content-1 border border-border'
                 }`}>
                   {msg.sender !== currentUser && (
-                    <div className="text-xs text-neon-300/80 mb-1">
+                    <div className="text-xs text-primary-700 mb-1">
                       #{getPlayerNumber(msg.sender)}
                     </div>
                   )}
-                  <div className="text-sm text-white/90">{msg.content}</div>
-                  <div className="text-xs text-white/40 mt-1">
+                  <div className="text-sm text-foreground">{msg.content}</div>
+                  <div className="text-xs text-primary-400 mt-1">
                     {new Date(msg.timestamp).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',

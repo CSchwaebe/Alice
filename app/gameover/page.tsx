@@ -39,8 +39,25 @@ function GameOverContent() {
   // Extract values from playerInfo
   const [gameName, gameId, isActive, gameState, playerNumber] = playerInfo || ['', BigInt(0), false, 0, BigInt(0)];
 
-  // Format player number with leading zeros
-  const formattedPlayerNumber = playerNumber ? playerNumber.toString().padStart(3, '0') : '---';
+  // Add debug logs
+  useEffect(() => {
+    console.log('Debug - Player Info:', {
+      address,
+      isConnected,
+      rawPlayerInfo: playerInfo,
+      extractedInfo: {
+        gameName,
+        gameId: gameId.toString(),
+        isActive,
+        gameState,
+        playerNumber: playerNumber.toString()
+      },
+      finalPlacement: finalPlacement ? finalPlacement.toString() : 'undefined'
+    });
+  }, [address, isConnected, playerInfo, gameName, gameId, isActive, gameState, playerNumber, finalPlacement]);
+
+  // Format player number with leading zeros - handle 0 as valid value
+  const formattedPlayerNumber = typeof playerNumber !== 'undefined' ? playerNumber.toString().padStart(3, '0') : '---';
   const formattedPlacement = finalPlacement ? finalPlacement.toString() : '---';
 
   // Determine placement suffix (1st, 2nd, 3rd, etc.)
@@ -64,7 +81,7 @@ function GameOverContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-black">
+    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
       <GlitchTextBackground />
       
       {/* Scanlines overlay */}
@@ -74,40 +91,36 @@ function GameOverContent() {
         <div className="w-full max-w-4xl mx-auto">
           {isLoading ? (
             <div className="text-center font-mono animate-pulse">
-              <div className="text-2xl text-white/70">ANALYZING FINAL RESULTS...</div>
+              <div className="text-2xl text-primary-700">ANALYZING FINAL RESULTS...</div>
             </div>
           ) : (
             <div className={`space-y-8 transform transition-all duration-1000 ${showContent ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               {/* Game Over Title */}
               <div className="text-center mb-12">
-                <h1 className="text-6xl md:text-8xl font-bold text-white mb-4 tracking-wider glitch-text">
+                <h1 className="text-6xl md:text-8xl font-bold text-foreground mb-4 tracking-wider glitch-text">
                   GAME OVER
                 </h1>
-                <div className="h-px w-48 md:w-64 bg-gradient-to-r from-transparent via-white/50 to-transparent mx-auto"></div>
+                <div className="h-px w-48 md:w-64 bg-gradient-to-r from-transparent via-primary-500 to-transparent mx-auto"></div>
               </div>
 
               {/* Player Stats Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Player Number Card */}
-                <div className="bg-black/40 border border-white/20 p-6 backdrop-blur-sm">
-                  <div className="text-white/60 text-sm font-mono mb-2">PLAYER ID</div>
-                  <div className="text-4xl font-bold text-white font-mono">#{formattedPlayerNumber}</div>
-                  <div className="mt-2 h-px w-full bg-gradient-to-r from-white/20 to-transparent"></div>
+                <div className="bg-content-1 border border-border p-6 backdrop-blur-sm">
+                  <div className="text-primary-600 text-sm font-mono mb-2">PLAYER ID</div>
+                  <div className="text-4xl font-bold text-foreground font-mono">#{formattedPlayerNumber}</div>
+                  <div className="mt-2 h-px w-full bg-gradient-to-r from-primary-200 to-transparent"></div>
                 </div>
 
                 {/* Final Placement Card */}
-                <div className="bg-black/40 border border-white/20 p-6 backdrop-blur-sm">
-                  <div className="text-white/60 text-sm font-mono mb-2">FINAL PLACEMENT</div>
-                  <div className="text-4xl font-bold text-white font-mono">
-                    {formattedPlacement}<span className="text-2xl text-white/70">{getPlacementSuffix(formattedPlacement)}</span>
+                <div className="bg-content-1 border border-border p-6 backdrop-blur-sm">
+                  <div className="text-primary-600 text-sm font-mono mb-2">FINAL PLACEMENT</div>
+                  <div className="text-4xl font-bold text-foreground font-mono">
+                    {formattedPlacement}<span className="text-2xl text-primary-700">{getPlacementSuffix(formattedPlacement)}</span>
                   </div>
-                  <div className="mt-2 h-px w-full bg-gradient-to-r from-white/20 to-transparent"></div>
+                  <div className="mt-2 h-px w-full bg-gradient-to-r from-primary-200 to-transparent"></div>
                 </div>
-
-               
               </div>
-
-             
             </div>
           )}
         </div>

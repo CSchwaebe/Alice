@@ -1,23 +1,15 @@
-import { useState } from 'react';
-
-type PlayerInfo = {
-  playerAddress: `0x${string}`;
-  playerNumber: string;
-  isActive: boolean;
-  doorsOpened: bigint;
-};
+import { FormattedPlayerInfo } from '@/hooks/useThreesGameData';
 
 interface PlayerListProps {
-  playerList: PlayerInfo[];
-  currentPlayerAddress?: string;
+  players: FormattedPlayerInfo[];
 }
 
-export default function PlayerList({ playerList, currentPlayerAddress }: PlayerListProps) {
+export function PlayerList({ players }: PlayerListProps) {
   return (
-    <div className="bg-overlay-medium backdrop-blur-sm border border-border rounded-lg p-4 mt-8 max-w-4xl mx-auto w-full">
+    <div className="bg-overlay-medium backdrop-blur-sm border border-border rounded-lg p-4">
       <h2 className="text-primary-800 font-mono mb-4">ACTIVE PLAYERS</h2>
       <div className="space-y-2">
-        {playerList.map((player) => (
+        {players.map((player) => (
           <div 
             key={player.playerAddress}
             className="flex items-center justify-between p-2 bg-overlay-light rounded border border-border"
@@ -27,8 +19,12 @@ export default function PlayerList({ playerList, currentPlayerAddress }: PlayerL
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-primary-400 font-mono text-sm">DOORS</span>
-                <span className="text-foreground font-mono text-sm">{player.doorsOpened.toString()}</span>
+                <span className="text-primary-400 font-mono text-sm">COMMITTED</span>
+                <div className={`h-2 w-2 rounded-full ${player.hasCommitted ? 'bg-foreground' : 'bg-primary-200'}`} />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-primary-400 font-mono text-sm">REVEALED</span>
+                <div className={`h-2 w-2 rounded-full ${player.hasRevealed ? 'bg-foreground' : 'bg-primary-200'}`} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-primary-400 font-mono text-sm">ACTIVE</span>

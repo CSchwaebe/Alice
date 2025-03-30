@@ -52,7 +52,7 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
             
             {/* Glass Door with Opening Effect - Now opening outward */}
             <motion.div
-              className="w-64 h-96 rounded-xl relative overflow-hidden border border-white/50"
+              className="w-64 h-96 rounded-xl relative overflow-hidden border border-primary-200"
               style={{ 
                 transformOrigin: "left",
                 transformStyle: "preserve-3d"
@@ -74,7 +74,7 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
                 }}
               />
               
-              {/* Futuristic Diamond Grid - White */}
+              {/* Futuristic Diamond Grid - Using theme colors */}
               <div className="absolute inset-0 opacity-20 pointer-events-none">
                 <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -83,30 +83,30 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
                       <path 
                         d="M0,20 L20,0 L40,20 L20,40 Z" 
                         fill="none" 
-                        stroke="rgba(255,255,255,0.7)" 
+                        className="stroke-primary-400"
                         strokeWidth="0.5"
                       />
                       <path 
                         d="M20,0 L20,40 M0,20 L40,20" 
                         fill="none" 
-                        stroke="rgba(255,255,255,0.3)" 
+                        className="stroke-primary-200"
                         strokeWidth="0.5"
                       />
                       
                       {/* Tech Detail Elements */}
-                      <circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.8)" />
-                      <circle cx="20" cy="20" r="4" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="0.5" />
+                      <circle cx="20" cy="20" r="1" className="fill-foreground" />
+                      <circle cx="20" cy="20" r="4" fill="none" className="stroke-primary-300" strokeWidth="0.5" />
                       
                       {/* Connection Nodes */}
-                      <circle cx="20" cy="0" r="0.75" fill="rgba(255,255,255,0.6)" />
-                      <circle cx="20" cy="40" r="0.75" fill="rgba(255,255,255,0.6)" />
-                      <circle cx="0" cy="20" r="0.75" fill="rgba(255,255,255,0.6)" />
-                      <circle cx="40" cy="20" r="0.75" fill="rgba(255,255,255,0.6)" />
+                      <circle cx="20" cy="0" r="0.75" className="fill-primary-400" />
+                      <circle cx="20" cy="40" r="0.75" className="fill-primary-400" />
+                      <circle cx="0" cy="20" r="0.75" className="fill-primary-400" />
+                      <circle cx="40" cy="20" r="0.75" className="fill-primary-400" />
                       
                       {/* Circuit Traces */}
                       <path 
                         d="M10,10 L15,15 M25,15 L30,10 M10,30 L15,25 M30,30 L25,25" 
-                        stroke="rgba(255,255,255,0.6)" 
+                        className="stroke-primary-400"
                         strokeWidth="0.5"
                       />
                     </pattern>
@@ -116,7 +116,7 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
                 
                 {/* Animated Grid Pulse */}
                 <motion.div 
-                  className="absolute inset-0 bg-white/5"
+                  className="absolute inset-0 bg-foreground/5"
                   animate={{ 
                     opacity: [0, 0.1, 0],
                   }}
@@ -128,9 +128,9 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
                 />
               </div>
               
-              {/* Door Inner Frame - Brighter white */}
+              {/* Door Inner Frame */}
               <motion.div
-                className="absolute inset-2 rounded-lg border border-white/40"
+                className="absolute inset-2 rounded-lg border border-primary-200"
                 animate={{
                   boxShadow: hoveredDoor === "valhalla"
                     ? "inset 0 0 15px 3px rgba(255, 255, 255, 0.25)"
@@ -139,12 +139,12 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
               />
               
               {/* Power Lines - Tech Elements */}
-              <div className="absolute h-full w-1 left-8 bg-gradient-to-b from-white/0 via-white/20 to-white/0"></div>
-              <div className="absolute h-full w-1 right-8 bg-gradient-to-b from-white/0 via-white/20 to-white/0"></div>
+              <div className="absolute h-full w-1 left-8 bg-gradient-to-b from-primary-200/0 via-primary-200/20 to-primary-200/0"></div>
+              <div className="absolute h-full w-1 right-8 bg-gradient-to-b from-primary-200/0 via-primary-200/20 to-primary-200/0"></div>
               
               {/* Data Flow Animation */}
               <motion.div 
-                className="absolute w-px h-6 bg-white/80 left-8"
+                className="absolute w-px h-6 bg-primary-200"
                 animate={{ 
                   top: ["-5%", "105%"],
                 }}
@@ -156,7 +156,7 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
                 }}
               />
               <motion.div 
-                className="absolute w-px h-6 bg-white/80 right-8"
+                className="absolute w-px h-6 bg-primary-200"
                 animate={{ 
                   top: ["105%", "-5%"],
                 }}
@@ -169,11 +169,11 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
               />
               
               {/* Door Hinges */}
-              <div className="absolute left-0 top-10 w-1 h-8 bg-white/30 rounded-r-sm"></div>
-              <div className="absolute left-0 bottom-10 w-1 h-8 bg-white/30 rounded-r-sm"></div>
+              <div className="absolute left-0 top-10 w-1 h-8 bg-primary-200/30 rounded-r-sm"></div>
+              <div className="absolute left-0 bottom-10 w-1 h-8 bg-primary-200/30 rounded-r-sm"></div>
               
-              {/* Vertical Line Detail (like a door seam) */}
-              <div className="absolute h-full w-px bg-white/30 left-1/2 transform -translate-x-1/2" />
+              {/* Vertical Line Detail */}
+              <div className="absolute h-full w-px bg-primary-200/30 left-1/2 transform -translate-x-1/2" />
               
               {/* Nordic Symbol - Brighter */}
               <div className="absolute inset-0 flex items-center justify-center">
@@ -217,21 +217,21 @@ export default function DoorChoice({ onDoorSelect }: DoorChoiceProps) {
               </div>
               
               {/* Horizontal Line Details (door panels) */}
-              <div className="absolute w-full h-px bg-white/20 top-1/4" />
-              <div className="absolute w-full h-px bg-white/20 top-3/4" />
+              <div className="absolute w-full h-px bg-primary-200/20 top-1/4" />
+              <div className="absolute w-full h-px bg-primary-200/20 top-3/4" />
               
               {/* Scanline Effect */}
               <motion.div
-                className="absolute inset-x-0 h-40 bg-gradient-to-b from-transparent via-white/10 to-transparent pointer-events-none"
+                className="absolute inset-x-0 h-40 bg-gradient-to-b from-transparent via-primary-200/10 to-transparent pointer-events-none"
                 style={{ top: "-20%" }}
                 animate={{ top: ["100%", "-20%"] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
               />
               
               {/* Door Handle */}
-              <div className="absolute right-3 top-1/2 w-2 h-20 bg-white/20 rounded-full -translate-y-1/2 border border-white/40">
+              <div className="absolute right-3 top-1/2 w-2 h-20 bg-primary-200/20 rounded-full -translate-y-1/2 border border-primary-200/40">
                 <motion.div
-                  className="absolute inset-x-0 h-1/2 top-0 bg-white/30 rounded-t-full"
+                  className="absolute inset-x-0 h-1/2 top-0 bg-primary-200/30 rounded-t-full"
                   animate={{
                     opacity: [0.3, 0.5, 0.3]
                   }}

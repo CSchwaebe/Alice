@@ -1,5 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useContractEventSubscription, ContractEventType, ContractEvent } from '@/lib/contract-events';
+import { useRouter } from 'next/navigation';
+
+export interface GameNotification {
+  title: string;
+  description: string;
+  color: 'primary' | 'success' | 'danger';
+}
 
 interface UseDoorsGameEventsProps {
   gameId: bigint | null;
@@ -8,13 +15,9 @@ interface UseDoorsGameEventsProps {
   refetchPlayerInfo: () => void;
   setCurrentRound: (round: bigint) => void;
   setRoundEndTime: (time: number) => void;
-  setTxStatus: (status: 'none' | 'pending' | 'success' | 'error') => void;
+  setTxStatus: (status: 'success' | 'error' | 'none' | 'pending') => void;
   setErrorMessage: (message: string) => void;
-}
-
-export interface GameNotification {
-  message: string | null;
-  type: 'success' | 'danger' | 'info';
+  onNotification?: (notification: GameNotification) => void;
 }
 
 export function useDoorsGameEvents({
@@ -25,12 +28,10 @@ export function useDoorsGameEvents({
   setCurrentRound,
   setRoundEndTime,
   setTxStatus,
-  setErrorMessage
+  setErrorMessage,
+  onNotification
 }: UseDoorsGameEventsProps) {
-  const [notification, setNotification] = useState<GameNotification>({ 
-    message: null, 
-    type: 'info' 
-  });
+  const router = useRouter();
 
   // Define events to subscribe to
   const eventsToSubscribe: ContractEventType[] = [
@@ -48,10 +49,15 @@ export function useDoorsGameEvents({
 
   // Handle contract events
   const handleContractEvent = (event: ContractEvent) => {
-    console.log(`Doors game handling event: ${event.type.contract}.${event.type.event}`, event);
+    console.log(`Doors game handling event: ${event.type.contract}.${event.type.event}`, {
+      eventData: event.data,
+      nestedArgs: event.data?.args?.args,
+      gameId: event.data?.args?.args?.gameId?.toString(),
+      currentGameId: gameId?.toString()
+    });
     
     // Only process events for our current game
-    const eventGameId = event.data[0]?.args?.gameId;
+    const eventGameId = event.data?.args?.args?.gameId;
     if (eventGameId && gameId && BigInt(eventGameId.toString()) !== gameId) {
       console.log('Event is for a different game, ignoring');
       return;
@@ -60,98 +66,90 @@ export function useDoorsGameEvents({
     // Take action based on event type
     switch (event.type.event) {
       case 'RoundStarted':
-        const { roundNumber, endTime } = event.data[0]?.args || {};
-        
+        const { roundNumber, endTime } = event.data?.args?.args || {};
         if (roundNumber && endTime) {
           setCurrentRound(BigInt(roundNumber.toString()));
           setRoundEndTime(Number(endTime));
           refetchGameInfo();
           refetchPlayerInfo();
-          setNotification({
-            message: `Round ${roundNumber.toString()} has started! Choose a door carefully...`,
-            type: 'info'
+          
+          onNotification?.({
+            title: 'Round Started',
+            description: `Round ${roundNumber.toString()} has started! Choose a door carefully...`,
+            color: 'primary'
           });
-          console.log('Round started:', roundNumber.toString());
         }
         break;
         
       case 'DoorOpened':
-        const { player, success, playerNumber } = event.data[0]?.args || {};
-        
-        refetchPlayerInfo();
-        // Show notification for all players
+        const { player, success } = event.data?.args?.args || {};
         if (player) {
-          const formattedPlayer = playerNumber ? 
-            `Player ${playerNumber.toString()}` : 
-            formatAddress(player.toString());
-            
-          if (success) {
-            setNotification({
-              message: `${formattedPlayer} opened a door and survived!`,
-              type: 'success'
-            });
-          } else {
-            setNotification({
-              message: `${formattedPlayer} opened a door and was ELIMINATED!`,
-              type: 'danger'
-            });
+          const formattedPlayer = formatAddress(player.toString());
+          
+          refetchGameInfo();
+          refetchPlayerInfo();
+          
+          onNotification?.({
+            title: 'Door Opened',
+            description: success ? 
+              `${formattedPlayer} opened a door and survived!` :
+              `${formattedPlayer} opened a door and was ELIMINATED!`,
+            color: success ? 'success' : 'danger'
+          });
+
+          // Additional handling for the current player
+          if (address && player.toLowerCase() === address.toLowerCase()) {
+            setTxStatus(success ? 'success' : 'error');
+            if (!success) {
+              setErrorMessage('Door opening failed!');
+            }
           }
-        }
-        
-        // Additional handling for the current player
-        if (player && address && player.toLowerCase() === address.toLowerCase()) {
-          setTxStatus(success ? 'success' : 'error');
-          if (!success) {
-            setErrorMessage('Door opening failed!');
-          }
-          console.log('Door opened by player:', player);
         }
         break;
         
       case 'PlayerEliminated':
-        const eliminatedPlayer = event.data[0]?.args?.player;
-        const playerNum = event.data[0]?.args?.playerNumber;
-        
-        refetchPlayerInfo();
-        
-        // Show notification for all players
+        const eliminatedPlayer = event.data?.args?.args?.player;
         if (eliminatedPlayer) {
-          const formattedPlayer = playerNum ? 
-            `Player ${playerNum.toString()}` : 
-            formatAddress(eliminatedPlayer.toString());
-            
-          setNotification({
-            message: `${formattedPlayer} has been ELIMINATED!`,
-            type: 'danger'
+          const formattedPlayer = formatAddress(eliminatedPlayer.toString());
+          const isCurrentPlayer = eliminatedPlayer.toLowerCase() === address?.toLowerCase();
+          
+          refetchGameInfo();
+          refetchPlayerInfo();
+          
+          onNotification?.({
+            title: isCurrentPlayer ? 'You were eliminated!' : 'Player Eliminated',
+            description: isCurrentPlayer ? 
+              'You have been eliminated from the game!' :
+              `${formattedPlayer} has been eliminated!`,
+            color: 'danger'
           });
-        }
-        
-        // Additional handling for the current player
-        if (eliminatedPlayer && address && eliminatedPlayer.toLowerCase() === address.toLowerCase()) {
-          setTxStatus('error');
-          setErrorMessage('You have been eliminated!');
-          console.log('Player eliminated:', eliminatedPlayer);
+          
+          if (isCurrentPlayer) {
+            setTxStatus('error');
+            setErrorMessage('You have been eliminated!');
+            setTimeout(() => router.push('/gameover'), 2000);
+          }
         }
         break;
         
       case 'RoundEnded':
         refetchGameInfo();
         refetchPlayerInfo();
-        setNotification({
-          message: `Round ended. A new round will begin shortly...`,
-          type: 'info'
+        onNotification?.({
+          title: 'Round Ended',
+          description: 'Round ended. A new round will begin shortly...',
+          color: 'primary'
         });
-        console.log('Round ended');
         break;
         
       case 'GameCompleted':
         refetchGameInfo();
         refetchPlayerInfo();
-        setNotification({
-          message: `Game completed! Thanks for playing.`,
-          type: 'success'
+        onNotification?.({
+          title: 'Game Completed',
+          description: 'Game completed! Thanks for playing.',
+          color: 'success'
         });
-        console.log('Game completed');
         break;
     }
   };
@@ -160,9 +158,6 @@ export function useDoorsGameEvents({
   useContractEventSubscription(
     eventsToSubscribe,
     handleContractEvent,
-    [gameId, address, refetchGameInfo, refetchPlayerInfo] // Dependencies
+    [gameId, address, refetchGameInfo, refetchPlayerInfo, onNotification, router] // Dependencies
   );
-  
-  // Return notification state for UI
-  return { notification, setNotification };
 } 

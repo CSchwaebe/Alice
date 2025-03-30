@@ -236,38 +236,6 @@ export const RagnarokGameMasterABI = [
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "activeGameCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "activeGames",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -447,6 +415,46 @@ export const RagnarokGameMasterABI = [
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getGames",
+    "outputs": [
+      {
+        "internalType": "string[]",
+        "name": "gameTypes",
+        "type": "string[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "gameId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "enum GameState",
+            "name": "state",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "currentRound",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "activePlayerCount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct GameInstanceInfo[][]",
+        "name": "gameInstances",
+        "type": "tuple[][]"
       }
     ],
     "stateMutability": "view",

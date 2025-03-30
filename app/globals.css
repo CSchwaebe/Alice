@@ -3,17 +3,65 @@
 @tailwind utilities;
 
 :root {
-  --background: #000000;
-  --dark-900: #000000;
-  --foreground: #F7F7F8;
+  /* Base colors */
+  --background: rgb(255, 255, 255);
+  --foreground: rgb(0, 0, 0);
+  
+  /* Border colors */
+  --border: rgba(0, 0, 0, 0.2);
+  --border-hover: rgba(0, 0, 0, 0.4);
+  
+  /* Content colors */
+  --content-1: rgba(0, 0, 0, 0.05);
+  --content-2: rgba(0, 0, 0, 0.1);
+  --content-3: rgba(0, 0, 0, 0.15);
+  --content-4: rgba(0, 0, 0, 0.4);
+  
+  /* Primary colors */
+  --primary-50: rgba(0, 0, 0, 0.05);
+  --primary-100: rgba(0, 0, 0, 0.1);
+  --primary-200: rgba(0, 0, 0, 0.2);
+  --primary-300: rgba(0, 0, 0, 0.3);
+  --primary-400: rgba(0, 0, 0, 0.4);
+  --primary-500: rgba(0, 0, 0, 0.5);
+  --primary-600: rgba(0, 0, 0, 0.6);
+  --primary-700: rgba(0, 0, 0, 0.7);
+  --primary-800: rgba(0, 0, 0, 0.8);
+  --primary-900: rgba(0, 0, 0, 0.9);
+  
+  /* Status colors */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-danger: #EF4444;
+  --status-info: #3B82F6;
+  
+  /* Accent colors */
+  --accent-1: rgba(0, 0, 0, 0.3);
+  --accent-2: rgba(0, 0, 0, 0.5);
+  --accent-3: rgba(0, 0, 0, 0.7);
+  --accent-4: rgba(0, 0, 0, 0.9);
+  
+  /* Overlay colors */
+  --overlay-light: rgba(0, 0, 0, 0.05);
+  --overlay-medium: rgba(255, 255, 255, 0.3);
+  --overlay-dark: rgba(255, 255, 255, 0.5);
+  
+  /* UI Elements */
+  --scrollbar-track: #EAEAEA;
+  --scrollbar-thumb: rgba(0, 0, 0, 0.3);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.5);
+  
+  /* Effects */
+  --glitch-primary: rgba(255, 0, 0, 0.75);
+  --glitch-secondary: rgba(0, 255, 0, 0.75);
+  --glitch-tertiary: rgba(0, 0, 255, 0.75);
+  --scanlines: rgba(0, 0, 0, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* 
+ * Light theme is applied by default
+ * Dark theme values will be applied through ThemeProvider
+ */
 
 body {
   color: var(--foreground);
@@ -28,16 +76,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1F1F23;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #7B4FFF;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6236CF;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Smooth transitions */
@@ -68,7 +116,7 @@ body {
 
 /* Add this at the very top of the file */
 html, body {
-  background-color: #000000 !important;
+  background-color: var(--background) !important;
 }
 
 /* Add these styles to your globals.css file */
@@ -97,7 +145,7 @@ html, body {
 .glitch-text {
   position: relative;
   animation: glitch 500ms infinite;
-  color: #fff;
+  color: var(--foreground);
 }
 
 .glitch-text::before,
@@ -112,7 +160,7 @@ html, body {
 
 .glitch-text::before {
   left: 2px;
-  text-shadow: -1px 0 #fff;
+  text-shadow: -1px 0 var(--glitch-primary);
   animation: glitch 650ms infinite;
   clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
   opacity: 0.8;
@@ -120,7 +168,7 @@ html, body {
 
 .glitch-text::after {
   left: -2px;
-  text-shadow: -1px 0 #fff;
+  text-shadow: -1px 0 var(--glitch-secondary);
   animation: glitch 375ms infinite;
   clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
   opacity: 0.8;
@@ -206,4 +254,54 @@ html, body {
 
 .animate-interface-reveal {
   animation: interface-reveal 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Scanlines effect */
+.bg-scanlines {
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    var(--scanlines) 50%
+  );
+  background-size: 100% 4px;
+  animation: scanlines 10s linear infinite;
+}
+
+.dark {
+  --background: rgb(0, 0, 0);
+  --foreground: rgb(255, 255, 255);
+  
+  --border: rgba(255, 255, 255, 0.2);
+  --border-hover: rgba(255, 255, 255, 0.4);
+  
+  --content-1: rgba(255, 255, 255, 0.05);
+  --content-2: rgba(255, 255, 255, 0.1);
+  --content-3: rgba(255, 255, 255, 0.15);
+  --content-4: rgba(255, 255, 255, 0.4);
+  
+  --primary-50: rgba(255, 255, 255, 0.05);
+  --primary-100: rgba(255, 255, 255, 0.1);
+  --primary-200: rgba(255, 255, 255, 0.2);
+  --primary-300: rgba(255, 255, 255, 0.3);
+  --primary-400: rgba(255, 255, 255, 0.4);
+  --primary-500: rgba(255, 255, 255, 0.5);
+  --primary-600: rgba(255, 255, 255, 0.6);
+  --primary-700: rgba(255, 255, 255, 0.7);
+  --primary-800: rgba(255, 255, 255, 0.8);
+  --primary-900: rgba(255, 255, 255, 0.9);
+  
+  --accent-1: rgba(255, 255, 255, 0.3);
+  --accent-2: rgba(255, 255, 255, 0.5);
+  --accent-3: rgba(255, 255, 255, 0.7);
+  --accent-4: rgba(255, 255, 255, 0.9);
+  
+  --overlay-light: rgba(255, 255, 255, 0.05);
+  --overlay-medium: rgba(0, 0, 0, 0.3);
+  --overlay-dark: rgba(0, 0, 0, 0.5);
+  
+  --scrollbar-track: #1F1F23;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.3);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.5);
+  
+  --scanlines: rgba(255, 255, 255, 0.05);
 }
