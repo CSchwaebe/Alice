@@ -1,10 +1,10 @@
 "use client";
 
 import { useAccount, useReadContract } from 'wagmi';
-import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
+import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import RouteGuard from '@/components/auth/RouteGuard';
+import GameStateRedirect from '@/components/auth/GameStateRedirect';
 import GlitchTextBackground from '@/components/effects/GlitchTextBackground';
 import './styles.css';
 
@@ -17,7 +17,7 @@ function GameOverContent() {
   // Get player info from contract
   const { data: playerInfo } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
@@ -28,7 +28,7 @@ function GameOverContent() {
   // Get player's final placement
   const { data: finalPlacement } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getPlayerFinalPlacement',
     args: [address],
     query: {
@@ -131,8 +131,8 @@ function GameOverContent() {
 
 export default function GameOverPage() {
   return (
-    <RouteGuard>
+    <GameStateRedirect>
       <GameOverContent />
-    </RouteGuard>
+    </GameStateRedirect>
   );
 } 

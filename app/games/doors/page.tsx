@@ -2,19 +2,19 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import RouteGuard from '@/components/auth/RouteGuard';
 import GameChat from '@/components/chat/GameChat';
 import { addToast } from '@heroui/toast';
-import type { GameNotification } from '@/hooks/useDoorsGameEvents';
+import type { GameNotification } from '@/lib/contract-events';
+import { useEffect } from 'react';
 
 // Import custom hooks
-import { useDoorsGameData } from '@/hooks/useDoorsGameData';
-import { useDoorsGameEvents } from '@/hooks/useDoorsGameEvents';
-import { useDoorsGameTransactions } from '@/hooks/useDoorsGameTransactions';
-import { useGameRouteGuard } from '@/hooks/useGameRouteGuard';
+import { useDoorsGameData } from '@/hooks/Doors/useDoorsGameData';
+import { useDoorsGameEvents } from '@/hooks/Doors/useDoorsGameEvents';
+import { useDoorsGameTransactions } from '@/hooks/Doors/useDoorsGameTransactions';
+import GameStateRedirect from '@/components/auth/GameStateRedirect';
 
 // Import components
-import GameContent from '@/components/games/Doors/GameContent';
+import GameContent from '@/components/games/Doors/Content';
 import PlayerList from '@/components/games/Doors/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
@@ -52,13 +52,34 @@ function DoorsGame() {
   // Add notification handler
   const handleNotification = (notification: GameNotification) => {
     console.log('Doors: handleNotification called with:', notification);
-    addToast({
-      title: notification.title,
-      description: notification.description,
-      color: notification.color,
-      duration: 5000 // Add explicit duration to make sure toasts are visible
-    });
+    addToast(notification);
   };
+  
+  // Handle transaction notifications
+  useEffect(() => {
+    if (errorMessage) {
+      addToast({
+        title: 'Transaction Failed',
+        description: errorMessage,
+        color: 'danger',
+        timeout: 1000,
+      });
+    }
+  }, [errorMessage]);
+
+  // Handle transaction success
+  useEffect(() => {
+    if (!isPending && !isWaitingTx && !errorMessage) {
+      if (txStatus === 'success') {
+        addToast({
+          title: 'Door Selection Successful',
+          description: 'Your door has been selected!',
+          color: 'success',
+          timeout: 1000,
+        });
+      }
+    }
+  }, [isPending, isWaitingTx, errorMessage, txStatus]);
   
   // Subscribe to game events and get notifications
   useDoorsGameEvents({
@@ -71,13 +92,6 @@ function DoorsGame() {
     setTxStatus,
     setErrorMessage,
     onNotification: handleNotification
-  });
-  
-  // Protect route - redirect if user is not in the correct game
-  useGameRouteGuard({
-    isConnected,
-    playerInfo,
-    expectedGameName: 'DOORS'
   });
   
   // Check if player is active in the game
@@ -145,8 +159,8 @@ function DoorsGame() {
 
 export default function DoorsGamePage() {
   return (
-    <RouteGuard>
+    <GameStateRedirect>
       <DoorsGame />
-    </RouteGuard>
+    </GameStateRedirect>
   );
 } 

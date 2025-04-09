@@ -1,12 +1,11 @@
 "use client";
 
-import { useAccount, useContractRead, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
-import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { formatEther } from 'viem';
 import MatrixRain from "@/components/effects/GlitchTextBackground";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
-import RouteGuard from '@/components/auth/RouteGuard';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 
 export default function RegisterWithGuard() {
@@ -23,7 +22,7 @@ export default function RegisterWithGuard() {
   // Get player info from contract
   const { data: playerInfo, refetch: refetchPlayerInfo } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
@@ -34,7 +33,7 @@ export default function RegisterWithGuard() {
   // Get registration fee from contract
   const { data: registrationFee } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'registrationFee',
     args: [],
     query: {
@@ -45,7 +44,7 @@ export default function RegisterWithGuard() {
   // Total player count
   const { data: playerCount, refetch: refetchPlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getPlayerCount',
     args: [],
     query: {
@@ -56,13 +55,24 @@ export default function RegisterWithGuard() {
   // Max players
   const { data: maxPlayers } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'MAX_PLAYERS',
     args: [],
     query: {
       enabled: true
     }
   }) as { data: bigint | undefined };
+
+  // Get registration status from contract
+  const { data: registrationClosed } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: GameMasterABI,
+    functionName: 'registrationClosed',
+    args: [],
+    query: {
+      enabled: true
+    }
+  }) as { data: boolean | undefined };
 
   const { writeContract, isPending: isRegistering, data: hash } = useWriteContract();
 
@@ -149,7 +159,7 @@ export default function RegisterWithGuard() {
       setErrorMessage('');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'register',
         value: registrationFee
       });
@@ -174,7 +184,6 @@ export default function RegisterWithGuard() {
   }, [isTxSuccess, isTxError, refetchPlayerInfo, refetchPlayerCount]);
 
   return (
-    <RouteGuard>
       <GameStateRedirect allowRegistrationPage={true}>
         <div className="min-h-[100vh] flex flex-col items-center justify-center relative overflow-hidden" ref={containerRef}>
           <MatrixRain />
@@ -235,8 +244,10 @@ export default function RegisterWithGuard() {
                                pl-3 pr-2 py-3 text-foreground/90 mb-4">
                   <div className="text-foreground/50 mb-1 uppercase tracking-wider">System Status</div>
                   <div className="flex items-center mt-2">
-                    <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
-                    <span className="text-foreground uppercase">ACTIVE</span>
+                    <div className={`w-2 h-2 rounded-full ${registrationClosed ? 'bg-red-500' : 'bg-foreground animate-pulse'} mr-2`}></div>
+                    <span className="text-foreground uppercase">
+                      {registrationClosed ? 'REGISTRATION CLOSED' : 'REGISTRATION OPEN'}
+                    </span>
                   </div>
                   <div className="mt-4 text-xs flex items-center">
                     <span className="text-foreground/50">YOUR ADDRESS: </span>
@@ -275,6 +286,7 @@ export default function RegisterWithGuard() {
                       {formattedFee}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                     
+                   <div className="hidden">
                     <div className="text-foreground/60 pl-2">PRIZE POOL</div>
                     <div className="text-right">
                       {prizePool}<span className="text-foreground/60 ml-1">S</span>
@@ -283,6 +295,7 @@ export default function RegisterWithGuard() {
                     <div className="text-foreground/60 pl-2">WONDERLAND CONTRIBUTION</div>
                     <div className="text-right">
                       {protocolFee}<span className="text-foreground/60 ml-1">S</span>
+                    </div>
                     </div>
                   </div>
                 </div>
@@ -338,7 +351,7 @@ export default function RegisterWithGuard() {
                   {/* Warning notice */}
                   <div className="mt-3 text-xs text-foreground/50 flex items-center">
                     <div className="h-px flex-grow bg-content-2"></div>
-                    <div className="mx-2 uppercase">Non-Refundable Entry</div>
+                    <div className="mx-2 uppercase">...Curiouser and Curiouser...</div>
                     <div className="h-px flex-grow bg-content-2"></div>
                   </div>
                 </div>
@@ -387,9 +400,9 @@ export default function RegisterWithGuard() {
                   <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
                     <div className="text-foreground/80 flex items-center">
                       <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
-                      <span>DAILY EXECUTION:</span>
+                      <span>START TIME:</span>
                     </div>
-                    <div className="text-foreground">19:00 PST (7:00 PM)</div>
+                    <div className="text-foreground">15:00 GMT (3:00 PM)</div>
                     
                     <div className="text-foreground/80 flex items-center">
                       <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
@@ -401,7 +414,7 @@ export default function RegisterWithGuard() {
                       <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
                       <span>STATUS:</span>
                     </div>
-                    <div className="text-foreground text-right font-bold animate-pulse">AWAITING SELECTION</div>
+                    <div className="text-foreground text-right font-bold animate-pulse">REGISTERED</div>
                   </div>
                 </div>
                 
@@ -412,7 +425,7 @@ export default function RegisterWithGuard() {
                   
                   <div className="space-y-3 leading-loose">
                     <p>Your registration has been confirmed.</p>
-                    <p>When selected, you will receive a 24-hour notification prior to your scheduled game time.</p>
+                    <p>Follow @AliceOnSonic on X for updates on game status.</p>
                     <p>Prepare accordingly. Your survival in the games depends on strategy and skill.</p>
                     <p className="text-foreground/40 text-[10px] mt-2">
                       SYSTEM NOTE: Participants who fail to appear for their scheduled game will be eliminated.
@@ -447,6 +460,5 @@ export default function RegisterWithGuard() {
           </div>
         </div>
       </GameStateRedirect>
-    </RouteGuard>
   );
 } 

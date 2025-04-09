@@ -73,7 +73,7 @@ export default function ViewportDrawer({
                 onConfirmClick();
                 onClose();
               }}
-              className="px-4 py-2 bg-foreground text-background hover:bg-primary-800 hover:text-foreground transition-colors"
+              className="px-4 py-2 bg-foreground text-background transition-colors"
             >
               {confirmText}
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, memo } from 'react';
-import { useGameChat, ChatMessage } from '@/hooks/useGameChat';
+import { useGameChat } from '@/hooks/useGameChat';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
@@ -56,25 +56,34 @@ interface LobbyChatProps {
 }
 
 export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
-  const { messages, sendMessage, currentUser, loading } = useGameChat(gameId);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const { messages, sendMessage, currentUser, loading, loadMore, loadingMore } = useGameChat(gameId);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Handle auto-scrolling
+  // Scroll to bottom only on initial load
   useEffect(() => {
-    if (autoScroll && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (isInitialLoad && !loading && messages.length > 0 && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      setIsInitialLoad(false);
     }
-  }, [messages, autoScroll]);
+  }, [loading, messages.length, isInitialLoad]);
 
-  // Check if user has scrolled up
-  const handleScroll = () => {
+  const handleLoadMore = async () => {
     if (!chatContainerRef.current) return;
     
-    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-    const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
-    setAutoScroll(isAtBottom);
+    // Store current scroll height before loading more messages
+    const scrollHeight = chatContainerRef.current.scrollHeight;
+    
+    await loadMore();
+    
+    // After messages load, adjust scroll position to maintain relative position
+    requestAnimationFrame(() => {
+      if (chatContainerRef.current) {
+        const newScrollHeight = chatContainerRef.current.scrollHeight;
+        const addedHeight = newScrollHeight - scrollHeight;
+        chatContainerRef.current.scrollTop += addedHeight;
+      }
+    });
   };
 
   const getPlayerNumber = (address: string): string => {
@@ -104,10 +113,32 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
       {/* Messages Container */}
       <div 
         ref={chatContainerRef}
-        onScroll={handleScroll}
         className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-300 
                    scrollbar-track-transparent p-4 space-y-4"
       >
+        {/* Load More Button */}
+        {messages.length >= 100 && (
+          <div className="flex justify-center mb-4">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="px-4 py-2 bg-background border border-border text-primary-400 
+                       hover:bg-foreground/10 font-mono text-sm flex items-center gap-2
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin"></div>
+                  LOADING...
+                </>
+              ) : (
+                'LOAD MORE'
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* Messages */}
         {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className="flex flex-col items-center gap-2">
@@ -152,7 +183,6 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
             </motion.div>
           ))
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Input Form */}

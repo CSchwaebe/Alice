@@ -9,7 +9,9 @@ import {
   limitToLast, 
   orderByChild,
   DatabaseReference,
-  off
+  off,
+  get,
+  endBefore
 } from 'firebase/database';
 
 // Message type definition
@@ -25,6 +27,7 @@ export interface ChatMessage {
 type MessageCallback = (messages: ChatMessage[]) => void;
 type PlayersCallback = (players: string[]) => void;
 type LoadingCallback = (loading: boolean) => void;
+type LoadMoreCallback = (success: boolean) => void;
 
 // Singleton class to manage chat connections
 class ChatManager {
@@ -168,7 +171,7 @@ class ChatManager {
     const messagesQuery = query(
       chatRoomRef,
       orderByChild('timestamp'),
-      limitToLast(10)
+      limitToLast(100)
     );
     
     // Store refs for cleanup
@@ -276,6 +279,61 @@ class ChatManager {
   // Helper function to shorten addresses
   private shortenAddress(address: string): string {
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
+  
+  // Load more messages
+  public async loadMoreMessages(gameId: string, callback: LoadMoreCallback): Promise<void> {
+    try {
+      const currentMessages = this.messages.get(gameId) || [];
+      if (currentMessages.length === 0) {
+        callback(false);
+        return;
+      }
+
+      const oldestMessage = currentMessages[0];
+      const chatRoomRef = ref(database, `chats/${gameId}/messages`);
+      const moreMessagesQuery = query(
+        chatRoomRef,
+        orderByChild('timestamp'),
+        endBefore(oldestMessage.timestamp),
+        limitToLast(50)
+      );
+
+      const snapshot = await get(moreMessagesQuery);
+      const messageData = snapshot.val();
+      
+      if (!messageData) {
+        callback(false);
+        return;
+      }
+
+      const olderMessages: ChatMessage[] = [];
+      Object.keys(messageData).forEach((key) => {
+        olderMessages.push({
+          id: key,
+          ...messageData[key],
+        });
+      });
+
+      // Sort older messages by timestamp
+      olderMessages.sort((a, b) => a.timestamp - b.timestamp);
+      
+      // Merge with existing messages, keeping duplicates out
+      const messageIds = new Set(currentMessages.map(msg => msg.id));
+      const uniqueOlderMessages = olderMessages.filter(msg => !messageIds.has(msg.id));
+      
+      // Update messages with older messages first, then current messages
+      const updatedMessages = [...uniqueOlderMessages, ...currentMessages];
+      this.messages.set(gameId, updatedMessages);
+      
+      // Notify subscribers
+      this.messageCallbacks.get(gameId)?.forEach(callback => callback(updatedMessages));
+      
+      callback(true);
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+      callback(false);
+    }
   }
 }
 

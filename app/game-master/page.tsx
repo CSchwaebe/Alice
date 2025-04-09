@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
+import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { useState, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import OwnerGuard from '@/components/auth/OwnerGuard';
@@ -296,7 +296,7 @@ function GameMasterDashboard(): ReactElement {
   // Get active players count from contract
   const { data: activePlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getActivePlayerCount',
     args: [],
   }) as { data: bigint | undefined };
@@ -304,7 +304,7 @@ function GameMasterDashboard(): ReactElement {
   // Get eliminated players count from contract
   const { data: eliminatedPlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getEliminatedPlayerCount',
     args: [],
   }) as { data: bigint | undefined };
@@ -323,7 +323,7 @@ function GameMasterDashboard(): ReactElement {
   // Get registration status
   const { data: isRegistrationClosed } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'registrationClosed',
     args: [],
   });
@@ -331,7 +331,7 @@ function GameMasterDashboard(): ReactElement {
   // Get registered games
   const { data: games, refetch: refetchGames } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getRegisteredGames',
     args: [],
   }) as { data: string[] | undefined, refetch: () => void };
@@ -339,7 +339,7 @@ function GameMasterDashboard(): ReactElement {
   // Get player count from contract
   const { data: playerCount, refetch: refetchPlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getPlayerCount',
     args: [],
   }) as { data: bigint | undefined, refetch: () => void };
@@ -446,7 +446,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('registerGame');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'registerGame',
         args: [gameName, gameAddress as `0x${string}`],
       });
@@ -465,7 +465,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('initializeGame');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'initializeGame',
         args: [gameName],
       });
@@ -485,7 +485,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('startGames');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'startGames',
         args: [gameName],
       });
@@ -504,7 +504,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('endExpiredGames');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'endExpiredGames',
         args: [gameName],
       });
@@ -522,7 +522,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('setRegistrationFee');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'setRegistrationFee',
         args: [parseEther(newRegistrationFee)],
       });
@@ -538,7 +538,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('closeRegistration');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'closeRegistration',
         args: [],
       });
@@ -554,7 +554,7 @@ function GameMasterDashboard(): ReactElement {
       setActiveFunction('withdraw');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: RagnarokGameMasterABI,
+        abi: GameMasterABI,
         functionName: 'withdraw',
         args: [],
       });
@@ -573,7 +573,7 @@ function GameMasterDashboard(): ReactElement {
   // Add this new contract read
   const { data: gamesData } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'getGames',
     args: [],
   }) as { data: [string[], GameInstanceInfo[][]] | undefined };

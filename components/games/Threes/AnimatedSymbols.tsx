@@ -35,8 +35,8 @@ export default function AnimatedSymbols({
   const EDGE_PADDING = 50;
   const SVG_WIDTH = 600 + (EDGE_PADDING * 2);
   const SVG_HEIGHT = 400;
-  const TRIANGLE_X = 100 + EDGE_PADDING;
-  const CIRCLE_X = 300 + EDGE_PADDING;
+  const CIRCLE_X = 100 + EDGE_PADDING;
+  const TRIANGLE_X = 300 + EDGE_PADDING;
   const SQUARE_X = 500 + EDGE_PADDING;
 
   // Periodic reanimation of all shapes
@@ -120,53 +120,10 @@ export default function AnimatedSymbols({
       className={`${className} mx-auto`}
       style={{ display: 'block' }}
     >
-      {/* Triangle Group (index 0) */}
+      {/* Circle Group (index 0) */}
       <g
         onClick={() => handleSymbolClick(0)}
         onMouseEnter={() => setHoveredSymbol(0)}
-        onMouseLeave={() => setHoveredSymbol(null)}
-        className="cursor-pointer"
-      >
-        <rect
-          x={TRIANGLE_X - 90 - CLICK_PADDING - GLOW_PADDING}
-          y={BASE_Y - CLICK_PADDING - GLOW_PADDING}
-          width={180 + (CLICK_PADDING + GLOW_PADDING) * 2}
-          height={SYMBOL_HEIGHT + (CLICK_PADDING + GLOW_PADDING) * 2}
-          fill="transparent"
-          pointerEvents="all"
-        />
-        <AnimatePresence mode="wait" initial={false}>
-          {shouldShowGlow(0) && (
-            <motion.path
-              d={getTrianglePath()}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.6 }}
-              exit={{ opacity: 0, transition: { duration: 0.1 } }}
-              strokeWidth={20}
-              className="stroke-foreground"
-              style={{ 
-                filter: "blur(15px)",
-                fill: "transparent",
-                strokeLinecap: "round" as const
-              }}
-            />
-          )}
-        </AnimatePresence>
-        <motion.path
-          d={getTrianglePath()}
-          className="stroke-foreground"
-          variants={variants}
-          custom={0}
-          initial="hidden"
-          animate="visible"
-          style={shape}
-        />
-      </g>
-
-      {/* Circle Group (index 1) */}
-      <g
-        onClick={() => handleSymbolClick(1)}
-        onMouseEnter={() => setHoveredSymbol(1)}
         onMouseLeave={() => setHoveredSymbol(null)}
         className="cursor-pointer"
       >
@@ -179,7 +136,7 @@ export default function AnimatedSymbols({
           pointerEvents="all"
         />
         <AnimatePresence mode="wait" initial={false}>
-          {shouldShowGlow(1) && (
+          {shouldShowGlow(0) && (
             <motion.path
               d={getCirclePath()}
               initial={{ opacity: 0 }}
@@ -199,6 +156,49 @@ export default function AnimatedSymbols({
           cx={CIRCLE_X}
           cy={BASE_Y + SYMBOL_HEIGHT / 2}
           r={SYMBOL_HEIGHT / 2}
+          className="stroke-foreground"
+          variants={variants}
+          custom={0}
+          initial="hidden"
+          animate="visible"
+          style={shape}
+        />
+      </g>
+
+      {/* Triangle Group (index 1) */}
+      <g
+        onClick={() => handleSymbolClick(1)}
+        onMouseEnter={() => setHoveredSymbol(1)}
+        onMouseLeave={() => setHoveredSymbol(null)}
+        className="cursor-pointer"
+      >
+        <rect
+          x={TRIANGLE_X - 90 - CLICK_PADDING - GLOW_PADDING}
+          y={BASE_Y - CLICK_PADDING - GLOW_PADDING}
+          width={180 + (CLICK_PADDING + GLOW_PADDING) * 2}
+          height={SYMBOL_HEIGHT + (CLICK_PADDING + GLOW_PADDING) * 2}
+          fill="transparent"
+          pointerEvents="all"
+        />
+        <AnimatePresence mode="wait" initial={false}>
+          {shouldShowGlow(1) && (
+            <motion.path
+              d={getTrianglePath()}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.6 }}
+              exit={{ opacity: 0, transition: { duration: 0.1 } }}
+              strokeWidth={20}
+              className="stroke-foreground"
+              style={{ 
+                filter: "blur(15px)",
+                fill: "transparent",
+                strokeLinecap: "round" as const
+              }}
+            />
+          )}
+        </AnimatePresence>
+        <motion.path
+          d={getTrianglePath()}
           className="stroke-foreground"
           variants={variants}
           custom={1}

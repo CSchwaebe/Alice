@@ -9,6 +9,7 @@ export function useGameChat(gameId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [players, setPlayers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   
   useEffect(() => {
     // Subscribe to chat updates
@@ -30,13 +31,28 @@ export function useGameChat(gameId: string) {
       chatManager.sendMessage(gameId, address, content);
     }
   };
+
+  // Function to load more messages
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      await chatManager.loadMoreMessages(gameId, (success) => {
+        setLoadingMore(false);
+      });
+    } catch (error) {
+      console.error('Error loading more messages:', error);
+      setLoadingMore(false);
+    }
+  };
   
   return {
     messages,
     players,
     sendMessage,
+    loadMore,
     currentUser: address,
-    loading
+    loading,
+    loadingMore
   };
 }
 

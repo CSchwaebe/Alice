@@ -11,25 +11,33 @@ const silkscreen = Silkscreen({
 
 interface GameTimerProps {
   endTime: number; // Unix timestamp in seconds
+  onExpired?: () => void;
 }
 
-export function GameTimer({ endTime }: GameTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(0);
+export function GameTimer({ endTime, onExpired }: GameTimerProps) {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isGlitching, setIsGlitching] = useState(false);
   
   // Calculate and update time remaining
   useEffect(() => {
-    const updateTimer = () => {
+    const calculateTimeLeft = () => {
       const now = Math.floor(Date.now() / 1000);
-      const remaining = Math.max(0, endTime - now);
-      setTimeLeft(remaining);
+      const difference = endTime - now;
+      setTimeLeft(Math.max(0, difference));
+      
+      // Call onExpired when timer reaches zero
+      if (difference <= 0 && onExpired) {
+        onExpired();
+      }
     };
     
-    updateTimer(); // Initial calculation
+    // Initial calculation
+    calculateTimeLeft();
     
-    const timer = setInterval(updateTimer, 1000);
+    // Update every second
+    const timer = setInterval(calculateTimeLeft, 1000);
     return () => clearInterval(timer);
-  }, [endTime]);
+  }, [endTime, onExpired]);
   
   // Random glitch effect
   useEffect(() => {
@@ -50,7 +58,7 @@ export function GameTimer({ endTime }: GameTimerProps) {
   return (
     <div className="relative">
       {/* Main timer display */}
-      <div className={`text-4xl md:text-5xl font-bold tracking-wider text-foreground ${silkscreen.className}`}>
+      <div className={`text-5xl font-bold tracking-wider text-foreground ${silkscreen.className}`}>
         {timeString}
       </div>
 

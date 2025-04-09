@@ -54,14 +54,48 @@ interface GameChatProps {
 }
 
 export default function GameChat({ gameId, gameName, playerList }: GameChatProps) {
-  const { messages, players, sendMessage, currentUser, loading } = useGameChat(gameId);
+  const { messages, players, sendMessage, currentUser, loading, loadMore, loadingMore } = useGameChat(gameId);
   const [isExpanded, setIsExpanded] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const mobileChatContainerRef = useRef<HTMLDivElement>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Scroll to bottom only on initial load
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (isInitialLoad && !loading && messages.length > 0) {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+      if (mobileChatContainerRef.current) {
+        mobileChatContainerRef.current.scrollTop = mobileChatContainerRef.current.scrollHeight;
+      }
+      setIsInitialLoad(false);
+    }
+  }, [loading, messages.length, isInitialLoad]);
+
+  const handleLoadMore = async () => {
+    if (!chatContainerRef.current && !mobileChatContainerRef.current) return;
+    
+    // Store current scroll height before loading more messages
+    const desktopScrollHeight = chatContainerRef.current?.scrollHeight || 0;
+    const mobileScrollHeight = mobileChatContainerRef.current?.scrollHeight || 0;
+    
+    await loadMore();
+    
+    // After messages load, adjust scroll position to maintain relative position
+    requestAnimationFrame(() => {
+      if (chatContainerRef.current) {
+        const newScrollHeight = chatContainerRef.current.scrollHeight;
+        const addedHeight = newScrollHeight - desktopScrollHeight;
+        chatContainerRef.current.scrollTop += addedHeight;
+      }
+      if (mobileChatContainerRef.current) {
+        const newScrollHeight = mobileChatContainerRef.current.scrollHeight;
+        const addedHeight = newScrollHeight - mobileScrollHeight;
+        mobileChatContainerRef.current.scrollTop += addedHeight;
+      }
+    });
+  };
 
   const getPlayerNumber = (address: string): string => {
     const player = playerList.find(p => 
@@ -95,6 +129,29 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
 
   const renderMessages = () => (
     <div className="flex-1 overflow-y-auto p-3 bg-background overscroll-contain">
+      {/* Load More Button */}
+      {messages.length >= 100 && (
+        <div className="flex justify-center mb-4">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="px-4 py-2 bg-background border border-border text-primary-400 
+                     hover:bg-foreground/10 font-mono text-sm flex items-center gap-2
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loadingMore ? (
+              <>
+                <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin"></div>
+                LOADING...
+              </>
+            ) : (
+              'LOAD MORE'
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Messages */}
       {loading ? (
         <div className="flex justify-center items-center h-full">
           <div className="flex flex-col items-center">
@@ -118,14 +175,13 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
           />
         ))
       )}
-      <div ref={messagesEndRef} />
     </div>
   );
 
   return (
     <>
       {/* Desktop Chat */}
-      <div className="hidden min-[1000px]:flex flex-col h-[calc(100vh-2rem)] w-80 bg-background backdrop-blur-sm border border-border">
+      <div className="hidden min-[1000px]:flex flex-col h-full bg-background backdrop-blur-sm border border-border">
         {/* Chat Header with corner accents */}
         <div className="relative bg-background p-3 border-b border-border flex justify-between items-center">
           {/* Corner accents */}
@@ -141,31 +197,8 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
         </div>
         
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-3 bg-background overscroll-contain">
-          {loading ? (
-            <div className="flex justify-center items-center h-full">
-              <div className="flex flex-col items-center">
-                <div className="animate-spin h-5 w-5 border-2 border-content-3 border-t-primary-700"></div>
-                <div className="text-xs font-mono text-primary-500">LOADING COMMS...</div>
-              </div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-primary-500 text-center font-mono text-sm py-4">
-              NO MESSAGES YET. INITIATE COMMUNICATION.
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <MessageBubble 
-                key={msg.id}
-                message={{
-                  ...msg,
-                  senderName: `${getPlayerNumber(msg.sender)}`
-                }}
-                isCurrentUser={msg.sender === currentUser}
-              />
-            ))
-          )}
-          <div ref={messagesEndRef} />
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 bg-background overscroll-contain">
+          {renderMessages()}
         </div>
         
         {/* Input with bottom corner accents */}
@@ -193,7 +226,7 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary-500 z-10"></div>
                 
                 {/* Make messages container flexible and scrollable */}
-                <div className="flex-1 overflow-y-auto touch-auto -webkit-overflow-scrolling-touch">
+                <div ref={mobileChatContainerRef} className="flex-1 overflow-y-auto touch-auto -webkit-overflow-scrolling-touch">
                   {renderMessages()}
                 </div>
                 

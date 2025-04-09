@@ -1,9 +1,9 @@
-import RouteGuard from "@/components/auth/RouteGuard";
+import GameStateRedirect from "@/components/auth/GameStateRedirect";
 
 export default function GamesLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <RouteGuard>{children}</RouteGuard>;
+  return <GameStateRedirect>{children}</GameStateRedirect>;
 } 

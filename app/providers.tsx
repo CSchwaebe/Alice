@@ -28,8 +28,8 @@ export const wagmiAdapter = new WagmiAdapter({
   ssr: true,
   syncConnectedChain: true,
   transports: {
-    [sonicBlazeTestnet.id]: webSocket('wss://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
     [sonic.id]: webSocket('wss://sonic-mainnet.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+    [sonicBlazeTestnet.id]: webSocket('wss://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
   },
   projectId,
   networks
@@ -38,9 +38,9 @@ export const wagmiAdapter = new WagmiAdapter({
 // Set up metadata for AppKit
 const metadata = {
   name: 'Alice',
-  description: 'Norse-themed blockchain games',
-  url: 'https://ragnarok-eight.vercel.app/',
-  icons: ['https://avatars.githubusercontent.com/u/179229932']
+  description: 'The 1000-player, real-time PvP event',
+  url: 'https://alice-wonderland.com/',
+  icons: ['https://alice-wonderland.com/images/logo.jpg']
 };
 
 // Create the AppKit modal
@@ -73,7 +73,7 @@ export const modal = createAppKit({
   } as any)),
 
   networks,
-  defaultNetwork: sonicBlazeTestnet,
+  defaultNetwork: sonic,
   defaultAccountTypes: {eip155:'smartAccount'},
   
   enableWalletConnect: false,
@@ -96,10 +96,10 @@ export const modal = createAppKit({
     analytics: true,
     swaps: false,
     onramp: false,
-    email: true, // default to true
-    emailShowWallets: false, 
+    email: false, // default to true
+    emailShowWallets: true, 
     socials: ['x', 'google', 'apple', 'facebook'],
-    connectMethodsOrder: ['email','social', 'wallet'],
+    connectMethodsOrder: ['wallet']//['email','social', 'wallet'],
   },
   
   
@@ -122,13 +122,14 @@ export function Providers({ children, cookies }: { children: ReactNode; cookies:
             <HeroUIProvider>
               <ToastProvider
                 maxVisibleToasts={3}
-                placement="bottom-right"
+                placement="bottom-left"
                 toastProps={{
                   radius: "sm",
-                  timeout: 2000,
+                  timeout: 1000,
                   hideIcon: true,
+                  shouldShowTimeoutProgress: false,
                   classNames: {
-                    base: "max-w-md bg-background border border-border shadow-glow-sm",
+                    base: "bg-background max-w-sm border shadow-glow-sm",
                     title: "text-foreground font-bold",
                     description: "text-foreground/80"
                   }

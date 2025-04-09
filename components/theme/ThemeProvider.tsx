@@ -38,7 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(stored);
     } else {
       // Make light the default, don't use system preference
-      setTheme('light');
+      setTheme('dark');
     }
   }, []);
 

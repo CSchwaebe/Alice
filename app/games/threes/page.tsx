@@ -2,9 +2,9 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useThreesGameData } from '@/hooks/useThreesGameData';
-import { useThreesGameEvents } from '@/hooks/useThreesGameEvents';
-import { useThreesGameTransactions } from '@/hooks/useThreesGameTransactions';
+import { useThreesGameData } from '@/hooks/Threes/useThreesGameData';
+import { useThreesGameEvents } from '@/hooks/Threes/useThreesGameEvents';
+import { useThreesGameTransactions } from '@/hooks/Threes/useThreesGameTransactions';
 import { GameTimer } from "@/components/ui/GameTimer";
 import GameChat from "@/components/chat/GameChat";
 import { PlayerList } from "@/components/games/Threes/PlayerList";
@@ -12,11 +12,10 @@ import { LoadingScreen } from "@/components/games/LoadingScreen";
 import { ThreesGameContent } from "@/components/games/Threes/ThreesGameContent";
 import { GameCompletionScreen } from "@/components/games/GameCompletionScreen";
 import { Silkscreen } from 'next/font/google';
-import RouteGuard from '@/components/auth/RouteGuard';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 import { useEffect, useState } from 'react';
 import { addToast } from "@heroui/toast";
-import type { GameNotification } from '@/hooks/useThreesGameEvents';
+import type { GameNotification } from '@/hooks/Threes/useThreesGameEvents';
 
 const silkscreen = Silkscreen({ 
   weight: '400',
@@ -52,6 +51,7 @@ function ThreesGame() {
 
   // Add notification handler
   const handleNotification = (notification: GameNotification) => {
+    console.log('Threes: handleNotification called with:', notification);
     addToast(notification);
   };
 
@@ -88,7 +88,7 @@ function ThreesGame() {
       {/* Main Game Area */}
       <div className="flex-1 flex flex-col items-center p-4 space-y-8 w-full">
         {gameState !== 1 && (
-          <div className={`text-4xl min-[1000px]:text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}>
+          <div className={`text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}>
             <GameTimer endTime={roundEndTime} />
           </div>
         )}
@@ -130,10 +130,8 @@ function ThreesGame() {
 
 export default function ThreesPage() {
   return (
-    <RouteGuard>
       <GameStateRedirect>
         <ThreesGame />
       </GameStateRedirect>
-    </RouteGuard>
   );
 } 

@@ -3,7 +3,7 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
+import { GameMasterABI } from '@/app/abis/GameMasterABI';
 
 export default function OwnerGuard({ children }: { children: React.ReactNode }) {
   const { address, isConnected } = useAccount();
@@ -14,7 +14,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
   // Check if connected address is the owner
   const { data: ownerAddress } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI,
+    abi: GameMasterABI,
     functionName: 'owner',
     args: [],
     query: {

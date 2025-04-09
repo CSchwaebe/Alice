@@ -81,29 +81,12 @@ export default function DiamondGrid({
       <ViewportDrawer 
         isOpen={showDrawer} 
         onClose={handleClose}
-        
-      >
-        <div className="p-4 flex flex-col items-center">
-          <p className="text-white text-lg mb-4">
-            Confirm selection: <span className="font-bold text-neon-300">{selectedNumber}</span>
-          </p>
-          
-          <div className="flex gap-4">
-            <button
-              onClick={handleConfirm}
-              className="bg-neon-300 hover:bg-neon-400 text-black font-bold py-2 px-6 rounded-lg transition-colors"
-            >
-              Confirm
-            </button>
-            <button
-              onClick={handleClose}
-              className="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </ViewportDrawer>
+        onConfirmClick={handleConfirm}
+        title="Select Diamond"
+        description={selectedNumber ? `Do you want to select Diamond #${selectedNumber}?` : ''}
+        confirmText="Confirm"
+        cancelText="Cancel"
+      />
     </div>
   );
 } 

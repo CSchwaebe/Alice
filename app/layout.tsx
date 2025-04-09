@@ -1,10 +1,12 @@
 // app/layout.tsx
+
+
 import { Providers } from './providers'; // Import providers
 import './globals.css'; // Tailwind styles
 import { Aboreto } from 'next/font/google';
-import Header from '@/components/ui/Header';
 import { headers } from 'next/headers';
 import { Analytics } from '@vercel/analytics/next';
+import ScrollRestoration from '@/components/ScrollRestoration';
 
 const aboreto = Aboreto({
   weight: '400',
@@ -14,7 +16,7 @@ const aboreto = Aboreto({
 
 export const metadata = {
   title: 'Alice',
-  description: 'Norse-themed blockchain games',
+  description: 'A collection of elimination games on the blockchain',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className="bg-background">
       <body className={`min-h-screen bg-background ${aboreto.className}`}>
         <Providers cookies={cookieStore}>
+          <ScrollRestoration />
           <div className="opacity-0 animate-fade-in">
             <main>
               {children}

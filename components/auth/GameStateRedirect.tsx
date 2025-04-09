@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { RagnarokGameMasterABI } from '@/app/abis/RagnarokGameMasterABI';
+import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import type { Abi } from 'viem';
 
 // GameState enum matching the contract
@@ -47,11 +47,12 @@ export default function GameStateRedirect({
 }: GameStateRedirectProps) {
   const router = useRouter();
   const { address, isConnected } = useAccount();
+  const currentPath = typeof window !== 'undefined' ? window.location.pathname : '';
 
   // Get player info to check for active games and state
   const { data: playerInfo } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI as Abi,
+    abi: GameMasterABI as Abi,
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
@@ -62,7 +63,7 @@ export default function GameStateRedirect({
   // Check if player is registered
   const { data: isRegistered } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: RagnarokGameMasterABI as Abi,
+    abi: GameMasterABI as Abi,
     functionName: 'isRegistered',
     args: [address],
     query: {
@@ -73,9 +74,18 @@ export default function GameStateRedirect({
   useEffect(() => {
     // Helper function to perform redirect
     const redirect = (destination: string, reason: string) => {
+      // Don't redirect if we're already on the target page
+      if (currentPath === destination) {
+        return;
+      }
       console.log(`GameStateRedirect: Redirecting to ${destination} - ${reason}`);
-      router.push(destination);
+      router.push(destination, { scroll: true });
     };
+
+    // Redirect to home if wallet is not connected
+    if (!isConnected) {
+      return redirect(RedirectDestination.Home, 'Wallet not connected');
+    }
 
     // Helper function to check if game is in active state
     const isGameActive = (gameState: GameState): boolean => {
@@ -83,45 +93,33 @@ export default function GameStateRedirect({
              gameState !== GameState.Completed;
     };
 
-    // Log initial state
-    console.log('GameStateRedirect: Initial State', {
-      isConnected,
-      address,
-      playerInfo,
-      isRegistered,
-      currentPath: window.location.pathname,
-      redirectFlags: {
-        redirectUnregistered,
-        redirectInactive,
-        redirectNoGame,
-        allowRegistrationPage,
-        allowLobby
+    // Special handling for lobby page
+    if (allowLobby && currentPath === RedirectDestination.Lobby) {
+      // Only redirect away from lobby if we have all data
+      if (address && playerInfo && isRegistered !== undefined) {
+        if (!isRegistered) {
+          return redirect(RedirectDestination.Register, 'Player not registered');
+        }
+        if (redirectInactive && !playerInfo[2]) { // playerInfo[2] is isActive
+          return redirect(RedirectDestination.Home, 'Player not active');
+        }
+        // Check for active game and redirect if found
+        const [gameName, , , gameState] = playerInfo;
+        if (gameName && isGameActive(gameState)) {
+          const gameRoute = `/games/${gameName.toLowerCase()}`;
+          return redirect(gameRoute, 'Active game in progress');
+        }
       }
-    });
-
-    // Early returns for special cases
-    if (!isConnected || !address) {
-      return redirect(RedirectDestination.Home, 'No wallet connection');
+      return;
     }
 
-    if (!playerInfo || isRegistered === undefined) {
-      console.log('GameStateRedirect: Waiting for data...');
+    // Wait for all data before making other redirect decisions
+    if (!address || !playerInfo || isRegistered === undefined) {
       return;
     }
 
     // Extract player info
     const [gameName, gameId, isActive, gameState, playerNumber] = playerInfo;
-    const currentPath = window.location.pathname;
-
-    // Log player state
-    console.log('GameStateRedirect: Player State', {
-      gameName,
-      gameId: gameId.toString(),
-      isActive,
-      gameState: GameState[gameState],
-      playerNumber: playerNumber.toString(),
-      currentPath
-    });
 
     // Redirect Priority System
     try {
@@ -146,9 +144,6 @@ export default function GameStateRedirect({
 
       // 3. Special page allowances
       if (allowRegistrationPage && currentPath === RedirectDestination.Register) {
-        return;
-      }
-      if (allowLobby && currentPath === RedirectDestination.Lobby) {
         return;
       }
 
