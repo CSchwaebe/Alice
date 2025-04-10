@@ -17,7 +17,7 @@ import { ThemeProvider } from '@/components/theme/ThemeProvider';
 const projectId = process.env.NEXT_PUBLIC_APPKIT_PROJECT_ID || '';
 const networks = [
   { ...sonic, name: 'Sonic' },
-  { ...sonicBlazeTestnet, name: 'Sonic Testnet' }
+  //{ ...sonicBlazeTestnet, name: 'Sonic Testnet' }
 ] as [AppKitNetwork, ...AppKitNetwork[]];
 
 // Set up the Wagmi Adapter
@@ -29,7 +29,7 @@ export const wagmiAdapter = new WagmiAdapter({
   syncConnectedChain: true,
   transports: {
     [sonic.id]: webSocket('wss://sonic-mainnet.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
-    [sonicBlazeTestnet.id]: webSocket('wss://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
+    //[sonicBlazeTestnet.id]: webSocket('wss://sonic-blaze.g.alchemy.com/v2/GdeOJcP1A5nVB4VsMm4KN0wDVA2yy6iL'),
   },
   projectId,
   networks
@@ -40,7 +40,7 @@ const metadata = {
   name: 'Alice',
   description: 'The 1000-player, real-time PvP event',
   url: 'https://alice-wonderland.com/',
-  icons: ['https://alice-wonderland.com/images/logo.jpg']
+  icons: ['https://alice-wonderland.com/images/logo.png']
 };
 
 // Create the AppKit modal

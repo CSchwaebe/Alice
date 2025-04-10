@@ -16,7 +16,7 @@ const aboreto = Aboreto({
 
 export const metadata = {
   title: 'Alice',
-  description: 'A collection of elimination games on the blockchain',
+  description: 'Welcome to Wonderland',
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
