@@ -18,12 +18,16 @@ export default function GameContent({
   
   if (gameState === 1) {
     // Pre-game state - show game rules
-    return <GameRules />;
+    return (
+      <div className="relative">
+        <GameRules />
+      </div>
+    );
   }
   
   // Active game state
   return (
-    <>
+    <div className="relative">
       {/* Timer */}
       <div className="flex justify-center mb-8">
         <GameTimer endTime={roundEndTime} />
@@ -37,7 +41,7 @@ export default function GameContent({
       </div>
 
       {/* Door Choice Component */}
-      <DoorChoice onDoorSelect={onDoorSelect} />
-    </>
+      <DoorChoice onDoorSelect={onDoorSelect} round={Number(currentRound)} />
+    </div>
   );
 } 

@@ -39,7 +39,7 @@ export function useBiddingGameTransactions() {
     }
   }, [isTxSuccess, hash]);
 
-  const handleCommitBid = useCallback(async (amount: number) => {
+  const handleCommitBid = useCallback(async (amount: number, gameId: string | number, round: string | number) => {
     try {
       setError(null);
       if (!address) {
@@ -54,7 +54,9 @@ export function useBiddingGameTransactions() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           bidAmount: amount,
-          playerAddress: address 
+          playerAddress: address,
+          gameId,
+          round
         }),
       });
 
@@ -79,14 +81,14 @@ export function useBiddingGameTransactions() {
     }
   }, [writeContract, address]);
 
-  const handleRevealBid = useCallback(async (amount: number) => {
+  const handleRevealBid = useCallback(async (amount: number, gameId: string, round: string) => {
     try {
       setError(null);
       if (amount <= 0) {
         throw new Error('Bid amount must be greater than 0');
       }
 
-      const response = await fetch('/api/bidding/salt', {
+      const response = await fetch(`/api/salt?gameType=bidding&gameId=${gameId}&round=${round}`, {
         method: 'GET',
       });
 

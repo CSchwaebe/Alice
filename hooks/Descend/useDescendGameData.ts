@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useReadContract } from 'wagmi';
 import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { DescendABI } from '@/app/abis/DescendABI';
@@ -20,6 +20,8 @@ export type GameInfo = {
   state: number;
   currentRound: bigint;
   roundEndTime: bigint;
+  gameStartTime: bigint;
+  gameEndTime: bigint;
 };
 
 // Type for the formatted player info we'll use in the UI
@@ -46,10 +48,12 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
   const [roundEndTime, setRoundEndTime] = useState<number>(0);
   const [gameState, setGameState] = useState<number>(0);
   const [currentRound, setCurrentRound] = useState<bigint>(BigInt(0));
+  const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [hasCommitted, setHasCommitted] = useState(false);
   const [hasRevealed, setHasRevealed] = useState(false);
   const [playerLevel, setPlayerLevel] = useState<number>(0);
   const [levelPopulations, setLevelPopulations] = useState<Record<number, number>>({});
+  const [levelCapacities, setLevelCapacities] = useState<Record<number, number>>({});
 
   // Get player info from GameMaster
   const { data: playerInfo } = useReadContract({
@@ -58,36 +62,54 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      gcTime: 0 // Don't garbage collect this data
     }
   }) as { data: [string, bigint, boolean, number, bigint] | undefined };
 
   // Extract values from playerInfo
   const [playerGameName, playerGameId, isPlayerActive, playerGameState, playerNum] = playerInfo || ['', BigInt(0), false, 0, BigInt(0)];
 
-  // Get level populations
-  const levelPopulationResults = Array.from({ length: 22 }, (_, i) => {
-    return useReadContract({
-      address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
-      abi: DescendABI,
-      functionName: 'getLevelPopulation',
-      args: [gameId, BigInt(i)],
-      query: {
-        enabled: !!gameId
-      }
-    });
-  });
+  // Get level populations in a single call
+  const { data: levelPopulationsData } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
+    abi: DescendABI,
+    functionName: 'getLevelPopulations',
+    args: [gameId],
+    query: {
+      enabled: !!gameId
+    }
+  }) as { data: bigint[] | undefined };
 
-  // Update level populations when data changes
+  // Get level capacities from contract
+  const { data: levelCapacitiesData } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
+    abi: DescendABI,
+    functionName: 'getLevelCapacities',
+    args: [gameId],
+    query: {
+      enabled: !!gameId
+    }
+  }) as { data: bigint[] | undefined };
+
+  // Update level populations and capacities when data changes
   useEffect(() => {
-    if (!gameId) return;
+    if (!levelPopulationsData || !levelCapacitiesData) return;
     
     const newPopulations: Record<number, number> = {};
-    levelPopulationResults.forEach((result, level) => {
-      newPopulations[level] = Number(result.data || 0);
+    const newCapacities: Record<number, number> = {};
+
+    levelPopulationsData.forEach((population, level) => {
+      newPopulations[level] = Number(population);
     });
+
+    levelCapacitiesData.forEach((capacity, level) => {
+      newCapacities[level] = Number(capacity);
+    });
+
     setLevelPopulations(newPopulations);
-  }, [gameId, ...levelPopulationResults.map(r => r.data)]);
+    setLevelCapacities(newCapacities);
+  }, [levelPopulationsData, levelCapacitiesData]);
 
   // Add effect to check player's active status
   useEffect(() => {
@@ -103,7 +125,7 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
     }
   }, [playerGameId]);
 
-  // Get game info
+  // Get game info and phase in a single call
   const { data: gameInfo, refetch: refetchGameInfo } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
     abi: DescendABI,
@@ -113,6 +135,24 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
       enabled: !!gameId
     }
   }) as { data: GameInfo | undefined, refetch: () => void };
+
+  // Get current phase
+  const { data: phase } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
+    abi: DescendABI,
+    functionName: 'getCurrentPhase',
+    args: [gameId],
+    query: {
+      enabled: !!gameId
+    }
+  }) as { data: bigint | undefined };
+
+  // Update phase when data changes
+  useEffect(() => {
+    if (phase !== undefined) {
+      setCurrentPhase(Number(phase));
+    }
+  }, [phase]);
 
   // Get all players info
   const { data: playersInfo, refetch: refetchPlayerInfo } = useReadContract({
@@ -165,10 +205,11 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
     }
   }, [gameInfo]);
 
-  const refetchAll = () => {
+  // Memoize refetch functions
+  const refetchAll = useCallback(() => {
     refetchGameInfo();
     refetchPlayerInfo();
-  };
+  }, [refetchGameInfo, refetchPlayerInfo]);
 
   return {
     gameId,
@@ -176,16 +217,21 @@ export function useDescendGameData({ address, isConnected }: UseDescendGameDataP
     playerList,
     playerLevel,
     levelPopulations,
+    levelCapacities,
     isLoading,
     roundEndTime,
     gameState,
     currentRound,
+    currentPhase,
     hasCommitted,
     hasRevealed,
     refetchGameInfo,
     refetchPlayerInfo,
     refetchAll,
     setCurrentRound,
-    setRoundEndTime
+    setRoundEndTime,
+    setCurrentPhase,
+    setLevelPopulations,
+    setLevelCapacities
   };
 } 

@@ -80,7 +80,7 @@ export function GameTimer({ endTime, onExpired }: GameTimerProps) {
                 duration: 0.2,
                 times: [0, 0.5, 1]
               }}
-              className="absolute inset-0 text-[var(--glitch-primary)] mix-blend-screen"
+              className={`absolute inset-0 text-5xl font-bold tracking-wider ${silkscreen.className} text-[var(--glitch-primary)] mix-blend-screen flex items-center justify-center`}
             >
               {timeString}
             </motion.div>
@@ -99,7 +99,7 @@ export function GameTimer({ endTime, onExpired }: GameTimerProps) {
                 duration: 0.2,
                 times: [0, 0.5, 1]
               }}
-              className="absolute inset-0 text-[var(--glitch-secondary)] mix-blend-screen"
+              className={`absolute inset-0 text-5xl font-bold tracking-wider ${silkscreen.className} text-[var(--glitch-secondary)] mix-blend-screen flex items-center justify-center`}
             >
               {timeString}
             </motion.div>

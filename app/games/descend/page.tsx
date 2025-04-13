@@ -16,7 +16,6 @@ import { useDescendGameTransactions } from '@/hooks/Descend/useDescendGameTransa
 
 // Import components
 import { Content } from '@/components/games/Descend/Content';
-import PlayerList from '@/components/games/Descend/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
 
@@ -39,13 +38,19 @@ function DescendGame() {
     roundEndTime,
     gameState,
     currentRound,
+    currentPhase,
     hasCommitted,
     hasRevealed,
     refetchGameInfo,
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
+    setCurrentPhase,
     levelPopulations,
+    levelCapacities,
+    setLevelPopulations,
+    setLevelCapacities,
+    playerLevel
   } = useDescendGameData({ address, isConnected });
   
   // Handle transactions
@@ -73,12 +78,15 @@ function DescendGame() {
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
+    setCurrentPhase,
+    setLevelPopulations,
+    setLevelCapacities,
     onNotification: handleNotification
   });
   
   // Handle timer expiration
   const handleTimerExpired = () => {
-    if (gameState !== 1 && gameState !== 4) {
+    if (roundEndTime > 0 && gameState !== 0 && gameState !== 1 && gameState !== 4) {
       setShowEndGameDialog(true);
     }
   };
@@ -133,23 +141,21 @@ function DescendGame() {
             <Content 
               gameState={gameState}
               currentRound={currentRound}
-              playerLevel={playerInfo?.level || 0}
+              playerLevel={playerLevel}
               hasCommitted={hasCommitted}
               hasRevealed={hasRevealed}
-              isCommitting={isTxPending}
-              isRevealing={isTxLoading}
+              isCommitting={isTxPending && !hasCommitted}
+              isRevealing={isTxPending && !hasRevealed}
               roundEndTime={roundEndTime}
               onCommitMove={handleCommitMove}
               onRevealMove={handleRevealMove}
               onTimerExpired={handleTimerExpired}
               playerList={playerList}
               levelPopulations={levelPopulations}
+              levelCapacities={levelCapacities}
+              currentPhase={currentPhase}
+              gameId={gameId?.toString() || '0'}
             />
-          </div>
-
-          {/* Player List */}
-          <div className="mt-8">
-            <PlayerList players={playerList} />
           </div>
         </div>
         

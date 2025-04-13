@@ -102,6 +102,7 @@ function ThreesGame() {
           isRevealing={isTxLoading}
           onCommit={handleCommit}
           onReveal={handleReveal}
+          gameId={gameId?.toString()}
         />
 
         {/* Player List */}

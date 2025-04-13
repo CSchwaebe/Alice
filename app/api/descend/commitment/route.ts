@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { keccak256, encodePacked, stringToHex } from 'viem';
-import { formatAsBytes32 } from '@/lib/utils';
+import { keccak256, encodePacked } from 'viem';
+import { generateSaltForGameRound } from '@/lib/salt-manager';
 
 export async function POST(request: Request) {
   try {
-    const { move, playerAddress } = await request.json();
+    const { move, playerAddress, gameId, round } = await request.json();
     
     // Validate input
     if (typeof move !== 'number' || move < 0 || move > 5) {
@@ -15,28 +15,29 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!playerAddress || typeof playerAddress !== 'string' || !playerAddress.startsWith('0x')) {
+    // Validate and narrow the type in one step
+    if (typeof playerAddress !== 'string' || !/^0x[0-9a-fA-F]{40}$/i.test(playerAddress)) {
       return NextResponse.json(
         { error: 'Invalid player address' },
         { status: 400 }
       );
     }
+    const hexAddress = playerAddress as `0x${string}`;
 
-    // Get salt from environment variable
-    const salt = process.env.SUPER_SECRET_SALT;
-    if (!salt) {
+    if (!gameId || !round) {
       return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
+        { error: 'Missing gameId or round parameter' },
+        { status: 400 }
       );
     }
 
+    // Generate salt for this specific game round
+    const formattedSalt = generateSaltForGameRound('descend', gameId, round) as `0x${string}`;
+
     // Generate commitment
-    const saltHex = stringToHex(salt);
-    const formattedSalt = formatAsBytes32(saltHex);
     const encodedData = encodePacked(
       ['uint256', 'bytes32', 'address'],
-      [BigInt(move), formattedSalt, playerAddress as `0x${string}`]
+      [BigInt(move), formattedSalt, hexAddress]
     );
 
     const commitment = keccak256(encodedData);

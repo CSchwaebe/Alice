@@ -6,15 +6,16 @@ import ViewportDrawer from '@/components/ui/ViewportDrawer';
 import { motion } from 'framer-motion';
 import ThreesGameRules from './ThreesGameRules';
 
-interface ThreesGameContentProps {
+export interface ThreesGameContentProps {
   gameState: number;
   currentRound: bigint;
   hasCommitted: boolean;
   hasRevealed: boolean;
   isCommitting: boolean;
   isRevealing: boolean;
-  onCommit: (choice: number) => void;
-  onReveal: (choice: number) => void;
+  onCommit: (choice: number, gameId: string | number, round: string | number) => void;
+  onReveal: (choice: number, gameId: string, round: string) => void;
+  gameId?: string | number;
 }
 
 export function ThreesGameContent({
@@ -26,37 +27,34 @@ export function ThreesGameContent({
   isRevealing,
   onCommit,
   onReveal,
+  gameId
 }: ThreesGameContentProps) {
   const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
+  const [selectedSymbol, setSelectedSymbol] = useState<number | null>(null);
 
   if (gameState === 1) {
     return <ThreesGameRules />;
   }
 
-  const handleSymbolSelect = (choice: number) => {
-    if ((currentRound?.toString() === '1' && !hasCommitted) || 
-        (currentRound?.toString() === '2' && !hasRevealed)) {
-      setSelectedChoice(choice);
-      setShowConfirmation(true);
-    }
+  const canInteract = !isCommitting && !isRevealing && 
+    ((currentRound?.toString() === '1' && !hasCommitted) || 
+     (currentRound?.toString() === '2' && !hasRevealed));
+
+  const handleSymbolSelect = (symbol: number) => {
+    setSelectedSymbol(symbol);
+    setShowConfirmation(true);
   };
 
   const handleConfirm = () => {
-    if (selectedChoice !== null) {
-      const choice = selectedChoice + 1; // Convert 0-based to 1-based index
-      if (currentRound?.toString() === '1') {
-        onCommit(choice);
-      } else {
-        onReveal(choice);
-      }
-      setShowConfirmation(false);
-      setSelectedChoice(null);
+    if (selectedSymbol === null || !gameId) return;
+    
+    if (currentRound?.toString() === '1') {
+      onCommit(selectedSymbol, gameId, currentRound.toString());
+    } else {
+      onReveal(selectedSymbol, gameId.toString(), currentRound.toString());
     }
+    setShowConfirmation(false);
   };
-
-  const canInteract = (currentRound?.toString() === '1' && !hasCommitted) || 
-                     (currentRound?.toString() === '2' && !hasRevealed);
 
   return (
     <div className="flex flex-col items-center w-full">

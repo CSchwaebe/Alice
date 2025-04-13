@@ -16,6 +16,8 @@ export type GameInfo = {
   state: number;
   currentRound: bigint;
   roundEndTime: bigint;
+  gameStartTime: bigint;
+  gameEndTime: bigint;
 };
 
 interface UseDoorsGameDataProps {

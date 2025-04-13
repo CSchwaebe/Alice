@@ -307,6 +307,16 @@ export const ThreesABI = [
             "internalType": "uint256",
             "name": "roundEndTime",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "gameStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "gameEndTime",
+            "type": "uint256"
           }
         ],
         "internalType": "struct IGame.GameInfo",

@@ -12,6 +12,8 @@ interface BidCardProps {
   isRevealing: boolean;
   onCommitBid: (amount: number) => void;
   onRevealBid: (amount: number) => void;
+  gameId?: string | number;
+  round?: string | number;
 }
 
 export default function BidCard({
@@ -22,7 +24,9 @@ export default function BidCard({
   isCommitting,
   isRevealing,
   onCommitBid,
-  onRevealBid
+  onRevealBid,
+  gameId,
+  round
 }: BidCardProps) {
   const [bidAmount, setBidAmount] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -38,18 +42,20 @@ export default function BidCard({
   };
 
   const handleBidSubmit = () => {
-    const rawBid = Number(bidAmount.replace(/,/g, ''));
-    if (!rawBid || rawBid <= 0 || rawBid > playerPoints) return;
+    if (!isValidBid || !gameId || !round) return;
     setShowConfirmation(true);
   };
 
   const handleConfirm = () => {
-    const rawBid = Number(bidAmount.replace(/,/g, ''));
+    if (!isValidBid || !gameId || !round) return;
+    const amount = parseInt(bidAmount);
+    
     if (phase === 1) {
-      onCommitBid(rawBid);
+      onCommitBid(amount);
     } else {
-      onRevealBid(rawBid);
+      onRevealBid(amount);
     }
+    setShowConfirmation(false);
   };
   
   // Determine component states

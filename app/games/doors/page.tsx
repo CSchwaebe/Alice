@@ -124,33 +124,42 @@ function DoorsGame() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative overflow-hidden bg-background">
-      {/* Main content with responsive layout */}
-      <div className="relative z-10 w-full p-4 md:flex md:flex-row md:gap-4 max-w-[1440px] mx-auto">
-        {/* Game content - takes full width on mobile, shrinks on desktop to make room for chat */}
-        <div className="w-full md:flex-1 pb-12 md:pb-0">
-          {/* Game content (rules or active game) */}
-          <GameContent 
-            gameState={gameState}
-            roundEndTime={roundEndTime}
-            currentRound={currentRound}
-            onDoorSelect={handleDoorSelect}
-          />
+    <div className="min-h-screen flex flex-col relative bg-background">
+      <div className="relative z-10 w-full p-4 lg:flex lg:flex-row lg:gap-4 max-w-[1440px] mx-auto">
+        <div className="w-full lg:flex-1">
+          <div className="mb-8">
+            <GameContent 
+              gameState={gameState}
+              roundEndTime={roundEndTime}
+              currentRound={currentRound}
+              onDoorSelect={handleDoorSelect}
+            />
+          </div>
 
           {/* Player List */}
-          <PlayerList 
-            playerList={playerList}
-            currentPlayerAddress={address}
-          />
+          <div className="w-full max-w-4xl">
+            <PlayerList 
+              playerList={playerList}
+              currentPlayerAddress={address}
+            />
+          </div>
+
+          {errorMessage && (
+            <div className="w-full max-w-4xl p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded">
+              {errorMessage}
+            </div>
+          )}
         </div>
-        
-        {/* Game Chat - Only show for active players */}
+
+        {/* Game Chat */}
         {isActivePlayer && gameId && (
-          <GameChat 
-            gameId={`doors_${gameId.toString()}`}
-            gameName="DOORS"
-            playerList={playerList}
-          />
+          <div className="w-full lg:w-96 mt-8 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
+            <GameChat 
+              gameId={`doors_${gameId.toString()}`}
+              gameName="DOORS"
+              playerList={playerList}
+            />
+          </div>
         )}
       </div>
     </div>

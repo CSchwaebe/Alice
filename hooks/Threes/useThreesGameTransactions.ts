@@ -39,7 +39,7 @@ export function useThreesGameTransactions() {
     }
   }, [isTxSuccess, hash]);
 
-  const handleCommit = useCallback(async (choice: number) => {
+  const handleCommit = useCallback(async (choice: number, gameId: string | number, round: string | number) => {
     try {
       setError(null);
       if (!address) {
@@ -52,7 +52,7 @@ export function useThreesGameTransactions() {
       const response = await fetch('/api/threes/commitment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ choice, playerAddress: address }),
+        body: JSON.stringify({ choice, playerAddress: address, gameId, round }),
       });
 
       if (!response.ok) {
@@ -76,14 +76,14 @@ export function useThreesGameTransactions() {
     }
   }, [writeContract, address]);
 
-  const handleReveal = useCallback(async (choice: number) => {
+  const handleReveal = useCallback(async (choice: number, gameId: string, round: string) => {
     try {
       setError(null);
       if (choice < 1 || choice > 3) {
         throw new Error('Choice must be between 1 and 3');
       }
 
-      const response = await fetch('/api/threes/salt', {
+      const response = await fetch(`/api/salt?gameType=threes&gameId=${gameId}&round=${round}`, {
         method: 'GET',
       });
 

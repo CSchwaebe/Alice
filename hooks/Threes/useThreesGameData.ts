@@ -18,6 +18,8 @@ export type GameInfo = {
   state: number;
   currentRound: bigint;
   roundEndTime: bigint;
+  gameStartTime: bigint;
+  gameEndTime: bigint;
 };
 
 // Type for the formatted player info we'll use in the UI

@@ -3,8 +3,6 @@ import { DescendABI } from '@/app/abis/DescendABI';
 import { useCallback, useState, useEffect } from 'react';
 import { addToast } from '@heroui/toast';
 
-const DESCEND_GAME_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`;
-
 export function useDescendGameTransactions() {
   const [error, setError] = useState<string | null>(null);
   const { address } = useAccount();
@@ -39,7 +37,7 @@ export function useDescendGameTransactions() {
     }
   }, [isTxSuccess, hash]);
 
-  const handleCommitMove = useCallback(async (move: number) => {
+  const handleCommitMove = useCallback(async (move: number, gameId: string | number, round: string | number) => {
     try {
       setError(null);
       if (!address) {
@@ -52,10 +50,7 @@ export function useDescendGameTransactions() {
       const response = await fetch('/api/descend/commitment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          move,
-          playerAddress: address 
-        }),
+        body: JSON.stringify({ move, playerAddress: address, gameId, round }),
       });
 
       if (!response.ok) {
@@ -66,7 +61,7 @@ export function useDescendGameTransactions() {
       const { commitment } = await response.json();
       
       const config = {
-        address: DESCEND_GAME_ADDRESS,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
         abi: DescendABI,
         functionName: 'commitMove',
         args: [commitment],
@@ -79,14 +74,14 @@ export function useDescendGameTransactions() {
     }
   }, [writeContract, address]);
 
-  const handleRevealMove = useCallback(async (move: number) => {
+  const handleRevealMove = useCallback(async (move: number, gameId: string | number, round: string | number) => {
     try {
       setError(null);
       if (move < 0 || move > 5) {
         throw new Error('Move must be between 0 and 5');
       }
 
-      const response = await fetch('/api/descend/salt', {
+      const response = await fetch(`/api/salt?gameType=descend&gameId=${gameId}&round=${round}`, {
         method: 'GET',
       });
 
@@ -98,7 +93,7 @@ export function useDescendGameTransactions() {
       const { formattedSalt } = await response.json();
 
       const config = {
-        address: DESCEND_GAME_ADDRESS,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
         abi: DescendABI,
         functionName: 'revealMove',
         args: [BigInt(move), formattedSalt],
@@ -115,7 +110,7 @@ export function useDescendGameTransactions() {
     try {
       setError(null);
       const config = {
-        address: DESCEND_GAME_ADDRESS,
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DESCEND as `0x${string}`,
         abi: DescendABI,
         functionName: 'endExpiredGames',
         args: [],

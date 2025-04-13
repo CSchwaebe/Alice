@@ -2,35 +2,70 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDescendGameData } from '@/hooks/Descend/useDescendGameData';
 
-export default function Rules() {
+interface RulesProps {
+  levelCapacities?: Record<number, number>;
+}
+
+export default function Rules({ levelCapacities = {} }: RulesProps) {
   const [displayText, setDisplayText] = useState("");
   const [currentLine, setCurrentLine] = useState(0);
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const getCapacityText = () => {
+    // Default values if contract data is not available
+    const defaultCapacities = {
+      0: Infinity,
+      1: 100, // Default for levels 1-20
+      21: 500
+    };
+
+    // Use contract values if available, otherwise use defaults
+    const level0Cap = levelCapacities[0] || defaultCapacities[0];
+    const level1To20Cap = levelCapacities[1] || defaultCapacities[1];
+    const level21Cap = levelCapacities[21] || defaultCapacities[21];
+
+    return [
+      "• EACH LEVEL HAS A CAP.",
+      `• LEVEL 0 - ${level0Cap === Infinity ? "UNLIMITED" : level0Cap} PLAYERS.`,
+      `• LEVELS 1-20 - ${level1To20Cap} PLAYERS.`,
+      `• LEVEL 21 - ${level21Cap} PLAYERS.`,
+      `• THE FIRST ${level21Cap} PLAYERS TO REACH LEVEL 21 ADVANCE TO THE NEXT ROUND`
+    ];
+  };
+
   const gameRulesText = [
     "DESCEND",
     "",
-    "You and your team must navigate through 21 levels of descent.",
-    "Each round, you must choose your moves carefully to survive.",
+    "You're alone in a world swallowed by shadow.",
+    "The only way out… is down.",
+    "",
+    "You can't see them, but they're there—countless others, breathing, whispering, waiting.",
+    "Every step echoes with someone else's fear. Or strategy. Or lie.",
+    "",
+    "Watch your footing.",
+    "This descent isn't just perilous… it's crowded.",
     "",
     "Rules:",
     "• EACH PLAYER STARTS AT LEVEL 0",
-    "• EACH ROUND, CHOOSE A MOVE NUMBER (0-5)",
-    "• YOUR MOVE DETERMINES YOUR FATE",
-    "• WRONG MOVES WILL LEAD TO ELIMINATION",
+    "• EACH ROUND, YOU MUST MOVE 0-5 LEVELS DOWN",
+    "• YOU CANNOT PLAY THE SAME MOVE TWICE IN A ROW",
+    "",
+    ...getCapacityText(),
+    "",
+    "***IF A LEVEL EXCEEDS CAPACITY, ALL PLAYERS ON THAT LEVEL WILL BE ELIMINATED***",
     "",
     "Game Phases:",
     "• COMMIT (5 MINUTES): Lock in your secret move",
-    "• REVEAL (2 MINUTES): Show your chosen move",
+    "• REVEAL (5 MINUTES): Show your chosen move",
     "",
     "Warnings:",
+    "• You must reveal the same move you committed to",
     "• If you do not commit or reveal in time, you will be eliminated",
-    "• Your move must match your commitment exactly",
-    "• Pay attention to your current level",
     "",
-    "The rules will not be repeated. Use the chat to coordinate with your team.",
+    "The rules will not be repeated. Use the chat to work with, or against, your opponents.",
   ];
 
   useEffect(() => {

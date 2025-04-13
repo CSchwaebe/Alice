@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { keccak256, encodePacked, stringToHex } from 'viem';
-import { formatAsBytes32 } from '@/lib/utils';
+import { keccak256, encodePacked } from 'viem';
+import { generateSaltForGameRound } from '@/lib/salt-manager';
 
 // Route handler for POST /api/bidding/commitment
 export async function POST(request: Request) {
   try {
-    const { bidAmount, playerAddress } = await request.json();
+    const { bidAmount, playerAddress, gameId, round } = await request.json();
 
     // Validate inputs
     if (typeof bidAmount !== 'number' || bidAmount <= 0) {
@@ -22,18 +22,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get salt from environment variable
-    const salt = process.env.SUPER_SECRET_SALT;
-    if (!salt) {
+    if (!gameId || !round) {
       return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
+        { error: 'Missing gameId or round parameter' },
+        { status: 400 }
       );
     }
 
+    // Generate salt for this specific game round
+    const formattedSalt = generateSaltForGameRound('bidding', gameId, round) as `0x${string}`;
+
     // Generate commitment
-    const saltHex = stringToHex(salt);
-    const formattedSalt = formatAsBytes32(saltHex);
     const encodedData = encodePacked(
       ['uint256', 'bytes32', 'address'],
       [BigInt(bidAmount), formattedSalt, playerAddress as `0x${string}`]
