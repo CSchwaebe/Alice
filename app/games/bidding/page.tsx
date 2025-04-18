@@ -19,8 +19,7 @@ import { Content } from '@/components/games/Bidding/Content';
 import PlayerList from '@/components/games/Bidding/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
-import BidCard from '@/components/games/Bidding/Game';
-import { GameTimer } from '@/components/ui/GameTimer';
+
 
 function BiddingGame() {
   const { address, isConnected } = useAccount();
@@ -85,7 +84,6 @@ function BiddingGame() {
   
   // Handle timer expiration
   const handleTimerExpired = useCallback(() => {
-    // Only show dialog if game is in active state (not pregame or completed)
     if (gameState !== 1 && gameState !== 4) {
       setShowEndGameDialog(true);
     }
@@ -95,9 +93,7 @@ function BiddingGame() {
   const handleEndGames = async () => {
     try {
       await handleEndExpiredGames();
-    } catch (err) {
-     
-    }
+    } catch (err) {}
   };
 
   // Handle transaction success/failure
@@ -144,67 +140,63 @@ function BiddingGame() {
       </div>
     );
   }
-  
+
   // Check if player is active in the game
   const isActivePlayer = playerInfo?.isActive || false;
   
+  console.log('Game State:', {
+    gameState,
+    playerList,
+    isActivePlayer
+  });
+  
   return (
-    <div className="flex flex-col min-[1000px]:flex-row w-full h-full">
-      {/* Main Game Area */}
-      <div className="flex-1 flex flex-col items-center p-4 space-y-8 w-full">
-        {gameState !== 1 && (
-          <div className="text-5xl font-bold mb-8 tracking-wider">
-            <GameTimer endTime={roundEndTime} />
+    <div className="min-h-screen flex flex-col relative bg-background">
+      <div className="relative z-10 w-full h-full p-4 lg:flex lg:flex-row lg:gap-4 max-w-[1440px] mx-auto">
+        <div className="w-full lg:flex-1">
+          <div className="mb-8">
+            <Content 
+              gameState={gameState}
+              currentRound={currentRound}
+              currentPhase={currentPhase}
+              playerPoints={playerPoints}
+              hasCommitted={hasCommitted}
+              hasRevealed={hasRevealed}
+              isCommitting={isTxPending}
+              isRevealing={isTxLoading}
+              roundEndTime={roundEndTime}
+              onCommitBid={handleBidCommit}
+              onRevealBid={handleBidReveal}
+              onTimerExpired={handleTimerExpired}
+            />
+          </div>
+
+          {/* Player List */}
+          <div className="w-full max-w-4xl">
+            <PlayerList 
+              players={playerList}
+              currentPlayerAddress={address}
+            />
+          </div>
+
+          {error && (
+            <div className="w-full max-w-4xl p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded">
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Game Chat */}
+        {isActivePlayer && gameId && (
+          <div className="w-full lg:w-96 mt-8 lg:mt-0 lg:sticky lg:top-4 h-[calc(100vh-2rem)]">
+            <GameChat 
+              gameId={`bidding_${gameId.toString()}`}
+              gameName="BIDDING"
+              playerList={playerList}
+            />
           </div>
         )}
-        
-        <BidCard
-          playerPoints={playerPoints}
-          phase={currentPhase}
-          hasCommitted={hasCommitted}
-          hasRevealed={hasRevealed}
-          isCommitting={isTxPending}
-          isRevealing={isTxLoading}
-          onCommitBid={handleBidCommit}
-          onRevealBid={handleBidReveal}
-          gameId={gameId?.toString()}
-          round={currentRound?.toString()}
-        />
-
-        {/* Game content (rules or active game) */}
-        <div className="mt-4">
-          <Content 
-            gameState={gameState}
-            currentRound={currentRound}
-            currentPhase={currentPhase}
-            playerPoints={playerPoints}
-            hasCommitted={hasCommitted}
-            hasRevealed={hasRevealed}
-            isCommitting={isTxPending}
-            isRevealing={isTxLoading}
-            roundEndTime={roundEndTime}
-            onCommitBid={handleBidCommit}
-            onRevealBid={handleBidReveal}
-            onTimerExpired={handleTimerExpired}
-          />
-        </div>
-
-        {/* Player List */}
-        <div className="mt-8">
-          <PlayerList players={playerList} />
-        </div>
       </div>
-      
-      {/* Game Chat - Only show for active players */}
-      {isActivePlayer && gameId && (
-        <div className="w-full lg:w-96 mt-8 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
-          <GameChat 
-            gameId={`bidding_${gameId.toString()}`}
-            gameName="BIDDING"
-            playerList={playerList}
-          />
-        </div>
-      )}
 
       {/* End Expired Games Dialog */}
       <ViewportDrawer

@@ -16,7 +16,7 @@ interface BidCardProps {
   round?: string | number;
 }
 
-export default function BidCard({
+export default function Game({
   playerPoints,
   phase,
   hasCommitted,

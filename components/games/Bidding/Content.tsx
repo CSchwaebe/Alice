@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import BidCard from './Game';
-import BiddingGameRules from './Rules';
+import Game from './Game';
+import Rules from './Rules';
 import { GameTimer } from '@/components/ui/GameTimer';
 
 interface BiddingGameContentProps {
@@ -41,28 +41,48 @@ export function Content({
 
   if (gameState === 1) {
     return (
-      <div className="relative">
-        <BiddingGameRules />
+      <div className="w-full">
+        <Rules />
       </div>
     );
   }
 
   return (
-    <div className="relative">
+    <div className="w-full">
       {/* Timer and round info display */}
       <div className="flex justify-center mb-8">
         <GameTimer endTime={roundEndTime} onExpired={onTimerExpired} />
       </div>
 
-      {/* Round Counter */}
-      <div className="mb-8 flex justify-center">
+      {/* Round and Phase */}
+      <div className="mb-8 flex justify-center items-center gap-4">
         <div className="text-2xl lg:text-3xl text-foreground font-bold tracking-wider">
           Round {currentRound.toString()}
         </div>
+        <div className="text-2xl lg:text-3xl text-foreground font-bold tracking-wider">
+          - {currentPhase === 1 ? 'Commit Phase' : 'Reveal Phase'}
+        </div>
       </div>
+
+      {/* Instructions */}
+      <div className="text-center mb-8">
+        <p className="text-primary-800">
+          {currentPhase === 1 
+            ? !hasCommitted
+              ? 'Enter your bid amount to commit...'
+              : 'Waiting for other players to commit their bids...'
+            : !hasCommitted
+              ? 'You missed the commit phase! Wait for the next round...'
+              : !hasRevealed
+                ? 'Enter the same bid amount to reveal...'
+                : 'Waiting for other players to reveal their bids...'}
+        </p>
+      </div>
+
+    
       
       {/* Bidding interface */}
-      <BidCard
+      <Game
         playerPoints={playerPoints}
         phase={currentPhase}
         hasCommitted={hasCommitted}

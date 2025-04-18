@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, memo } from 'react';
 import { useGameChat } from '@/hooks/useGameChat';
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronDownIcon } from '@heroicons/react/24/solid';
 
 // Isolated input component to prevent re-render issues
 const ChatInputForm = memo(({ onSendMessage, disabled }: { 
@@ -59,12 +60,81 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
   const { messages, sendMessage, currentUser, loading, loadMore, loadingMore } = useGameChat(gameId);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const lastMessageIdRef = useRef<string | null>(null);
 
-  // Scroll to bottom only on initial load
+  const isScrolledToBottom = () => {
+    if (!chatContainerRef.current) return true;
+    const { scrollHeight, scrollTop, clientHeight } = chatContainerRef.current;
+    return scrollHeight - scrollTop - clientHeight <= 50;
+  };
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+      setUnreadCount(0);
+      setIsAtBottom(true);
+    }
+  };
+
+  const handleScroll = () => {
+    setIsAtBottom(isScrolledToBottom());
+  };
+
+  // Handle new messages
+  useEffect(() => {
+    if (loading || isInitialLoad) return;
+
+    const latestMessage = messages[messages.length - 1];
+    if (!latestMessage) return;
+
+    // Check if this is actually a new message
+    if (latestMessage.id !== lastMessageIdRef.current) {
+      const container = chatContainerRef.current;
+
+      if (container) {
+        if (isAtBottom) {
+          scrollToBottom();
+        } else {
+          // Get the last message element to measure its height
+          const messageElements = container.querySelectorAll('[data-message-id]');
+          const lastMessageElement = messageElements[messageElements.length - 1];
+          
+          if (lastMessageElement) {
+            // Get the computed styles to account for margins
+            const computedStyle = window.getComputedStyle(lastMessageElement);
+            const messageHeight = lastMessageElement.getBoundingClientRect().height;
+            const marginBottom = parseFloat(computedStyle.marginBottom);
+            
+            // Instantly adjust scroll position including the margin
+            container.scrollTo({
+              top: container.scrollTop - (messageHeight + marginBottom),
+              behavior: 'instant'
+            });
+            setUnreadCount(prev => prev + 1);
+          }
+        }
+      }
+
+      lastMessageIdRef.current = latestMessage.id;
+    }
+  }, [messages, loading, isInitialLoad, isAtBottom]);
+
+  // Initial scroll and scroll event listener
   useEffect(() => {
     if (isInitialLoad && !loading && messages.length > 0 && chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      scrollToBottom();
       setIsInitialLoad(false);
+    }
+
+    const container = chatContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
     }
   }, [loading, messages.length, isInitialLoad]);
 
@@ -94,9 +164,9 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background/40 backdrop-blur-sm border border-border">
+    <div className="flex flex-col h-[calc(100vh-2rem)] bg-background/40 backdrop-blur-sm border border-border">
       {/* Chat Header */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"></div>
         <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent"></div>
         <div className="p-4 flex items-center justify-between">
@@ -111,82 +181,107 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
       </div>
 
       {/* Messages Container */}
-      <div 
-        ref={chatContainerRef}
-        className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-300 
-                   scrollbar-track-transparent p-4 space-y-4"
-      >
-        {/* Load More Button */}
-        {messages.length >= 100 && (
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={handleLoadMore}
-              disabled={loadingMore}
-              className="px-4 py-2 bg-background border border-border text-primary-400 
-                       hover:bg-foreground/10 font-mono text-sm flex items-center gap-2
-                       disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loadingMore ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin"></div>
-                  LOADING...
-                </>
-              ) : (
-                'LOAD MORE'
-              )}
-            </button>
-          </div>
-        )}
-
-        {/* Messages */}
-        {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="flex flex-col items-center gap-2">
-              <div className="animate-spin h-5 w-5 border-2 border-content-3 border-t-primary-700"></div>
-              <div className="text-xs font-mono text-primary-500">LOADING COMMS...</div>
+      <div className="flex-1 min-h-0 relative">
+        <div 
+          ref={chatContainerRef}
+          className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-primary-300 
+                     scrollbar-track-transparent p-4 space-y-4 scroll-smooth"
+        >
+          {/* Load More Button */}
+          {messages.length >= 100 && (
+            <div className="flex justify-center mb-4">
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="px-4 py-2 bg-background border border-border text-primary-400 
+                         hover:bg-foreground/10 font-mono text-sm flex items-center gap-2
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingMore ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin"></div>
+                    LOADING...
+                  </>
+                ) : (
+                  'LOAD MORE'
+                )}
+              </button>
             </div>
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center gap-2">
-            <div className="text-primary-500 font-mono text-sm">COMMS ONLINE</div>
-            <div className="text-primary-400 font-mono text-xs">AWAITING TRANSMISSION</div>
-          </div>
-        ) : (
-          messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`flex ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[80%] ${msg.sender === currentUser ? 'text-right' : ''}`}>
-                <div className={`inline-block p-3 font-mono ${
-                  msg.sender === currentUser
-                    ? 'bg-content-2 border border-border'
-                    : 'bg-content-1 border border-border'
-                }`}>
-                  {msg.sender !== currentUser && (
-                    <div className="text-xs text-primary-700 mb-1">
-                      #{getPlayerNumber(msg.sender)}
+          )}
+
+          {/* Messages */}
+          {loading ? (
+            <div className="flex justify-center items-center h-full">
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin h-5 w-5 border-2 border-content-3 border-t-primary-700"></div>
+                <div className="text-xs font-mono text-primary-500">LOADING COMMS...</div>
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center gap-2">
+              <div className="text-primary-500 font-mono text-sm">COMMS ONLINE</div>
+              <div className="text-primary-400 font-mono text-xs">AWAITING TRANSMISSION</div>
+            </div>
+          ) : (
+            messages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                data-message-id={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`max-w-[80%] ${msg.sender === currentUser ? 'text-right' : ''}`}>
+                  <div className={`inline-block p-3 font-mono ${
+                    msg.sender === currentUser
+                      ? 'bg-content-2 border border-border'
+                      : 'bg-content-1 border border-border'
+                  }`}>
+                    {msg.sender !== currentUser && (
+                      <div className="text-xs text-primary-700 mb-1">
+                        #{getPlayerNumber(msg.sender)}
+                      </div>
+                    )}
+                    <div className="text-sm text-foreground">{msg.content}</div>
+                    <div className="text-xs text-primary-400 mt-1">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                      })}
                     </div>
-                  )}
-                  <div className="text-sm text-foreground">{msg.content}</div>
-                  <div className="text-xs text-primary-400 mt-1">
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: false
-                    })}
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          ))
-        )}
+              </motion.div>
+            ))
+          )}
+        </div>
+
+        {/* New Messages Button */}
+        <AnimatePresence>
+          {!isAtBottom && unreadCount > 0 && (
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center z-50">
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                onClick={scrollToBottom}
+                className="bg-foreground text-background px-4 py-2 rounded-full shadow-lg 
+                          flex items-center gap-2 hover:bg-foreground/90
+                          transition-colors font-mono text-sm"
+              >
+                <span>{unreadCount} New Messages</span>
+                <ChevronDownIcon className="w-4 h-4" />
+              </motion.button>
+            </div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Input Form */}
-      <ChatInputForm onSendMessage={sendMessage} disabled={loading} />
+      <div className="flex-shrink-0">
+        <ChatInputForm onSendMessage={sendMessage} disabled={loading} />
+      </div>
     </div>
   );
 } 

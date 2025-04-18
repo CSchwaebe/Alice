@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, memo } from 'react';
 import { useGameChat, ChatMessage } from '@/hooks/useGameChat';
-import { PaperAirplaneIcon, XMarkIcon, ArrowUpIcon } from '@heroicons/react/24/solid';
+import { PaperAirplaneIcon, XMarkIcon, ArrowUpIcon, ChevronDownIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Isolated input component to prevent re-render issues
@@ -59,18 +59,139 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const mobileChatContainerRef = useRef<HTMLDivElement>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isAtBottom, setIsAtBottom] = useState(true);
+  const [isMobileAtBottom, setIsMobileAtBottom] = useState(true);
+  const lastMessageIdRef = useRef<string | null>(null);
+  const messageHeightsRef = useRef<Map<string, number>>(new Map());
 
-  // Scroll to bottom only on initial load
+  const isScrolledToBottom = (container: HTMLDivElement) => {
+    const { scrollHeight, scrollTop, clientHeight } = container;
+    const atBottom = scrollHeight - scrollTop - clientHeight <= 50;
+    return atBottom;
+  };
+
+  const scrollToBottom = (container: HTMLDivElement | null) => {
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth'
+      });
+      setUnreadCount(0);
+      if (container === chatContainerRef.current) {
+        setIsAtBottom(true);
+      } else if (container === mobileChatContainerRef.current) {
+        setIsMobileAtBottom(true);
+      }
+    }
+  };
+
+  const handleScroll = (e: Event) => {
+    const container = e.target as HTMLDivElement;
+    if (container === chatContainerRef.current) {
+      setIsAtBottom(isScrolledToBottom(container));
+    } else if (container === mobileChatContainerRef.current) {
+      setIsMobileAtBottom(isScrolledToBottom(container));
+    }
+  };
+
+  // Track message heights for scroll adjustment
+  useEffect(() => {
+    const updateMessageHeights = () => {
+      const container = chatContainerRef.current;
+      const mobileContainer = mobileChatContainerRef.current;
+      
+      if (container || mobileContainer) {
+        const messageElements = (container || mobileContainer)?.querySelectorAll('[data-message-id]');
+        messageElements?.forEach((el) => {
+          const messageId = el.getAttribute('data-message-id');
+          if (messageId) {
+            messageHeightsRef.current.set(messageId, el.getBoundingClientRect().height);
+          }
+        });
+      }
+    };
+
+    updateMessageHeights();
+  }, [messages]);
+
+  // Handle new messages
+  useEffect(() => {
+    if (loading || isInitialLoad) return;
+
+    const latestMessage = messages[messages.length - 1];
+    if (!latestMessage) return;
+
+    // Check if this is actually a new message
+    if (latestMessage.id !== lastMessageIdRef.current) {
+      const desktopContainer = chatContainerRef.current;
+      const mobileContainer = mobileChatContainerRef.current;
+
+      // Immediately adjust scroll before the new message is rendered
+      const adjustScroll = (container: HTMLDivElement | null, isAtBottom: boolean) => {
+        if (!container) return;
+        
+        if (isAtBottom) {
+          scrollToBottom(container);
+        } else {
+          // Get the last message element to measure its height
+          const messageElements = container.querySelectorAll('[data-message-id]');
+          const lastMessageElement = messageElements[messageElements.length - 1];
+          
+          if (lastMessageElement) {
+            // Get the computed styles to account for margins
+            const computedStyle = window.getComputedStyle(lastMessageElement);
+            const messageHeight = lastMessageElement.getBoundingClientRect().height;
+            const marginBottom = parseFloat(computedStyle.marginBottom);
+            
+            // Instantly adjust scroll position including the margin
+            container.scrollTo({
+              top: container.scrollTop - (messageHeight + marginBottom),
+              behavior: 'instant'
+            });
+          }
+        }
+      };
+
+      // Adjust scroll for both containers
+      adjustScroll(desktopContainer, isAtBottom);
+      adjustScroll(mobileContainer, isMobileAtBottom);
+
+      // Update unread count if not at bottom
+      if (!isAtBottom || !isMobileAtBottom) {
+        setUnreadCount(prev => prev + 1);
+      }
+
+      lastMessageIdRef.current = latestMessage.id;
+    }
+  }, [messages, loading, isInitialLoad, isAtBottom, isMobileAtBottom]);
+
+  // Initial scroll and scroll event listeners
   useEffect(() => {
     if (isInitialLoad && !loading && messages.length > 0) {
-      if (chatContainerRef.current) {
-        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-      }
-      if (mobileChatContainerRef.current) {
-        mobileChatContainerRef.current.scrollTop = mobileChatContainerRef.current.scrollHeight;
-      }
+      scrollToBottom(chatContainerRef.current);
+      scrollToBottom(mobileChatContainerRef.current);
       setIsInitialLoad(false);
     }
+
+    const desktopContainer = chatContainerRef.current;
+    const mobileContainer = mobileChatContainerRef.current;
+
+    if (desktopContainer) {
+      desktopContainer.addEventListener('scroll', handleScroll);
+    }
+    if (mobileContainer) {
+      mobileContainer.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (desktopContainer) {
+        desktopContainer.removeEventListener('scroll', handleScroll);
+      }
+      if (mobileContainer) {
+        mobileContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, [loading, messages.length, isInitialLoad]);
 
   const handleLoadMore = async () => {
@@ -105,7 +226,10 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
   };
 
   const MessageBubble = ({ message, isCurrentUser }: { message: ChatMessage; isCurrentUser: boolean }) => (
-    <div className={`flex mb-3 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
+    <div 
+      data-message-id={message.id}
+      className={`flex mb-3 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+    >
       <div className={`max-w-[80%] p-3 ${
         isCurrentUser 
           ? 'bg-content-2 border border-border text-foreground' 
@@ -169,7 +293,7 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
             key={msg.id}
             message={{
               ...msg,
-              senderName: `${getPlayerNumber(msg.sender)}`
+              senderName: `#${getPlayerNumber(msg.sender).padStart(3, '0')}`
             }}
             isCurrentUser={msg.sender === currentUser}
           />
@@ -181,9 +305,9 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
   return (
     <>
       {/* Desktop Chat */}
-      <div className="hidden min-[1000px]:flex flex-col h-full bg-background backdrop-blur-sm border border-border">
+      <div className="hidden min-[1000px]:flex flex-col h-[calc(100vh-2rem)] bg-background backdrop-blur-sm border border-border">
         {/* Chat Header with corner accents */}
-        <div className="relative bg-background p-3 border-b border-border flex justify-between items-center">
+        <div className="relative bg-background p-3 border-b border-border flex justify-between items-center flex-shrink-0">
           {/* Corner accents */}
           <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary-500"></div>
           <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary-500"></div>
@@ -196,13 +320,35 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
           </div>
         </div>
         
-        {/* Messages */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 bg-background overscroll-contain">
-          {renderMessages()}
+        {/* Messages Container */}
+        <div className="flex-1 min-h-0 relative">
+          <div ref={chatContainerRef} className="absolute inset-0 overflow-y-auto scroll-smooth">
+            {renderMessages()}
+          </div>
+          
+          {/* New Messages Button */}
+          <AnimatePresence>
+            {unreadCount > 0 && !isAtBottom && (
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center z-50">
+                <motion.button
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  onClick={() => scrollToBottom(chatContainerRef.current)}
+                  className="bg-foreground text-background px-4 py-2 rounded-full shadow-lg 
+                            flex items-center gap-2 hover:bg-foreground/90
+                            transition-colors font-mono text-sm"
+                >
+                  <span>{unreadCount} New Messages</span>
+                  <ChevronDownIcon className="w-4 h-4" />
+                </motion.button>
+              </div>
+            )}
+          </AnimatePresence>
         </div>
         
         {/* Input with bottom corner accents */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary-500"></div>
           <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary-500"></div>
           <ChatInputForm onSendMessage={sendMessage} disabled={loading} />
@@ -220,17 +366,39 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
               transition={{ duration: 0.2 }}
               className="bg-background border-t border-border shadow-[0_-5px_15px_rgba(0,0,0,0.7)]"
             >
-              <div className="max-h-[50vh] flex flex-col relative">
+              <div className="h-[50vh] flex flex-col relative">
                 {/* Corner accents for mobile expanded view */}
                 <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-primary-500 z-10"></div>
                 <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary-500 z-10"></div>
                 
                 {/* Make messages container flexible and scrollable */}
-                <div ref={mobileChatContainerRef} className="flex-1 overflow-y-auto touch-auto -webkit-overflow-scrolling-touch">
-                  {renderMessages()}
+                <div className="flex-1 min-h-0 relative">
+                  <div ref={mobileChatContainerRef} className="absolute inset-0 overflow-y-auto scroll-smooth">
+                    {renderMessages()}
+                  </div>
+                  
+                  {/* Mobile New Messages Button */}
+                  <AnimatePresence>
+                    {unreadCount > 0 && !isMobileAtBottom && (
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center z-50">
+                        <motion.button
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 20 }}
+                          onClick={() => scrollToBottom(mobileChatContainerRef.current)}
+                          className="bg-foreground text-background px-4 py-2 rounded-full shadow-lg 
+                                    flex items-center gap-2 hover:bg-foreground/90
+                                    transition-colors font-mono text-sm"
+                        >
+                          <span>{unreadCount} NEW</span>
+                          <ChevronDownIcon className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    )}
+                  </AnimatePresence>
                 </div>
                 
-                <div className="relative">
+                <div className="relative flex-shrink-0">
                   <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary-500"></div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-primary-500"></div>
                   <ChatInputForm onSendMessage={sendMessage} disabled={loading} />

@@ -7,10 +7,11 @@ import { DoorsABI } from '@/app/abis/DoorsABI';
 import { ThreesABI } from '@/app/abis/ThreesABI';
 import { BiddingABI } from '@/app/abis/BiddingABI';
 import { DescendABI } from '@/app/abis/DescendABI';
+import { EquilibriumABI } from '@/app/abis/EquilibriumABI';
 import { Log, decodeEventLog } from 'viem';
 
 // Define contract names
-export type ContractName = 'GameMaster' | 'Doors' | 'Threes' | 'Bidding' | 'Descend';
+export type ContractName = 'GameMaster' | 'Doors' | 'Threes' | 'Bidding' | 'Descend' | 'Equilibrium';
 
 // Define all the possible event types we'll handle
 export type ContractEventType = {
@@ -47,6 +48,14 @@ export type ContractEventType = {
     | 'PlayerEliminated'
     | 'PlayerMoved'
     | 'LevelElimination'
+    | 'GameCompleted'
+
+    // Equilibrium events
+    | 'GameInitialized'
+    | 'GameStarted'
+    | 'PlayerEliminated'
+    | 'PlayerSwitchedTeam'
+    | 'TeamEliminated'
     | 'GameCompleted';
 };
 
@@ -106,7 +115,8 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
                   contractType === 'Doors' ? DoorsABI :
                   contractType === 'Threes' ? ThreesABI :
                   contractType === 'Bidding' ? BiddingABI :
-                  contractType === 'Descend' ? DescendABI : null;
+                  contractType === 'Descend' ? DescendABI :
+                  contractType === 'Equilibrium' ? EquilibriumABI : null;
       
       if (!abi) {
         console.error('Unknown contract type:', contractType);
@@ -445,8 +455,61 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
           })
         ]);
 
+        // Subscribe to Equilibrium events
+        const equilibriumAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDR_EQUILIBRIUM as `0x${string}`;
+        const equilibriumUnsubscribes = await Promise.all([
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'GameInitialized',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'GameInitialized'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'GameStarted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'GameStarted'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'PlayerEliminated',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'PlayerEliminated'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'PlayerSwitchedTeam',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'PlayerSwitchedTeam'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'TeamEliminated',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'TeamEliminated'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: equilibriumAddress,
+            abi: EquilibriumABI,
+            eventName: 'GameCompleted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, equilibriumAddress, 'Equilibrium', 'GameCompleted'));
+            }
+          })
+        ]);
+
         // Store unsubscribe functions
-        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes, ...threesUnsubscribes, ...biddingUnsubscribes, ...descendUnsubscribes];
+        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes, ...threesUnsubscribes, ...biddingUnsubscribes, ...descendUnsubscribes, ...equilibriumUnsubscribes];
       } catch (error) {
         console.error('Error setting up event subscriptions:', error);
       }

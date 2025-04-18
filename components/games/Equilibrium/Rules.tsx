@@ -9,33 +9,24 @@ export default function Rules() {
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Prevent scroll on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const gameRulesText = [
-    "BIDDING",
+    "EQUILIBRIUM",
     "",
-    "You will participate in a deadly auction.",
-    "The player with the lowest bid in each round will be eliminated.",
+    "A game of strategy, deception, and collective survival.",
+    "Unity is strength, but time forces division.",
     "",
     "Rules:",
-    "• EACH PLAYER STARTS WITH 100,000,000 POINTS",
-    "• EACH ROUND, ALL PLAYERS MUST PLACE A SECRET BID",
-    "• THE PLAYER WITH THE LOWEST BID WILL BE ELIMINATED",
-    "• IF MULTIPLE PLAYERS PLACE THE SAME LOWEST BID, ALL ARE ELIMINATED",
+    "• There are 4 teams in the game",
+    "• All players start on the same team",
+    "• Players can switch between teams freely",
+    "• Switch as many times as you want before time runs out",
     "",
-    "Game Phases:",
-    "• COMMIT (5 MINUTES): Lock in your secret bid",
-    "• REVEAL (2 MINUTES): Show your bid amount",
+    "Victory & Elimination:",
+    "• When time expires, the team with the most players is eliminated",
+    "• Everyone can survive if they work together",
+    "• Your choices shape the fate of all",
     "",
-    "Warnings:",
-    "• If you do not commit or reveal in time, you will be eliminated",
-    "• Your bid will be deducted from your total points after reveal",
-    "• In case of a tie, all players with the lowest bid are eliminated",
-    "",
-    "The rules will not be repeated. Use the chat to coordinate with your team.",
+    "The rules will not be repeated. Use the chat to coordinate with or deceive your opponents.",
   ];
 
   useEffect(() => {
@@ -79,7 +70,7 @@ export default function Rules() {
       return `<span class="text-primary-800">${line}</span>`;
     } else if (line.startsWith("The rules")) {
       return `<span class="text-primary-600 font-semibold">${line}</span>`;
-    } else if (line.startsWith("Rules:") || line.startsWith("Game Phases:") || line.startsWith("Warnings:")) {
+    } else if (line.startsWith("Rules:") || line.startsWith("Warnings:")) {
       return `<span class="text-primary-900 font-semibold">${line}</span>`;
     }
     return `<span class="text-primary-700">${line}</span>`;
