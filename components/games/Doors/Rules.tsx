@@ -82,11 +82,11 @@ export default function GameRules() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative max-w-4xl mx-auto mt-4"
+        className="relative w-full max-w-4xl mx-auto"
       >
         <div 
           ref={containerRef}
-          className="relative bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg 
+          className="relative w-full bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg 
                      shadow-glow-sm backdrop-blur-sm"
         >
           <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary-200"></div>
@@ -95,7 +95,7 @@ export default function GameRules() {
           <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-primary-200"></div>
           
           <pre 
-            className="font-mono text-sm text-primary-700 whitespace-pre-wrap break-words"
+            className="w-full font-mono text-sm text-primary-700 whitespace-pre-wrap break-words"
             dangerouslySetInnerHTML={{ __html: styledText }}
           />
           

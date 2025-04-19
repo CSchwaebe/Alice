@@ -82,7 +82,11 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
   };
 
   const handleScroll = () => {
-    setIsAtBottom(isScrolledToBottom());
+    const atBottom = isScrolledToBottom();
+    setIsAtBottom(atBottom);
+    if (atBottom) {
+      setUnreadCount(0);
+    }
   };
 
   // Handle new messages
@@ -92,7 +96,6 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
     const latestMessage = messages[messages.length - 1];
     if (!latestMessage) return;
 
-    // Check if this is actually a new message
     if (latestMessage.id !== lastMessageIdRef.current) {
       const container = chatContainerRef.current;
 
@@ -100,21 +103,41 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
         if (isAtBottom) {
           scrollToBottom();
         } else {
-          // Get the last message element to measure its height
           const messageElements = container.querySelectorAll('[data-message-id]');
-          const lastMessageElement = messageElements[messageElements.length - 1];
           
-          if (lastMessageElement) {
-            // Get the computed styles to account for margins
-            const computedStyle = window.getComputedStyle(lastMessageElement);
-            const messageHeight = lastMessageElement.getBoundingClientRect().height;
-            const marginBottom = parseFloat(computedStyle.marginBottom);
-            
-            // Instantly adjust scroll position including the margin
-            container.scrollTo({
-              top: container.scrollTop - (messageHeight + marginBottom),
-              behavior: 'instant'
-            });
+          // Store the position of a reference message before adding new message
+          const visibleMessages = Array.from(messageElements).filter(msg => {
+            const rect = msg.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            return rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
+          });
+          
+          if (visibleMessages.length > 0) {
+            const referenceMessage = visibleMessages[0];
+            const refRect = referenceMessage.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const initialOffset = refRect.top - containerRect.top;
+
+            // If we're at or above the message limit, just maintain position
+            if (messages.length >= 100 && messageElements.length >= 100) {
+              container.scrollTo({
+                top: container.scrollTop,
+                behavior: 'instant'
+              });
+            } else {
+              // Wait a tick for the new message to be rendered and measured
+              requestAnimationFrame(() => {
+                const newRefRect = referenceMessage.getBoundingClientRect();
+                const newContainerRect = container.getBoundingClientRect();
+                const newOffset = newRefRect.top - newContainerRect.top;
+                const adjustment = newOffset - initialOffset;
+
+                container.scrollTo({
+                  top: container.scrollTop + adjustment,
+                  behavior: 'instant'
+                });
+              });
+            }
             setUnreadCount(prev => prev + 1);
           }
         }
@@ -151,7 +174,10 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
       if (chatContainerRef.current) {
         const newScrollHeight = chatContainerRef.current.scrollHeight;
         const addedHeight = newScrollHeight - scrollHeight;
-        chatContainerRef.current.scrollTop += addedHeight;
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollTop + addedHeight,
+          behavior: 'instant'
+        });
       }
     });
   };
@@ -164,7 +190,7 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-2rem)] bg-background/40 backdrop-blur-sm border border-border">
+    <div className="flex flex-col h-[600px] bg-background/40 backdrop-blur-sm border border-border">
       {/* Chat Header */}
       <div className="relative flex-shrink-0">
         <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500 to-transparent"></div>
@@ -232,7 +258,7 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
                 className={`flex ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-[80%] ${msg.sender === currentUser ? 'text-right' : ''}`}>
-                  <div className={`inline-block p-3 font-mono ${
+                  <div className={`inline-block p-3 font-mono max-w-full break-all ${
                     msg.sender === currentUser
                       ? 'bg-content-2 border border-border'
                       : 'bg-content-1 border border-border'
@@ -242,7 +268,9 @@ export default function LobbyChat({ gameId, playerList }: LobbyChatProps) {
                         #{getPlayerNumber(msg.sender)}
                       </div>
                     )}
-                    <div className="text-sm text-foreground">{msg.content}</div>
+                    <div className="text-sm text-foreground break-all whitespace-pre-wrap">
+                      {msg.content}
+                    </div>
                     <div className="text-xs text-primary-400 mt-1">
                       {new Date(msg.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',

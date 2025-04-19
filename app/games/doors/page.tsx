@@ -14,7 +14,7 @@ import { useDoorsGameTransactions } from '@/hooks/Doors/useDoorsGameTransactions
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 
 // Import components
-import GameContent from '@/components/games/Doors/Content';
+import Content from '@/components/games/Doors/Content';
 import PlayerList from '@/components/games/Doors/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
@@ -41,12 +41,10 @@ function DoorsGame() {
   // Handle transactions
   const {
     handleDoorSelect,
-    txStatus,
-    errorMessage,
+    error,
     isPending,
     isWaitingTx,
-    setTxStatus,
-    setErrorMessage
+    isSuccess
   } = useDoorsGameTransactions(gameId, refetchPlayerInfo, refetchGameInfo);
   
   // Add notification handler
@@ -57,20 +55,20 @@ function DoorsGame() {
   
   // Handle transaction notifications
   useEffect(() => {
-    if (errorMessage) {
+    if (error) {
       addToast({
         title: 'Transaction Failed',
-        description: errorMessage,
+        description: error,
         color: 'danger',
         timeout: 1000,
       });
     }
-  }, [errorMessage]);
+  }, [error]);
 
   // Handle transaction success
   useEffect(() => {
-    if (!isPending && !isWaitingTx && !errorMessage) {
-      if (txStatus === 'success') {
+    if (!isPending && !isWaitingTx && !error) {
+      if (isSuccess) {
         addToast({
           title: 'Door Selection Successful',
           description: 'Your door has been selected!',
@@ -79,7 +77,7 @@ function DoorsGame() {
         });
       }
     }
-  }, [isPending, isWaitingTx, errorMessage, txStatus]);
+  }, [isPending, isWaitingTx, error, isSuccess]);
   
   // Subscribe to game events and get notifications
   useDoorsGameEvents({
@@ -89,8 +87,6 @@ function DoorsGame() {
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
-    setTxStatus,
-    setErrorMessage,
     onNotification: handleNotification
   });
   
@@ -126,9 +122,9 @@ function DoorsGame() {
   return (
     <div className="min-h-screen flex flex-col relative bg-background">
       <div className="relative z-10 w-full p-4 lg:flex lg:flex-row lg:gap-4 max-w-[1440px] mx-auto">
-        <div className="w-full lg:flex-1">
-          <div className="mb-8">
-            <GameContent 
+        <div className="w-full lg:flex-1 lg:flex lg:flex-col">
+          <div>
+            <Content 
               gameState={gameState}
               roundEndTime={roundEndTime}
               currentRound={currentRound}
@@ -137,16 +133,16 @@ function DoorsGame() {
           </div>
 
           {/* Player List */}
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-4xl mt-8">
             <PlayerList 
               playerList={playerList}
               currentPlayerAddress={address}
             />
           </div>
 
-          {errorMessage && (
+          {error && (
             <div className="w-full max-w-4xl p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded">
-              {errorMessage}
+              {error}
             </div>
           )}
         </div>

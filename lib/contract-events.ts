@@ -631,7 +631,7 @@ export function createEventHandler(
           
           onNotification?.({
             title: 'Round Started',
-            description: `Round ${roundNumber.toString()} has started!'}`,
+            description: `Round ${roundNumber.toString()} has started!${(phase === 1 || phase === 2) ? ` ${phase === 1 ? '(Commit Phase)' : '(Reveal Phase)'}` : ''}`,
             color: 'primary',
             timeout: 1000,
           });

@@ -29,7 +29,6 @@ export default function Game({
   round
 }: BidCardProps) {
   const [bidAmount, setBidAmount] = useState<string>('');
-  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Format number with commas and handle input validation
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,20 +41,14 @@ export default function Game({
   };
 
   const handleBidSubmit = () => {
-    if (!isValidBid || !gameId || !round) return;
-    setShowConfirmation(true);
-  };
-
-  const handleConfirm = () => {
-    if (!isValidBid || !gameId || !round) return;
-    const amount = parseInt(bidAmount);
+    if (!isValidBid) return;
+    const amount = parseInt(bidAmount.replace(/,/g, ''));
     
     if (phase === 1) {
       onCommitBid(amount);
     } else {
       onRevealBid(amount);
     }
-    setShowConfirmation(false);
   };
   
   // Determine component states
@@ -165,9 +158,9 @@ export default function Game({
         <button
           onClick={handleBidSubmit}
           disabled={isDisabled || isPending || !isValidBid}
-          className="w-full bg-primary-400 text-background py-3 rounded-lg
+          className="w-full bg-foreground text-background py-3 rounded-lg
                    font-mono tracking-widest text-lg
-                   hover:bg-primary-200 transition-colors duration-200
+                   hover:bg-foreground transition-colors duration-200
                    disabled:bg-overlay-light disabled:text-primary-200"
         >
           {buttonText}
@@ -178,21 +171,6 @@ export default function Game({
           v2.4.7
         </div>
       </div>
-
-      {/* Confirmation Popup */}
-      <ViewportDrawer
-        isOpen={showConfirmation}
-        onClose={() => setShowConfirmation(false)}
-        onConfirmClick={handleConfirm}
-        title={phase === 1 ? "Confirm Bid Commitment" : "Confirm Bid Reveal"}
-        description={
-          phase === 1 
-            ? `Are you sure you want to commit a bid of ${bidAmount}? This will be kept secret until the reveal phase.` 
-            : `Are you sure you want to reveal a bid of ${bidAmount}? Make sure this matches your committed bid amount!`
-        }
-        confirmText="Confirm"
-        cancelText="Cancel"
-      />
     </div>
   );
 } 

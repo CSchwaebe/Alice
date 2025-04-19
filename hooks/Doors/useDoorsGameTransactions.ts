@@ -8,14 +8,13 @@ export function useDoorsGameTransactions(
   refetchPlayerInfo: () => void,
   refetchGameInfo: () => void
 ) {
-  const [txStatus, setTxStatus] = useState<'none' | 'pending' | 'success' | 'error'>('none');
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
 
   // Contract write hook
   const { writeContract, isPending, data: hash } = useWriteContract();
 
   // Transaction wait hook
-  const { isLoading: isWaitingTx, isSuccess: isTxSuccess, isError: isTxError } = useWaitForTransactionReceipt({
+  const { isLoading: isWaitingTx, isSuccess: isTxSuccess } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -24,61 +23,54 @@ export function useDoorsGameTransactions(
     if (!gameId) return;
 
     try {
-      setTxStatus('pending');
+      setError(null);
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_DOORS as `0x${string}`,
         abi: DoorsABI,
         functionName: 'openDoor',
         args: [],
+        gas: BigInt(3000000),
       });
-    } catch (error) {
-      console.error('Error opening door:', error);
-      setTxStatus('error');
-      setErrorMessage('Failed to open door. Please try again.');
+    } catch (err) {
+      console.error('Error opening door:', err);
+      setError(err instanceof Error ? err.message : 'Failed to open door');
     }
   };
 
-  // Watch for transaction status and handle notifications
+  // Handle transaction error notifications
   useEffect(() => {
-    if (isTxSuccess) {
-      setTxStatus('success');
+    if (error) {
+      addToast({
+        title: 'Transaction Failed',
+        description: error,
+        color: 'danger',
+        timeout: 1000,
+      });
+    }
+  }, [error]);
+
+  // Handle transaction success notifications
+  useEffect(() => {
+    if (isTxSuccess && hash) {
+      setError(null);
       console.log('Transaction success, refetching data');
-      // Refetch player info and game info
       refetchPlayerInfo();
       refetchGameInfo();
       
-      // Show success toast
       addToast({
         title: 'Door Selection Successful',
         description: 'Your door has been selected!',
         color: 'success',
         timeout: 1000,
       });
-    } else if (isTxError) {
-      setTxStatus('error');
-      setErrorMessage('Transaction failed. Please try again.');
     }
-  }, [isTxSuccess, isTxError, refetchPlayerInfo, refetchGameInfo]);
-
-  // Handle error notifications
-  useEffect(() => {
-    if (errorMessage) {
-      addToast({
-        title: 'Transaction Failed',
-        description: errorMessage,
-        color: 'danger',
-        timeout: 1000,
-      });
-    }
-  }, [errorMessage]);
+  }, [isTxSuccess, hash, refetchPlayerInfo, refetchGameInfo]);
 
   return {
     handleDoorSelect,
-    txStatus,
-    errorMessage,
+    error,
     isPending,
     isWaitingTx,
-    setTxStatus,
-    setErrorMessage
+    isSuccess: isTxSuccess
   };
 } 

@@ -1,4 +1,4 @@
-export const ThreesABI = [
+export const ThreesABI =  [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -183,6 +183,12 @@ export const ThreesABI = [
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "phase",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "endTime",
         "type": "uint256"
       }
@@ -257,6 +263,25 @@ export const ThreesABI = [
         "internalType": "address[]",
         "name": "",
         "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "gameId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getCurrentPhase",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",

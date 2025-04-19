@@ -49,6 +49,13 @@ export function useThreesGameTransactions() {
         throw new Error('Choice must be between 1 and 3');
       }
 
+      console.log('🎮 Committing choice:', {
+        choice,
+        gameId,
+        round,
+        playerAddress: address
+      });
+
       const response = await fetch('/api/threes/commitment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,6 +69,11 @@ export function useThreesGameTransactions() {
 
       const { commitment } = await response.json();
       
+      console.log('📝 Generated commitment:', {
+        commitment,
+        choice
+      });
+
       const config = {
         address: THREES_GAME_ADDRESS,
         abi: ThreesABI,
@@ -83,6 +95,12 @@ export function useThreesGameTransactions() {
         throw new Error('Choice must be between 1 and 3');
       }
 
+      console.log('🎮 Revealing choice:', {
+        choice,
+        gameId,
+        round
+      });
+
       const response = await fetch(`/api/salt?gameType=threes&gameId=${gameId}&round=${round}`, {
         method: 'GET',
       });
@@ -94,6 +112,11 @@ export function useThreesGameTransactions() {
 
       const { formattedSalt } = await response.json();
 
+      console.log('🔑 Retrieved salt:', {
+        formattedSalt,
+        choice
+      });
+
       const config = {
         address: THREES_GAME_ADDRESS,
         abi: ThreesABI,
@@ -101,9 +124,14 @@ export function useThreesGameTransactions() {
         args: [BigInt(choice), formattedSalt],
       } as const;
 
+      console.log('📝 Sending reveal transaction with args:', {
+        choice: BigInt(choice),
+        salt: formattedSalt
+      });
+
       writeContract(config);
     } catch (err) {
-      console.error('Reveal error:', err);
+      console.error('❌ Reveal error:', err);
       setError(err instanceof Error ? err.message : 'Failed to reveal choice');
     }
   }, [writeContract]);

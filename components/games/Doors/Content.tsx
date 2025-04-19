@@ -19,7 +19,7 @@ export default function GameContent({
   if (gameState === 1) {
     // Pre-game state - show game rules
     return (
-      <div className="relative">
+      <div className="flex flex-col items-center justify-start w-full">
         <GameRules />
       </div>
     );

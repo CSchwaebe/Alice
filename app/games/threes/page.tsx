@@ -7,9 +7,10 @@ import { useThreesGameEvents } from '@/hooks/Threes/useThreesGameEvents';
 import { useThreesGameTransactions } from '@/hooks/Threes/useThreesGameTransactions';
 import { GameTimer } from "@/components/ui/GameTimer";
 import GameChat from "@/components/chat/GameChat";
+import MobileChat from "@/components/chat/MobileChat";
 import { PlayerList } from "@/components/games/Threes/PlayerList";
 import { LoadingScreen } from "@/components/games/LoadingScreen";
-import { ThreesGameContent } from "@/components/games/Threes/ThreesGameContent";
+import { Content } from "@/components/games/Threes/Content";
 import { GameCompletionScreen } from "@/components/games/GameCompletionScreen";
 import { Silkscreen } from 'next/font/google';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
@@ -33,12 +34,14 @@ function ThreesGame() {
     roundEndTime,
     gameState,
     currentRound,
+    currentPhase,
     hasCommitted,
     hasRevealed,
     refetchGameInfo,
     refetchPlayerInfo,
     setCurrentRound,
-    setRoundEndTime
+    setRoundEndTime,
+    setCurrentPhase
   } = useThreesGameData({ address, isConnected });
 
   const {
@@ -62,6 +65,7 @@ function ThreesGame() {
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
+    setCurrentPhase,
     onNotification: handleNotification
   });
 
@@ -93,9 +97,10 @@ function ThreesGame() {
           </div>
         )}
         
-        <ThreesGameContent
+        <Content
           gameState={gameState}
           currentRound={currentRound}
+          currentPhase={currentPhase}
           hasCommitted={hasCommitted}
           hasRevealed={hasRevealed}
           isCommitting={isTxPending}
@@ -117,12 +122,21 @@ function ThreesGame() {
         )}
       </div>
 
-      {/* Right Sidebar - Chat */}
-      <div className="w-full min-[1000px]:w-96 p-4">
+      {/* Right Sidebar - Desktop Chat */}
+      <div className="hidden min-[1000px]:block w-full min-[1000px]:w-96 p-4">
         <GameChat 
-          gameId={gameId?.toString() || ''} 
+          gameId={gameId ? `threes_${gameId.toString()}` : ''} 
           playerList={playerList}
-          gameName="threes"
+          gameName="THREES"
+        />
+      </div>
+
+      {/* Mobile Chat */}
+      <div className="min-[1000px]:hidden">
+        <MobileChat 
+          gameId={gameId ? `threes_${gameId.toString()}` : ''} 
+          playerList={playerList}
+          gameName="THREES"
         />
       </div>
     </div>

@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from 'react';
-import AnimatedSymbols from './AnimatedSymbols';
+import Game from './Game';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 import { motion } from 'framer-motion';
-import ThreesGameRules from './ThreesGameRules';
+import ThreesGameRules from './Rules';
 
 export interface ThreesGameContentProps {
   gameState: number;
   currentRound: bigint;
+  currentPhase: number;
   hasCommitted: boolean;
   hasRevealed: boolean;
   isCommitting: boolean;
@@ -18,9 +19,10 @@ export interface ThreesGameContentProps {
   gameId?: string | number;
 }
 
-export function ThreesGameContent({
+export function Content({
   gameState,
   currentRound,
+  currentPhase,
   hasCommitted,
   hasRevealed,
   isCommitting,
@@ -32,13 +34,14 @@ export function ThreesGameContent({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedSymbol, setSelectedSymbol] = useState<number | null>(null);
 
+  console.log('currentPhase', currentPhase);
   if (gameState === 1) {
     return <ThreesGameRules />;
   }
 
   const canInteract = !isCommitting && !isRevealing && 
-    ((currentRound?.toString() === '1' && !hasCommitted) || 
-     (currentRound?.toString() === '2' && !hasRevealed));
+    ((currentPhase === 1 && !hasCommitted) || 
+     (currentPhase === 2 && !hasRevealed));
 
   const handleSymbolSelect = (symbol: number) => {
     setSelectedSymbol(symbol);
@@ -48,7 +51,7 @@ export function ThreesGameContent({
   const handleConfirm = () => {
     if (selectedSymbol === null || !gameId) return;
     
-    if (currentRound?.toString() === '1') {
+    if (currentPhase === 1) {
       onCommit(selectedSymbol, gameId, currentRound.toString());
     } else {
       onReveal(selectedSymbol, gameId.toString(), currentRound.toString());
@@ -61,10 +64,10 @@ export function ThreesGameContent({
       {currentRound > BigInt(0) && (
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold mb-2">
-            {currentRound?.toString() === '1' ? 'Commit Stage' : 'Reveal Stage'}
+            {currentPhase === 1 ? 'Commit Stage' : 'Reveal Stage'}
           </h2>
           <p className="text-primary-800">
-            {currentRound?.toString() === '1' 
+            {currentPhase === 1
               ? hasCommitted 
                 ? 'Waiting for other players to commit...'
                 : 'Choose your symbol to commit...'
@@ -76,7 +79,7 @@ export function ThreesGameContent({
       )}
       
       <div className="flex justify-center items-center w-full p-2">
-        <AnimatedSymbols 
+        <Game 
           onSymbolClick={canInteract ? handleSymbolSelect : undefined}
         />
       </div>
@@ -87,8 +90,8 @@ export function ThreesGameContent({
         confirmText="Confirm"
         cancelText="Cancel"
         onConfirmClick={handleConfirm}
-        title={currentRound?.toString() === '1' ? "Confirm Commit" : "Confirm Reveal"}
-        description={currentRound?.toString() === '1' 
+        title={currentPhase === 1 ? "Confirm Commit" : "Confirm Reveal"}
+        description={currentPhase === 1
           ? "Are you sure you want to commit to this symbol? This action cannot be undone."
           : "Are you sure you want to reveal this symbol? Make sure it matches your committed choice."
         }

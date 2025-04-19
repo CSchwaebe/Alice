@@ -8,6 +8,7 @@ interface UseThreesGameEventsProps {
   refetchPlayerInfo: () => void;
   setCurrentRound: (round: bigint) => void;
   setRoundEndTime: (time: number) => void;
+  setCurrentPhase: (phase: number) => void;
   onNotification?: (notification: GameNotification) => void;
 }
 
@@ -24,6 +25,7 @@ export function useThreesGameEvents({
   refetchPlayerInfo,
   setCurrentRound,
   setRoundEndTime,
+  setCurrentPhase,
   onNotification
 }: UseThreesGameEventsProps) {
   const router = useRouter();
@@ -45,6 +47,7 @@ export function useThreesGameEvents({
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
+    setCurrentPhase,
     onNotification,
     router
   });

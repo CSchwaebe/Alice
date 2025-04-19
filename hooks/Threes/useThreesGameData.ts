@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useReadContract } from 'wagmi';
 import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { ThreesABI } from '@/app/abis/ThreesABI';
@@ -44,6 +44,7 @@ export function useThreesGameData({ address, isConnected }: UseThreesGameDataPro
   const [roundEndTime, setRoundEndTime] = useState<number>(0);
   const [gameState, setGameState] = useState<number>(0);
   const [currentRound, setCurrentRound] = useState<bigint>(BigInt(0));
+  const [currentPhase, setCurrentPhase] = useState<number>(0);
   const [hasCommitted, setHasCommitted] = useState(false);
   const [hasRevealed, setHasRevealed] = useState(false);
 
@@ -54,7 +55,8 @@ export function useThreesGameData({ address, isConnected }: UseThreesGameDataPro
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      gcTime: 0 // Don't garbage collect this data
     }
   }) as { data: [string, bigint, boolean, number, bigint] | undefined };
 
@@ -85,6 +87,17 @@ export function useThreesGameData({ address, isConnected }: UseThreesGameDataPro
       enabled: !!gameId
     }
   }) as { data: GameInfo | undefined, refetch: () => void };
+
+  // Get current phase
+  const { data: phase } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAME_THREES as `0x${string}`,
+    abi: ThreesABI,
+    functionName: 'getCurrentPhase',
+    args: [gameId],
+    query: {
+      enabled: !!gameId
+    }
+  }) as { data: bigint | undefined };
 
   // Get all players info
   const { data: playersInfo, refetch: refetchPlayerInfo } = useReadContract({
@@ -134,6 +147,19 @@ export function useThreesGameData({ address, isConnected }: UseThreesGameDataPro
     }
   }, [gameInfo]);
 
+  // Update phase when data is fetched
+  useEffect(() => {
+    if (phase !== undefined) {
+      setCurrentPhase(Number(phase));
+    }
+  }, [phase]);
+
+  // Memoize refetch functions
+  const refetchAll = useCallback(() => {
+    refetchGameInfo();
+    refetchPlayerInfo();
+  }, [refetchGameInfo, refetchPlayerInfo]);
+
   return {
     gameId,
     playerInfo: playerList.find(p => p.playerAddress.toLowerCase() === address?.toLowerCase()),
@@ -142,11 +168,14 @@ export function useThreesGameData({ address, isConnected }: UseThreesGameDataPro
     roundEndTime,
     gameState,
     currentRound,
+    currentPhase,
     hasCommitted,
     hasRevealed,
     refetchGameInfo,
     refetchPlayerInfo,
+    refetchAll,
     setCurrentRound,
-    setRoundEndTime
+    setRoundEndTime,
+    setCurrentPhase
   };
 } 

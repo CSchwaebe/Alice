@@ -153,8 +153,8 @@ function BiddingGame() {
   return (
     <div className="min-h-screen flex flex-col relative bg-background">
       <div className="relative z-10 w-full h-full p-4 lg:flex lg:flex-row lg:gap-4 max-w-[1440px] mx-auto">
-        <div className="w-full lg:flex-1">
-          <div className="mb-8">
+        <div className="w-full lg:flex-1 flex flex-col items-center">
+          <div className="mb-8 w-full">
             <Content 
               gameState={gameState}
               currentRound={currentRound}

@@ -71,7 +71,7 @@ export default function AnimatedSymbols({
 
   const handleSymbolClick = (index: number) => {
     if (onSymbolClick) {
-      onSymbolClick(index);
+      onSymbolClick(index + 1);
     }
   };
 

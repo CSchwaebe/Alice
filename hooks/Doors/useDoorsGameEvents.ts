@@ -8,8 +8,6 @@ interface UseDoorsGameEventsProps {
   refetchPlayerInfo: () => void;
   setCurrentRound: (round: bigint) => void;
   setRoundEndTime: (time: number) => void;
-  setTxStatus: (status: 'success' | 'error' | 'none' | 'pending') => void;
-  setErrorMessage: (message: string) => void;
   onNotification?: (notification: GameNotification) => void;
 }
 
@@ -20,8 +18,6 @@ export function useDoorsGameEvents({
   refetchPlayerInfo,
   setCurrentRound,
   setRoundEndTime,
-  setTxStatus,
-  setErrorMessage,
   onNotification
 }: UseDoorsGameEventsProps) {
   const router = useRouter();
@@ -43,8 +39,6 @@ export function useDoorsGameEvents({
     refetchPlayerInfo,
     setCurrentRound,
     setRoundEndTime,
-    setTxStatus,
-    setErrorMessage,
     onNotification,
     router
   });
