@@ -7,6 +7,7 @@ import { Aboreto } from 'next/font/google';
 import { headers } from 'next/headers';
 import { Analytics } from '@vercel/analytics/next';
 import ScrollRestoration from '@/components/ScrollRestoration';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const aboreto = Aboreto({
   weight: '400',
@@ -31,6 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="opacity-0 animate-fade-in">
             <main>
               {children}
+              <SpeedInsights />
               <Analytics />
             </main>
           </div>
