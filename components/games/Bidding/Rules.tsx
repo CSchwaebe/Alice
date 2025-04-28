@@ -24,10 +24,10 @@ export default function Rules() {
     "• EACH PLAYER STARTS WITH 1,000 POINTS",
     "• EACH ROUND, ALL PLAYERS MUST PLACE A SECRET BID",
     "• THE PLAYER WITH THE LOWEST BID WILL BE ELIMINATED",
-    "• IF MULTIPLE PLAYERS PLACE THE SAME LOWEST BID, ALL LOWEST BID PLAYERSARE ELIMINATED",
+    "• IF MULTIPLE PLAYERS PLACE THE SAME LOWEST BID, ALL LOWEST BID PLAYERS ARE ELIMINATED",
     "",
     "Game Phases:",
-    "• COMMIT (5 MINUTES): Lock in your secret bid",
+    "• COMMIT (2 MINUTES): Lock in your secret bid",
     "• REVEAL (2 MINUTES): Show your bid amount",
     "",
     "Warnings:",
@@ -35,7 +35,7 @@ export default function Rules() {
     "• Your bid will be deducted from your total points after reveal",
     "• In case of a tie, all players with the lowest bid are eliminated",
     "",
-    "The rules will not be repeated. Use the chat to coordinate with your team.",
+    "The rules will not be repeated. Use the chat to coordinate or manipulate.",
   ];
 
   useEffect(() => {

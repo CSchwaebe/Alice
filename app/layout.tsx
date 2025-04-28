@@ -18,6 +18,9 @@ const aboreto = Aboreto({
 export const metadata = {
   title: 'Alice',
   description: 'Welcome to Wonderland',
+  other: {
+    'chrome-page-load': 'no-indicator',
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
