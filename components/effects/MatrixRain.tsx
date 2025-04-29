@@ -30,13 +30,13 @@ export default function MatrixRain() {
       y: forceY ? Math.random() * window.innerHeight : 0,
       speed: 1 + Math.random() * 3,
       char: getRandomChar(),
-      opacity: 0.1 + Math.random() * 0.5
+      opacity: 0.2 + Math.random() * 0.5
     };
   };
 
   const initDrops = () => {
     const drops: Drop[] = [];
-    const density = Math.floor(window.innerWidth / 20); // One drop every ~20px
+    const density = Math.floor(window.innerWidth / 20);
     
     for (let i = 0; i < density; i++) {
       const x = (window.innerWidth / density) * i;
@@ -63,36 +63,42 @@ export default function MatrixRain() {
     if (!ctx) return;
 
     const animate = () => {
-      // Use theme background color with fade effect
-      ctx.fillStyle = theme === 'dark' 
-        ? 'rgba(0, 0, 0, 0.1)' 
-        : 'rgba(255, 255, 255, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
+      // Clear the canvas with a transparent background
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       ctx.font = '20px monospace';
       
       dropsRef.current.forEach((drop, index) => {
-        // Main character - using theme's foreground color
+        // Main character - using theme's foreground color with blur effect
         const mainColor = theme === 'dark'
-          ? `rgba(255, 255, 255, ${drop.opacity})` // White in dark theme
-          : `rgba(0, 0, 0, ${drop.opacity})`       // Black in light theme
+          ? `rgba(255, 255, 255, ${drop.opacity})`
+          : `rgba(0, 0, 0, ${drop.opacity})`
         
+        // Draw the main character with blur effect
         ctx.fillStyle = mainColor;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = mainColor;
         ctx.fillText(drop.char, drop.x, drop.y);
+        ctx.shadowBlur = 0;
 
         // Trail effect
         let trailY = drop.y;
         let trailOpacity = drop.opacity;
         for (let i = 0; i < 5; i++) {
           trailY -= 20;
-          trailOpacity *= 0.5;
+          trailOpacity *= 0.6;
           
           if (trailY > 0) {
-            // Trail uses same foreground color with reduced opacity
-            ctx.fillStyle = theme === 'dark'
+            const trailColor = theme === 'dark'
               ? `rgba(255, 255, 255, ${trailOpacity})`
               : `rgba(0, 0, 0, ${trailOpacity})`;
+            
+            // Draw trail characters with blur effect
+            ctx.fillStyle = trailColor;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = trailColor;
             ctx.fillText(getRandomChar(), drop.x, trailY);
+            ctx.shadowBlur = 0;
           }
         }
 
@@ -104,8 +110,8 @@ export default function MatrixRain() {
           dropsRef.current[index] = createDrop(drop.x);
         }
 
-        // Randomly change character
-        if (Math.random() < 0.05) {
+        // Less frequent character changes for better performance
+        if (Math.random() < 0.03) {
           drop.char = getRandomChar();
         }
       });
@@ -126,8 +132,8 @@ export default function MatrixRain() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
-      style={{ opacity: 0.8, backgroundColor: 'var(--background)' }}
+      className="fixed inset-0 pointer-events-none z-10"
+      style={{ backgroundColor: 'transparent', opacity: 0.3 }}
     />
   );
 } 
