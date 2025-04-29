@@ -36,7 +36,7 @@ export default function MatrixRainMobile() {
 
   const initDrops = () => {
     const drops: Drop[] = [];
-    const density = Math.floor(window.innerWidth / 15);
+    const density = Math.floor(window.innerWidth / 8);
     
     for (let i = 0; i < density; i++) {
       const x = (window.innerWidth / density) * i;
