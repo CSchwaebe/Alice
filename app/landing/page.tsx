@@ -170,13 +170,13 @@ export default function LandingPage() {
                 <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6"></div>
                 <div className={`text-lg md:text-xl opacity-80 text-left flex-1 flex flex-col ${quantico.className}`}>
                   <div>
-                    The beta launch of Alice—our first 10 real-time events where
+                    The beta launch of Alice—our first 10 games where
                     early players help test, compete, and shape the game from
                     the ground up. But this isn't just early access—it's also
                     our token distribution event.
                     <br />
                     <br />
-                    We are distributing <span className="italic">50%</span> of the total ALICE to our early
+                    We are distributing <span className="italic">50%</span> of the total ALICE supply to our early
                     users. For now, everyone is a winner.
                   </div>
                 </div>
@@ -218,10 +218,7 @@ export default function LandingPage() {
                       <span className="mr-2">•</span>
                       <span>Secrecy ensured through Commit/Reveal Systems</span>
                     </div>
-                    <div className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Check out the docs for more!</span>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
