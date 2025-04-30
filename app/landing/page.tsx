@@ -77,8 +77,10 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="https://alice-3.gitbook.io/alice/season-0/season-0"
+              href="https://alice-3.gitbook.io/alice/season-0/token-info"
               className="block group w-full"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div className="relative transform transition-transform duration-300 group-hover:scale-105 h-full flex items-center justify-center">
                 <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -97,6 +99,8 @@ export default function LandingPage() {
             <Link
               href="https://alice-3.gitbook.io/alice/what-is-alice/quickstart"
               className="block group w-full"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div className="relative transform transition-transform duration-300 group-hover:scale-105 h-full flex items-center justify-center">
                 <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
