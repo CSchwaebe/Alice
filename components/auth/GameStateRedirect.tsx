@@ -17,7 +17,7 @@ enum GameState {
 
 // Define possible redirect destinations
 enum RedirectDestination {
-    Home = '/',
+    Home = '/portal',
     Register = '/register',
     Lobby = '/lobby',
     GameOver = '/gameover'

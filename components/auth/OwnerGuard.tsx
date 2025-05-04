@@ -24,7 +24,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (!isConnected) {
-      router.push('/');
+      router.push('/portal');
       return;
     }
 
@@ -36,7 +36,7 @@ export default function OwnerGuard({ children }: { children: React.ReactNode }) 
       
       if (!isOwner) {
         // Redirect non-owners to home
-        router.push('/');
+        router.push('/portal');
       }
     }
   }, [isConnected, address, ownerAddress, router]);

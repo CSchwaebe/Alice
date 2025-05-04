@@ -5,6 +5,7 @@ import Game from './Game';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 import { motion } from 'framer-motion';
 import ThreesGameRules from './Rules';
+import { GameTimer } from '@/components/ui/GameTimer';
 
 export interface ThreesGameContentProps {
   gameState: number;
@@ -17,6 +18,7 @@ export interface ThreesGameContentProps {
   onCommit: (choice: number, gameId: string | number, round: string | number) => void;
   onReveal: (choice: number, gameId: string, round: string) => void;
   gameId?: string | number;
+  roundEndTime: number;
 }
 
 export function Content({
@@ -29,7 +31,8 @@ export function Content({
   isRevealing,
   onCommit,
   onReveal,
-  gameId
+  gameId,
+  roundEndTime
 }: ThreesGameContentProps) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedSymbol, setSelectedSymbol] = useState<number | null>(null);
@@ -61,18 +64,24 @@ export function Content({
 
   return (
     <div className="flex flex-col items-center w-full">
+      {gameState !== 1 && (
+        <div className="flex justify-center mb-8">
+          <GameTimer endTime={roundEndTime} />
+        </div>
+      )}
+
       {currentRound > BigInt(0) && (
         <div className="text-center mb-8">
           <h2 className="text-2xl font-bold mb-2">
-            {currentPhase === 1 ? 'Commit Stage' : 'Reveal Stage'}
+            {currentPhase === 1 ? 'Commit' : 'Reveal'}
           </h2>
           <p className="text-primary-800">
             {currentPhase === 1
               ? hasCommitted 
-                ? 'Waiting for other players to commit...'
-                : 'Choose your symbol to commit...'
+                ? 'Waiting for other players...'
+                : 'Choose your symbol'
               : hasRevealed
-                ? 'Waiting for other players to reveal...'
+                ? 'Waiting for other players...'
                 : 'Choose your symbol to reveal...'}
           </p>
         </div>

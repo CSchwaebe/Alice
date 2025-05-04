@@ -1,11 +1,14 @@
 import { Silkscreen } from 'next/font/google';
 import { useRouter } from 'next/navigation';
 import  GlitchTextBackground  from '@/components/effects/GlitchTextBackground';
+import { useState } from 'react';
 
 const silkscreen = Silkscreen({ 
   weight: '400',
   subsets: ['latin']
 });
+
+const PLAYERS_PER_PAGE = 10;
 
 interface Player {
   playerNumber: string;
@@ -19,11 +22,24 @@ interface GameCompletionScreenProps {
 
 export function GameCompletionScreen({ playerList, gameName }: GameCompletionScreenProps) {
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
   
   // Sort players by number for consistent display
   const sortedPlayers = [...playerList].sort((a, b) => 
     parseInt(a.playerNumber) - parseInt(b.playerNumber)
   );
+
+  // Pagination calculations
+  const totalPages = Math.ceil(sortedPlayers.length / PLAYERS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PLAYERS_PER_PAGE;
+  const endIndex = startIndex + PLAYERS_PER_PAGE;
+  const currentPlayers = sortedPlayers.slice(startIndex, endIndex);
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    // Smooth scroll to top of grid
+    document.getElementById('player-grid')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto relative px-4">
@@ -46,10 +62,10 @@ export function GameCompletionScreen({ playerList, gameName }: GameCompletionScr
       </div>
 
       {/* Player Grid */}
-      <div className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-12">
-        {sortedPlayers.map((player, index) => (
+      <div id="player-grid" className="grid grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+        {currentPlayers.map((player, index) => (
           <div 
-            key={index}
+            key={startIndex + index}
             className={`relative overflow-hidden backdrop-blur-sm bg-overlay-dark border ${
               player.isActive 
                 ? 'border-primary-300/30' 
@@ -98,6 +114,37 @@ export function GameCompletionScreen({ playerList, gameName }: GameCompletionScr
           </div>
         ))}
       </div>
+
+      {/* Pagination Controls - Only show if more than 10 players */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-4 mb-8">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 font-mono rounded-lg border ${
+              currentPage === 1
+                ? 'border-primary-100/10 text-primary-100/30 cursor-not-allowed'
+                : 'border-primary-100/30 text-primary-100 hover:bg-primary-100/10'
+            } transition-colors`}
+          >
+            Previous
+          </button>
+          <span className="font-mono text-primary-100">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 font-mono rounded-lg border ${
+              currentPage === totalPages
+                ? 'border-primary-100/10 text-primary-100/30 cursor-not-allowed'
+                : 'border-primary-100/30 text-primary-100 hover:bg-primary-100/10'
+            } transition-colors`}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Return Button */}
       <div className="text-center mb-8 relative">

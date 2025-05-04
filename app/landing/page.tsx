@@ -1,33 +1,33 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { Iceland, Quantico } from "next/font/google";
 import MatrixRain from "@/components/effects/MatrixRain";
 import MatrixRainMobile from "@/components/effects/MatrixRainMobile";
-import TypingText from "@/components/effects/TypingText";
-import { useState, useEffect, useRef } from "react";
-
-const iceland = Iceland({
-  weight: "400",
-  subsets: ["latin"],
-});
-
-const quantico = Quantico({
-  weight: "400",
-  subsets: ["latin"],
-});
+import { saira } from "../../lib/landing/fonts";
+import { 
+  ScrollSection, 
+  SideBySideSection, 
+  AnimatedCard, 
+  ResponsiveContentBlock,
+  ImageWithScroll,
+  TextOverlay,
+  CallToAction
+} from "../../lib/landing/components/animated";
+import { 
+  InfoCard, 
+  NavButton
+} from "../../lib/landing/components/ui";
 
 export default function LandingPage() {
   return (
     <div className="flex flex-col relative">
-      {/* Main image section */}
+      {/* Hero Section */}
       <div className="w-full relative aspect-[9/16]">
-        {/* Gradient Overlay - Mobile */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% via-black/70 via-80% to-black z-20 max-md:block hidden"></div>
-        {/* Gradient Overlay - Desktop */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% via-black/70 via-80% to-black z-20 md:block hidden"></div>
+        {/* Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% via-black/70 via-80% to-black z-20 max-md:block hidden" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% via-black/70 via-80% to-black z-20 md:block hidden" />
+        
+        {/* Background Image */}
         <Image
           src="/images/landing_bg.png"
           alt="Background"
@@ -36,197 +36,244 @@ export default function LandingPage() {
           sizes="100vw"
           className="object-cover w-full opacity-100 object-top z-0"
           quality={100}
-          onLoadingComplete={(img) => {
+          onLoad={(e) => {
+            const img = e.target as HTMLImageElement;
             if (img.complete) {
               img.style.height = "auto";
             }
           }}
         />
 
-        {/* Matrix Rain Effect - Desktop */}
+        {/* Matrix Rain Effects */}
         <div className="hidden md:block absolute inset-0 z-10">
           <MatrixRain />
         </div>
-        {/* Matrix Rain Effect - Mobile */}
         <div className="block md:hidden absolute inset-0 z-10">
           <MatrixRainMobile />
         </div>
 
-      
-        {/* Button Group container */}
+        {/* Navigation Buttons */}
         <div className="absolute top-[40%] left-0 right-0 z-50 flex items-center justify-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-center relative w-full max-w-sm md:max-w-md lg:max-w-4xl flex flex-col gap-4"
-          >
-            <Link href="/" className="block group w-full">
-              <div className="relative transform transition-transform duration-300 group-hover:scale-105 h-full flex items-center justify-center">
-                <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative py-4 sm:py-4 md:py-6 xl:py-8 px-4">
-                  <h2
-                    className={`text-xl sm:text-2xl md:text-4xl 2xl:text-7xl font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground animate-text-shimmer ${iceland.className}`}
-                  >
-                    Enter Game
-                  </h2>
-                </div>
-                <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-              </div>
-            </Link>
-
-            <Link
-              href="https://alice-3.gitbook.io/alice/season-0/token-info"
-              className="block group w-full"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className="relative transform transition-transform duration-300 group-hover:scale-105 h-full flex items-center justify-center">
-                <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative py-4 sm:py-4 md:py-6 xl:py-8 px-4">
-                  <h2
-                    className={`text-xl sm:text-2xl md:text-4xl xl:text-4xl 2xl:text-7xl font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground animate-text-shimmer ${iceland.className}`}
-                  >
-                    Token
-                  </h2>
-                </div>
-                <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-              </div>
-            </Link>
-
-            <Link
-              href="https://alice-3.gitbook.io/alice/what-is-alice/quickstart"
-              className="block group w-full"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className="relative transform transition-transform duration-300 group-hover:scale-105 h-full flex items-center justify-center">
-                <div className="absolute -top-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="absolute -bottom-px left-0 right-0 h-px bg-gradient-to-r from-transparent via-foreground to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative py-4 sm:py-4 md:py-6 xl:py-8 px-4">
-                  <h2
-                    className={`text-xl sm:text-2xl md:text-4xl xl:text-4xl 2xl:text-7xl font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground animate-text-shimmer ${iceland.className}`}
-                  >
-                    Docs
-                  </h2>
-                </div>
-                <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg"></div>
-              </div>
-            </Link>
-          </motion.div>
+          <div className="text-center relative w-full max-w-sm md:max-w-md lg:max-w-4xl flex flex-col gap-4">
+            <NavButton href="/" text="Enter Game" />
+            <NavButton 
+              href="https://alice-3.gitbook.io/alice/season-0/token-info" 
+              text="Token" 
+              external 
+            />
+            <NavButton 
+              href="https://alice-3.gitbook.io/alice/what-is-alice/quickstart" 
+              text="Docs" 
+              external 
+            />
+          </div>
         </div>
       </div>
-      {/* Grid Section */}
-      <div className="absolute top-[75%] sm:top-[65%] md:top-[65%] lg:top-[60%] xl:top-[60%] 2xl:top-[60%] left-0 right-0 z-50">
-        <div className="container mx-auto px-4">
-          <h1 className={`text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 ${iceland.className}`}>
-            The On-Chain <span className="italic">Squid Game</span>
-          </h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {/* Box 1 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              className="relative w-full h-full"
-            >
-              <div className="relative bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg shadow-glow-sm backdrop-blur-sm w-full h-full flex flex-col">
-                <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary-200"></div>
-                <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary-200"></div>
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary-200"></div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-primary-200"></div>
-                
-                <div className={`text-3xl md:text-3xl text-white text-center ${iceland.className} min-h-[4rem] flex items-center justify-center`}>
-                  1,000 Players. One Survivor.
-                </div>
-                <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6"></div>
-                <div className={`text-lg md:text-xl opacity-80 text-left flex-1 flex flex-col ${quantico.className}`}>
-                  <div>
-                    A live gaming experience made possible by Sonic's instant
-                    finality and near-limitless throughput.
-                    <br />
-                    <br />
-                    Real-time, fast paced games with just moments to make your
-                    move. Only on Sonic.
-                  </div>
-                </div>
-              </div>
-            </motion.div>
 
-            {/* Box 2 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative w-full h-full"
-            >
-              <div className="relative bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg shadow-glow-sm backdrop-blur-sm w-full h-full flex flex-col">
-                <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary-200"></div>
-                <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary-200"></div>
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary-200"></div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-primary-200"></div>
-                
-                <div className={`text-3xl md:text-3xl text-white text-center ${iceland.className} min-h-[4rem] flex items-center justify-center`}>
-                  Season 0
-                </div>
-                <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6"></div>
-                <div className={`text-lg md:text-xl opacity-80 text-left flex-1 flex flex-col ${quantico.className}`}>
-                  <div>
-                    The beta launch of Alice—our first 10 games where
-                    early players help test, compete, and shape the game from
-                    the ground up. But this isn't just early access—it's also
-                    our token distribution event.
-                    <br />
-                    <br />
-                    We are distributing <span className="italic">50%</span> of the total ALICE supply to our early
-                    users. For now, everyone is a winner.
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+      {/* Content Grid Section */}
+      <div className="absolute top-[80%] sm:top-[75%] md:top-[65%] lg:top-[65%] xl:top-[60%] 2xl:top-[60%] left-0 right-0 mx-auto z-50 max-w-7xl w-full">
+        <div className="container mx-auto">
+          <ScrollSection className="mb-8 px-4">
+            <h1 className={`text-2xl md:text-3xl lg:text-4xl text-white text-center font-mono ${saira.className}`}>
+              THE ON-CHAIN <span className="italic">SQUID GAME</span>
+            </h1>
+          </ScrollSection>
 
-            {/* Box 3 */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="relative w-full h-full"
-            >
-              <div className="relative bg-gradient-to-b from-overlay-dark to-background p-8 rounded-lg shadow-glow-sm backdrop-blur-sm w-full h-full flex flex-col">
-                <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-primary-200"></div>
-                <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary-200"></div>
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary-200"></div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-primary-200"></div>
-                
-                <div className={`text-3xl md:text-3xl text-white text-center ${iceland.className} min-h-[4rem] flex items-center justify-center`}>
-                  Features
-                </div>
-                <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6"></div>
-                <div className={`text-lg md:text-xl opacity-80 text-left flex-1 flex flex-col ${quantico.className}`}>
-                  <div className="space-y-4">
-                    <div className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Wallet Gated Chatrooms</span>
+          {/* Info Cards Grid */}
+          <div className="px-4 overflow-hidden">
+            <SideBySideSection className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4 sm:gap-6 max-w-7xl mx-auto">
+              <AnimatedCard isLeft={true}>
+                <InfoCard
+                  title="1000 Players. One Survivor."
+                  content={
+                    <>
+                      A live gaming experience made possible by Sonic's instant finality and near-limitless throughput.
+                      <br /><br />
+                      Real-time, fast paced games with just moments to make your move. Only on Sonic.
+                    </>
+                  }
+                />
+              </AnimatedCard>
+              <AnimatedCard isLeft={false}>
+                <InfoCard
+                  title="Season 0"
+                  content={
+                    <>
+                      The beta launch of Alice—our first 10 games where early players help test, compete, and shape the game from the ground up. But this isn't just early access—it's also our token distribution event.
+                      <br /><br />
+                      We are distributing 50% of the total ALICE supply to our early users. For now, everyone is a winner.
+                    </>
+                  }
+                />
+              </AnimatedCard>
+            </SideBySideSection>
+          </div>
+
+          {/* Content Blocks */}
+          <div className="space-y-8 md:mt-8">
+          <div className="pt-24">
+              <ImageWithScroll
+                src="/images/renders/registration2.png"
+                alt="Getting Started"
+              />
+              <div className="relative z-10 -mt-[200px] sm:-mt-[250px] md:-mt-[300px] lg:-mt-[375px]">
+                <TextOverlay
+                  title="Getting Started"
+                  content={
+                    <div className="grid grid-cols-1 gap-8 max-w-2xl mx-auto">
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <span className="mr-4 font-bold text-md text-primary-300">1</span>
+                          <div>
+                            <div className="font-bold text-md">Get 101 Sonic</div>
+                            <div className="opacity-80 mt-2">
+                              You'll need Sonic to enter games and pay for gas. Use deBridge to bridge to Sonic if you don't have funds there.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <span className="mr-4 font-bold text-md text-primary-300">2</span>
+                          <div>
+                            <div className="font-bold text-md">Connect Your Wallet</div>
+                            <div className="opacity-80 mt-2 text-sm">
+                              Authenticate to prove ownership of your address. Only verified players can enter.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <span className="mr-4 font-bold text-md text-primary-300">3</span>
+                          <div>
+                            <div className="font-bold text-md">Register for a Game</div>
+                            <div className="opacity-80 mt-2 text-sm">
+                              Pay the entry fee to register for a game.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <span className="mr-4 font-bold text-md text-primary-300">4</span>
+                          <div>
+                            <div className="font-bold text-md">Get Your Player Number</div>
+                            <div className="opacity-80 mt-2 text-sm">
+                              This is who you are now. You'll enter the Nexus — a live lobby where players gather, chat, and wait for the next round to begin.
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Variety of Mini-Games</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Dynamic Grouping</span>
-                    </div>
-                    <div className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>Secrecy ensured through Commit/Reveal Systems</span>
-                    </div>
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="pt-24">
+              <ResponsiveContentBlock
+                imageUrl="/images/renders/Comms.png"
+                title={
+                  <div className="w-full font-mono ">
+                    <div className="text-center text-lg">Real-Time Chat</div>
+                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6" />
+                    <div className="text-sm opacity-80 text-left space-y-8">
                     
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Private Chat Rooms</div>
+                            <div className="text-sm opacity-80 mt-1">Each game and the Nexus has its own chat, accessible only to active players.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Wallet-Gated Access</div>
+                            <div className="text-sm opacity-80 mt-1">You must connect your wallet and be alive in the game to participate.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Anonymized Messaging</div>
+                            <div className="text-sm opacity-80 mt-1">All messages display only your player number — no usernames, no profile info.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">No Spectators</div>
+                            <div className="text-sm opacity-80 mt-1">Eliminated players lose access to chat immediately.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Strategic Communication</div>
+                            <div className="text-sm opacity-80 mt-1">Use the chat to coordinate, deceive, or stay silent. What you say — or don't — can change everything.</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </motion.div>
+                }
+                desktopImageFirst={true}
+                mobileImageFirst={true}
+              />
+            </div>
+           
+            <div className="pt-24">
+              <ResponsiveContentBlock
+                imageUrl="/images/renders/games5_1.png"
+                title={
+                  <div className="w-full">
+                    <div className="text-center text-lg font-mono">The Games</div>
+                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6" />
+                    <div className="text-sm opacity-80 text-left space-y-6 font-mono">
+                      <div>
+                        Alice includes a growing library of mini-games.<br />
+                        There are 5 games currently live, with more on the way.
+                      </div>
+
+                      <div>
+                        Each game is designed to be easy to understand but difficult — or impossible — to truly master. Success often depends on predicting or influencing the decisions of other players.
+                      </div>
+
+                      <div>
+                        We don't reveal the rules in advance.<br />
+                        Part of the game is not knowing what you're walking into.
+                      </div>
+
+                      <div>
+                        You'll find images of all current games on this page.<br />
+                        But don't bother studying them.<br />
+                        What you see won't help you.
+                      </div>
+                    </div>
+                  </div>
+                }
+                desktopImageFirst={false}
+                mobileImageFirst={true}
+              />
+            </div>
+
+            <div className="pt-24">
+              <CallToAction />
+            </div>
+            
           </div>
         </div>
       </div>

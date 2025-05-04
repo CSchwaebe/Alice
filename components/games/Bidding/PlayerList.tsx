@@ -31,19 +31,31 @@ export default function PlayerList({ players, currentPlayerAddress }: PlayerList
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-primary-400 font-mono text-sm">COMMITTED</span>
+                  <span className="text-primary-400 font-mono text-sm">
+                    <span className="hidden md:inline">COMMITTED</span>
+                    <span className="md:hidden">C</span>
+                  </span>
                   <div className={`h-2 w-2 rounded-full ${player.hasCommitted ? 'bg-foreground' : 'bg-primary-200'}`} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-primary-400 font-mono text-sm">REVEALED</span>
+                  <span className="text-primary-400 font-mono text-sm">
+                    <span className="hidden md:inline">REVEALED</span>
+                    <span className="md:hidden">R</span>
+                  </span>
                   <div className={`h-2 w-2 rounded-full ${player.hasRevealed ? 'bg-foreground' : 'bg-primary-200'}`} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-primary-400 font-mono text-sm">POINTS</span>
+                  <span className="text-primary-400 font-mono text-sm">
+                    <span className="hidden md:inline">POINTS</span>
+                    <span className="md:hidden">P</span>
+                  </span>
                   <span className="text-foreground font-mono text-sm">{player.points.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-primary-400 font-mono text-sm">ACTIVE</span>
+                  <span className="text-primary-400 font-mono text-sm">
+                    <span className="hidden md:inline">ACTIVE</span>
+                    <span className="md:hidden">A</span>
+                  </span>
                   <div className={`h-2 w-2 rounded-full ${player.isActive ? 'bg-foreground' : 'bg-primary-200'}`} />
                 </div>
               </div>

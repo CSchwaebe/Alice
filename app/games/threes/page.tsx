@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useThreesGameData } from '@/hooks/Threes/useThreesGameData';
 import { useThreesGameEvents } from '@/hooks/Threes/useThreesGameEvents';
 import { useThreesGameTransactions } from '@/hooks/Threes/useThreesGameTransactions';
-import { GameTimer } from "@/components/ui/GameTimer";
 import GameChat from "@/components/chat/GameChat";
 import MobileChat from "@/components/chat/MobileChat";
 import { PlayerList } from "@/components/games/Threes/PlayerList";
@@ -87,57 +86,49 @@ function ThreesGame() {
     );
   }
 
-  return (
-    <div className="flex flex-col min-[1000px]:flex-row w-full h-full">
-      {/* Main Game Area */}
-      <div className="flex-1 flex flex-col items-center p-4 space-y-8 w-full">
-        {gameState !== 1 && (
-          <div className={`text-5xl font-bold mb-8 tracking-wider ${silkscreen.className}`}>
-            <GameTimer endTime={roundEndTime} />
-          </div>
-        )}
-        
-        <Content
-          gameState={gameState}
-          currentRound={currentRound}
-          currentPhase={currentPhase}
-          hasCommitted={hasCommitted}
-          hasRevealed={hasRevealed}
-          isCommitting={isTxPending}
-          isRevealing={isTxLoading}
-          onCommit={handleCommit}
-          onReveal={handleReveal}
-          gameId={gameId?.toString()}
-        />
+  // Check if player is active in the game
+  const isActivePlayer = playerInfo?.isActive || false;
 
-        {/* Player List */}
-        <div className="w-full max-w-4xl">
-          <PlayerList players={playerList} />
+  return (
+    <div className="min-h-screen flex flex-col relative bg-background">
+      <div className="relative z-10 w-full p-4 lg:flex lg:flex-row lg:gap-4 max-w-[1440px] mx-auto">
+        <div className="w-full lg:flex-1 lg:flex lg:flex-col">
+          <Content
+            gameState={gameState}
+            currentRound={currentRound}
+            currentPhase={currentPhase}
+            hasCommitted={hasCommitted}
+            hasRevealed={hasRevealed}
+            isCommitting={isTxPending}
+            isRevealing={isTxLoading}
+            onCommit={handleCommit}
+            onReveal={handleReveal}
+            gameId={gameId?.toString()}
+            roundEndTime={roundEndTime}
+          />
+
+          {/* Player List */}
+          <div className="w-full max-w-4xl">
+            <PlayerList players={playerList} />
+          </div>
+
+          {error && (
+            <div className="w-full max-w-4xl p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded">
+              {error}
+            </div>
+          )}
         </div>
 
-        {error && (
-          <div className="w-full max-w-4xl p-4 bg-destructive/10 border border-destructive/30 text-destructive rounded">
-            {error}
+        {/* Game Chat - Only shown for active players */}
+        {isActivePlayer && gameId && (
+          <div className="w-full lg:w-96 mt-8 lg:mt-0 lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)]">
+            <GameChat 
+              gameId={`threes_${gameId.toString()}`}
+              playerList={playerList}
+              gameName="THREES"
+            />
           </div>
         )}
-      </div>
-
-      {/* Right Sidebar - Desktop Chat */}
-      <div className="hidden min-[1000px]:block w-full min-[1000px]:w-96 p-4">
-        <GameChat 
-          gameId={gameId ? `threes_${gameId.toString()}` : ''} 
-          playerList={playerList}
-          gameName="THREES"
-        />
-      </div>
-
-      {/* Mobile Chat */}
-      <div className="min-[1000px]:hidden">
-        <MobileChat 
-          gameId={gameId ? `threes_${gameId.toString()}` : ''} 
-          playerList={playerList}
-          gameName="THREES"
-        />
       </div>
     </div>
   );
