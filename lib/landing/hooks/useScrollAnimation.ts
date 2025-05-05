@@ -8,8 +8,11 @@ export const DEFAULT_TIMING = [0.2, 0.4, 0.9, 0.95];
 export const ALTERNATE_TIMING = [0, 0.2, 0.5, 0.8];
 export const TEXT_OVERLAY_TIMING = [0.1, 0.2, 0.9, 0.95];
 
+type ViewportValue = "start" | "end" | "center" | `${number}%`;
+type ScrollOffset = `${ViewportValue} ${ViewportValue}` | "start end" | "end start";
+
 type ScrollAnimationProps = {
-  customOffset?: [string, string];
+  customOffset?: [ScrollOffset, ScrollOffset];
   customTiming?: number[];
 };
 
@@ -23,7 +26,7 @@ type ScrollAnimations = {
 };
 
 export function useBasicAnimation({ 
-  customOffset = ["start end", "end start"],
+  customOffset = ["start end", "end start"] as ["start end", "end start"],
   customTiming = DEFAULT_TIMING
 }: ScrollAnimationProps = {}): ScrollAnimations {
   const ref = useRef<HTMLDivElement>(null);
@@ -38,7 +41,7 @@ export function useBasicAnimation({
     [0, 1, 1, 0]
   );
 
-  return { ref, scrollYProgress, opacity };
+  return { ref, scrollYProgress, opacity } as ScrollAnimations;
 }
 
 export function useScrollFadeIn({ 

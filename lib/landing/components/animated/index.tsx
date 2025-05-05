@@ -183,17 +183,17 @@ export function ResponsiveContentBlock({
       className="md:hidden grid grid-cols-1 gap-6 w-full px-4"
     >
       {mobileImageFirst ? [
-        <div key="image" className="w-full">
+        <div key="image" className="w-full flex items-center">
           <ImageCard src={imageUrl} />
         </div>,
-        <div key="text" className="w-full">
+        <div key="text" className="w-full flex items-center">
           <TextCard title={title} />
         </div>
       ] : [
-        <div key="text" className="w-full">
+        <div key="text" className="w-full flex items-center">
           <TextCard title={title} />
         </div>,
-        <div key="image" className="w-full">
+        <div key="image" className="w-full flex items-center">
           <ImageCard src={imageUrl} />
         </div>
       ]}
@@ -205,18 +205,22 @@ export function ResponsiveContentBlock({
     <div className="hidden md:block px-4">
       <SideBySideSection className="grid grid-cols-2 gap-6 max-w-7xl mx-auto">
         <AnimatedCard isLeft={true}>
-          {desktopImageFirst ? (
-            <ImageCard src={imageUrl} />
-          ) : (
-            <TextCard title={title} />
-          )}
+          <div className="w-full h-full flex items-center">
+            {desktopImageFirst ? (
+              <ImageCard src={imageUrl} />
+            ) : (
+              <TextCard title={title} />
+            )}
+          </div>
         </AnimatedCard>
         <AnimatedCard isLeft={false}>
-          {desktopImageFirst ? (
-            <TextCard title={title} />
-          ) : (
-            <ImageCard src={imageUrl} />
-          )}
+          <div className="w-full h-full flex items-center">
+            {desktopImageFirst ? (
+              <TextCard title={title} />
+            ) : (
+              <ImageCard src={imageUrl} />
+            )}
+          </div>
         </AnimatedCard>
       </SideBySideSection>
     </div>
@@ -232,16 +236,8 @@ export function ResponsiveContentBlock({
 
 // Call to action section with registration and social media options
 export function CallToAction() {
-  const { ref, opacity, scale } = useScrollFadeIn({
-    customTiming: [0.2, 0.4, 0.8, 0.9]
-  });
-
   return (
-    <motion.div
-      ref={ref}
-      style={{ opacity, scale }}
-      className="w-full py-16 md:py-24"
-    >
+    <div className="w-full py-16 md:py-24">
       <div className="max-w-7xl mx-auto px-4 text-center font-mono">
         <h2 className="text-xl md:text-2xl font-bold mb-4 text-white">
           Season 0 is Live
@@ -253,7 +249,7 @@ export function CallToAction() {
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
           <Link
             href="/portal"
-            className="px-8 py-4 bg-foreground hover:bg-primary-600 text-background rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center gap-2"
+            className="px-8 py-4 bg-foreground text-background rounded-lg font-semibold text-lg flex items-center gap-2 cursor-pointer"
           >
             <span>Enter Game</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +260,7 @@ export function CallToAction() {
             href="https://x.com/aliceonsonic"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-8 py-4 bg-black hover:bg-foreground/80 text-white rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center gap-2 border border-foreground"
+            className="px-8 py-4 bg-black text-white rounded-lg font-semibold text-lg flex items-center gap-2 border border-foreground cursor-pointer"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
@@ -273,6 +269,6 @@ export function CallToAction() {
           </Link>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 } 

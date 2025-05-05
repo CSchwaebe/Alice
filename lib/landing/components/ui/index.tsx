@@ -38,17 +38,15 @@ export function ListItem({ text }: { text: string }) {
 // Image component with consistent styling
 export function ImageCard({ src }: { src: string }) {
   return (
-    <div className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] lg:h-[700px] xl:h-[700px]">
-      <div className="relative w-full h-full">
-        <Image
-          src={src}
-          alt="Game visual"
-          fill
-          sizes="100vw"
-          priority
-          className="object-contain rounded-lg opacity-80"
-        />
-      </div>
+    <div className="w-full h-full flex items-center justify-center">
+      <Image
+        src={src}
+        alt="Game visual"
+        width={2000}
+        height={2000}
+        priority
+        className="w-full h-auto rounded-lg"
+      />
     </div>
   );
 }

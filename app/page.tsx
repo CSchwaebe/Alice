@@ -273,6 +273,8 @@ export default function LandingPage() {
             <div className="pt-24">
               <CallToAction />
             </div>
+
+            <div className="pt-48"></div>
             
           </div>
         </div>
