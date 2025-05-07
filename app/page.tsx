@@ -244,7 +244,7 @@ export default function LandingPage() {
                     <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6" />
                     <div className="text-sm opacity-80 text-left space-y-6 font-mono">
                       <div>
-                        Alice includes a growing library of mini-games.<br />
+                        Alice includes a growing library of mini-games.
                         There are 5 games currently live, with more on the way.
                       </div>
 
@@ -258,7 +258,7 @@ export default function LandingPage() {
                       </div>
 
                       <div>
-                        You'll find images of all current games on this page.<br />
+                        You'll find images of all current games on this page.
                         But don't bother studying them.<br />
                         What you see won't help you.
                       </div>

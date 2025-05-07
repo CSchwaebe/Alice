@@ -161,7 +161,8 @@ export default function RegisterWithGuard() {
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
         abi: GameMasterABI,
         functionName: 'register',
-        value: registrationFee
+        value: registrationFee,
+        gas: BigInt(300000)
       });
     } catch (error) {
       console.error('Registration error:', error);
