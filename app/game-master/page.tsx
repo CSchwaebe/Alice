@@ -1,11 +1,12 @@
 "use client";
 
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useBalance } from 'wagmi';
 import { GameMasterABI } from '@/app/abis/GameMasterABI';
+import { PointsABI } from '@/app/abis/PointsABI';
 import { useState, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import OwnerGuard from '@/components/auth/OwnerGuard';
-import { parseEther } from 'viem';
+import { parseEther, formatEther } from 'viem';
 import { useContractEventSubscription, ContractEventType, ContractEvent } from '@/lib/contract-events';
 
 // Add this type definition at the top of the file
@@ -535,16 +536,36 @@ function GameMasterDashboard(): ReactElement {
 
   const handleCloseRegistration = async () => {
     try {
-      setActiveFunction('closeRegistration');
+      setActiveFunction('toggleRegistration');
       await writeContract({
         address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
         abi: GameMasterABI,
-        functionName: 'closeRegistration',
+        functionName: 'toggleRegistration',
         args: [],
       });
     } catch (error) {
-      console.error('Error closing registration:', error);
-      setNotification({ type: 'error', message: 'Failed to close registration' });
+      console.error('Error toggling registration:', error);
+      setNotification({ type: 'error', message: 'Failed to toggle registration' });
+      setActiveFunction(null);
+    }
+  };
+
+  const [newMaxPlayers, setNewMaxPlayers] = useState('');
+
+  const handleSetMaxPlayers = async () => {
+    if (!newMaxPlayers) return;
+    
+    try {
+      setActiveFunction('setMaxPlayers');
+      await writeContract({
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+        abi: GameMasterABI,
+        functionName: 'setMaxPlayers',
+        args: [BigInt(newMaxPlayers)],
+      });
+    } catch (error) {
+      console.error('Error setting max players:', error);
+      setNotification({ type: 'error', message: 'Failed to set max players' });
       setActiveFunction(null);
     }
   };
@@ -578,6 +599,30 @@ function GameMasterDashboard(): ReactElement {
     args: [],
   }) as { data: [string[], GameInstanceInfo[][]] | undefined };
   
+  // Get points contract balance
+  const { data: contractBalanceData } = useBalance({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+  });
+
+  const contractBalance = contractBalanceData?.value;
+
+  // Function to withdraw from points contract
+  const handlePointsWithdraw = async () => {
+    try {
+      setActiveFunction('withdrawPoints');
+      await writeContract({
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+        abi: PointsABI,
+        functionName: 'withdraw',
+        args: [],
+      });
+    } catch (error) {
+      console.error('Error withdrawing from points contract:', error);
+      setNotification({ type: 'error', message: 'Failed to withdraw from points contract' });
+      setActiveFunction(null);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col relative bg-black">
       {/* Content */}
@@ -646,6 +691,12 @@ function GameMasterDashboard(): ReactElement {
           >
             Game Controls
           </button>
+          <button 
+            onClick={() => setActiveTab('points')}
+            className={`px-4 py-2 ${activeTab === 'points' ? 'bg-white/10 border-t border-r border-l border-white/20 text-white' : 'text-white/60'}`}
+          >
+            Points
+          </button>
         </div>
 
         {/* Registration Tab */}
@@ -678,7 +729,7 @@ function GameMasterDashboard(): ReactElement {
                       value={gameName} 
                       onChange={(e) => setGameName(e.target.value)}
                       className="w-full bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="e.g. RAGNAROK"
+                      placeholder="e.g. ALICE"
                     />
                   </div>
                   
@@ -709,9 +760,9 @@ function GameMasterDashboard(): ReactElement {
                 </div>
               </div>
 
-              {/* Ragnarok Controls */}
+              {/* ALICE Controls */}
               <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-                <div className="text-white/70 mb-3 uppercase tracking-wider">Ragnarok Controls</div>
+                <div className="text-white/70 mb-3 uppercase tracking-wider">ALICE Controls</div>
                 
                 <div className="space-y-4">
                   <div>
@@ -749,11 +800,11 @@ function GameMasterDashboard(): ReactElement {
                         font-mono text-white bg-transparent 
                         border border-white/50 py-2 px-3 text-center
                         focus:outline-none hover:bg-white/10
-                        ${activeFunction === 'closeRegistration' ? 'bg-white/20' : ''}
+                        ${activeFunction === 'toggleRegistration' ? 'bg-white/20' : ''}
                         ${(isPending || txLoading) ? 'animate-pulse' : ''}
                       `}
                     >
-                      {activeFunction === 'closeRegistration' ? 'Processing...' : 'Close Registration'}
+                      {activeFunction === 'toggleRegistration' ? 'Processing...' : 'Toggle Registration'}
                     </button>
 
                     <button 
@@ -769,6 +820,33 @@ function GameMasterDashboard(): ReactElement {
                     >
                       {activeFunction === 'withdraw' ? 'Processing...' : 'Withdraw Funds'}
                     </button>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className="block text-white/60 mb-1">Max Players</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="number"
+                        value={newMaxPlayers}
+                        onChange={(e) => setNewMaxPlayers(e.target.value)}
+                        className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
+                        placeholder="Enter max players..."
+                      />
+                      <button 
+                        onClick={handleSetMaxPlayers}
+                        disabled={!newMaxPlayers || isPending || txLoading || activeFunction !== null}
+                        className={`
+                          px-4 font-mono text-white bg-transparent 
+                          border border-white/50 text-center
+                          focus:outline-none hover:bg-white/10
+                          ${!newMaxPlayers ? 'opacity-50 cursor-not-allowed' : ''}
+                          ${activeFunction === 'setMaxPlayers' ? 'bg-white/20' : ''}
+                          ${(isPending || txLoading) ? 'animate-pulse' : ''}
+                        `}
+                      >
+                        {activeFunction === 'setMaxPlayers' ? '...' : 'Set'}
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -928,6 +1006,40 @@ function GameMasterDashboard(): ReactElement {
                     {activeFunction === 'endExpiredGames' ? 'Processing...' : 'End Expired Games'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Points Tab */}
+        {activeTab === 'points' && (
+          <div className="grid grid-cols-1 gap-6">
+            {/* Points Contract Balance */}
+            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
+              <div className="text-white/70 mb-3 uppercase tracking-wider">Points Contract</div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-white/60 mb-1">Contract Balance</label>
+                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
+                    {/* We'll add the balance display here */}
+                    {contractBalance ? formatEther(contractBalance) : '0'} SONIC
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={handlePointsWithdraw}
+                  disabled={isPending || txLoading || activeFunction !== null}
+                  className={`
+                    w-full font-mono text-white bg-transparent 
+                    border border-white/50 py-2 px-3 text-center
+                    focus:outline-none hover:bg-white/10
+                    ${activeFunction === 'withdrawPoints' ? 'bg-white/20' : ''}
+                    ${(isPending || txLoading) ? 'animate-pulse' : ''}
+                  `}
+                >
+                  {activeFunction === 'withdrawPoints' ? 'Processing...' : 'Withdraw Points Balance'}
+                </button>
               </div>
             </div>
           </div>

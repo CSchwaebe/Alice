@@ -4,12 +4,15 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { GameMasterABI } from '@/app/abis/GameMasterABI';
 import { formatEther } from 'viem';
 import MatrixRain from "@/components/effects/GlitchTextBackground";
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 
 export default function RegisterWithGuard() {
   const router = useRouter();
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+  const [manualRefCode, setManualRefCode] = useState('');
+  const [refCodeError, setRefCodeError] = useState('');
   const { address, isConnected } = useAccount();
   const containerRef = useRef<HTMLDivElement>(null);
   const [glitchEffect, setGlitchEffect] = useState(false);
@@ -56,7 +59,7 @@ export default function RegisterWithGuard() {
   const { data: maxPlayers } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
     abi: GameMasterABI,
-    functionName: 'MAX_PLAYERS',
+    functionName: 'maxPlayers',
     args: [],
     query: {
       enabled: true
@@ -100,13 +103,13 @@ export default function RegisterWithGuard() {
   // Format registration fee for display
   const formattedFee = registrationFee ? formatEther(registrationFee) : '...';
 
-  // Calculate prize pool and protocol fee (10/11 and 1/11)
+  // Calculate prize pool and protocol fee (5/6 and 1/6)
   const calculateFees = () => {
     if (!registrationFee) return { prizePool: '...', protocolFee: '...' };
     
     const feeValue = Number(formatEther(registrationFee));
-    const prizePool = (feeValue * 10 / 11).toFixed(4);
-    const protocolFee = (feeValue * 1 / 11).toFixed(4);
+    const prizePool = Math.round(feeValue * 5 / 6).toString();
+    const protocolFee = Math.round(feeValue * 1 / 6).toString();
     
     return { prizePool, protocolFee };
   };
@@ -151,19 +154,84 @@ export default function RegisterWithGuard() {
     }
   }, [terminalIndex, terminalText, isConnected, interfaceReady]);
 
+  // Load referral code from localStorage on component mount
+  useEffect(() => {
+    const storedRefCode = localStorage.getItem('referralCode');
+    if (storedRefCode) {
+      setReferralCode(storedRefCode);
+    }
+  }, []);
+
+  const validateRefCode = (code: string) => {
+    if (code.length > 20) {
+      setRefCodeError('Referral code must be 20 characters or less');
+      return false;
+    }
+    if (!/^[a-zA-Z0-9\-_]+$/.test(code)) {
+      setRefCodeError('Referral code can only contain letters, numbers, hyphens, and underscores');
+      return false;
+    }
+    setRefCodeError('');
+    return true;
+  };
+
+  const handleRefCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Only allow letters, numbers, hyphens, and underscores
+    const sanitizedValue = value.replace(/[^a-zA-Z0-9\-_]/g, '');
+    setManualRefCode(sanitizedValue);
+    if (sanitizedValue) {
+      validateRefCode(sanitizedValue);
+    } else {
+      setRefCodeError('');
+    }
+  };
+
+  const handleSetRefCode = () => {
+    if (validateRefCode(manualRefCode)) {
+      localStorage.setItem('referralCode', manualRefCode);
+      setReferralCode(manualRefCode);
+      setManualRefCode('');
+    }
+  };
+
+  const handleClearRefCode = () => {
+    localStorage.removeItem('referralCode');
+    setReferralCode(null);
+  };
+
   const handleRegister = async () => {
     if (!registrationFee) return;
+    
+    // Validate manual ref code if it exists
+    if (manualRefCode && !validateRefCode(manualRefCode)) {
+      return;
+    }
     
     try {
       setTxStatus('pending');
       setErrorMessage('');
-      await writeContract({
-        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-        abi: GameMasterABI,
-        functionName: 'register',
-        value: registrationFee,
-        gas: BigInt(300000)
-      });
+      
+      // Use registerWithReferral if there's a referral code (either from localStorage or manual input)
+      if (referralCode || manualRefCode) {
+        await writeContract({
+          address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+          abi: GameMasterABI,
+          functionName: 'registerWithReferral',
+          value: registrationFee,
+          gas: BigInt(600000),
+          args: [referralCode || manualRefCode]
+        });
+      } else {
+        // Use regular register if no referral code
+        await writeContract({
+          address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+          abi: GameMasterABI,
+          functionName: 'register',
+          value: registrationFee,
+          gas: BigInt(600000)
+        });
+      }
     } catch (error) {
       console.error('Registration error:', error);
       setTxStatus('error');
@@ -264,6 +332,7 @@ export default function RegisterWithGuard() {
                   <div className="text-foreground/50 uppercase tracking-wider">Registered Players</div>
                   <div className="mt-3 flex items-end">
                     <div className="text-3xl font-bold">{playerCount?.toString() || '0'}</div>
+                  
                     <div className="text-foreground/60 ml-1 mb-1">/{maxPlayers?.toString() || '?'}</div>
                   </div>
                   <div className="mt-3 w-full bg-content-2 h-1">
@@ -277,26 +346,79 @@ export default function RegisterWithGuard() {
                   </div>
                 </div>
                 
+                {/* Referral Code Panel */}
+                <div className="font-mono text-xs bg-background border border-l-2 border-border border-l-content-4
+                               pl-3 pr-2 py-3 text-foreground/90 mb-4">
+                  <div className="text-foreground/50 uppercase tracking-wider">Referral Code</div>
+                  {referralCode ? (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
+                          <span className="text-foreground/80">CODE:</span>
+                          <span className="ml-2 font-bold text-foreground">{referralCode}</span>
+                        </div>
+                        <button 
+                          onClick={handleClearRefCode}
+                          className="text-foreground/50 hover:text-foreground text-[10px]"
+                        >
+                          [CLEAR]
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-3">
+                      <div className="flex items-center mb-2">
+                        <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
+                        <span className="text-foreground/80">ENTER CODE:</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={manualRefCode}
+                          onChange={handleRefCodeChange}
+                          placeholder="Enter referral code..."
+                          maxLength={20}
+                          className={`flex-1 bg-background border ${refCodeError ? 'border-red-500' : 'border-border'} 
+                                   px-3 py-2 text-foreground focus:outline-none focus:border-foreground/50 
+                                   font-mono text-xs`}
+                        />
+                        <button
+                          onClick={handleSetRefCode}
+                          disabled={!manualRefCode || !!refCodeError}
+                          className="px-3 py-2 border border-border text-foreground/70 hover:text-foreground
+                                   disabled:opacity-50 disabled:cursor-not-allowed font-mono text-xs"
+                        >
+                          SET
+                        </button>
+                      </div>
+                      {refCodeError && (
+                        <div className="mt-2 text-red-500 text-[10px]">
+                          {refCodeError}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
                 {/* Registration panel */}
                 <div className="font-mono text-xs bg-background border border-t-2 border-border border-t-content-4
                                px-3 py-4 text-foreground/90 mb-4">
                   <div className="text-foreground/50 mb-2 uppercase tracking-wider">Join Game</div>
                   <div className="grid grid-cols-[1fr_auto] gap-1 text-[11px]">
-                    <div className="text-foreground/60">TOTAL ENTRY FEE</div>
-                    <div className="text-right">
-                      {formattedFee}<span className="text-foreground/60 ml-1">S</span>
-                    </div>
-                    
-                   <div className="hidden">
-                    <div className="text-foreground/60 pl-2">PRIZE POOL</div>
+                    <div className="text-foreground/60 pl-2">TO PRIZE POOL</div>
                     <div className="text-right">
                       {prizePool}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                     
-                    <div className="text-foreground/60 pl-2">WONDERLAND CONTRIBUTION</div>
+                    <div className="text-foreground/60 pl-2">PLATFORM FEES (Token Sale)</div>
                     <div className="text-right">
                       {protocolFee}<span className="text-foreground/60 ml-1">S</span>
                     </div>
+
+                    <div className="text-foreground/60 mt-2 font-bold">TOTAL ENTRY FEE</div>
+                    <div className="text-right mt-2 font-bold">
+                      {formattedFee}<span className="text-foreground/60 ml-1">S</span>
                     </div>
                   </div>
                 </div>
@@ -403,7 +525,7 @@ export default function RegisterWithGuard() {
                       <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>
                       <span>START TIME:</span>
                     </div>
-                    <div className="text-foreground">15:00 GMT (3:00 PM)</div>
+                    <div className="text-foreground">17:00 UTC</div>
                     
                     <div className="text-foreground/80 flex items-center">
                       <div className="w-2 h-2 rounded-full bg-foreground animate-pulse mr-2"></div>

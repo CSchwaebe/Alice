@@ -223,19 +223,6 @@ export const GameMasterABI = [
     "type": "event"
   },
   {
-    "inputs": [],
-    "name": "MAX_PLAYERS",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "uint256",
@@ -654,6 +641,19 @@ export const GameMasterABI = [
   },
   {
     "inputs": [],
+    "name": "maxPlayers",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -699,6 +699,19 @@ export const GameMasterABI = [
   },
   {
     "inputs": [],
+    "name": "pointsContract",
+    "outputs": [
+      {
+        "internalType": "contract Points",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "register",
     "outputs": [],
     "stateMutability": "payable",
@@ -720,6 +733,39 @@ export const GameMasterABI = [
     "name": "registerGame",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registerMe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "players",
+        "type": "address[]"
+      }
+    ],
+    "name": "registerPlayersBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "referralCode",
+        "type": "string"
+      }
+    ],
+    "name": "registerWithReferral",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -804,6 +850,32 @@ export const GameMasterABI = [
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "_maxPlayers",
+        "type": "uint256"
+      }
+    ],
+    "name": "setMaxPlayers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "_pointsContract",
+        "type": "address"
+      }
+    ],
+    "name": "setPointsContract",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_newFee",
         "type": "uint256"
       }
@@ -833,6 +905,13 @@ export const GameMasterABI = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "toggleRegistration",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -848,7 +927,13 @@ export const GameMasterABI = [
   {
     "inputs": [],
     "name": "withdraw",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   }

@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import MatrixRain from "@/components/effects/MatrixRain";
 import MatrixRainMobile from "@/components/effects/MatrixRainMobile";
 import { saira } from "../lib/landing/fonts";
@@ -19,6 +21,15 @@ import {
 } from "../lib/landing/components/ui";
 
 export default function LandingPage() {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const referralCode = searchParams.get('ref');
+    if (referralCode) {
+      localStorage.setItem('referralCode', referralCode);
+    }
+  }, [searchParams]);
+
   return (
     <div className="flex flex-col relative">
       {/* Hero Section */}
@@ -57,9 +68,8 @@ export default function LandingPage() {
           <div className="text-center relative w-full max-w-sm md:max-w-md lg:max-w-4xl flex flex-col gap-4">
             <NavButton href="/portal" text="Enter Game" />
             <NavButton 
-              href="https://alice-3.gitbook.io/alice/season-0/token-info" 
-              text="Token" 
-              external 
+              href="/token" 
+              text="Token"  
             />
             <NavButton 
               href="https://alice-3.gitbook.io/alice/what-is-alice/quickstart" 
@@ -99,7 +109,7 @@ export default function LandingPage() {
                   title="Season 0"
                   content={
                     <>
-                      The beta launch of Alice—our first 10 games where early players help test, compete, and shape the game from the ground up. But this isn't just early access—it's also our token distribution event.
+                      The beta launch of Alice—our first games where early players help test, compete, and shape the game from the ground up. But this isn't just early access—it's also our token distribution event.
                       <br /><br />
                       We are distributing 50% of the total ALICE supply to our early users. For now, everyone is a winner.
                     </>
@@ -125,7 +135,7 @@ export default function LandingPage() {
                         <div className="flex items-start">
                           <span className="mr-4 font-bold text-md text-primary-300">1</span>
                           <div>
-                            <div className="font-bold text-md">Get 101 Sonic</div>
+                            <div className="font-bold text-md">Get Sonic</div>
                             <div className="opacity-80 mt-2">
                               You'll need Sonic to enter games and pay for gas. Use deBridge to bridge to Sonic if you don't have funds there.
                             </div>

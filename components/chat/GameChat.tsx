@@ -264,7 +264,7 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
                 className={`flex ${msg.sender === currentUser ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-[80%] ${msg.sender === currentUser ? 'text-right' : ''}`}>
-                  <div className={`inline-block p-3 font-mono max-w-full break-all ${
+                  <div className={`inline-block p-3 font-mono max-w-full break-word ${
                     msg.sender === currentUser
                       ? 'bg-gradient-to-b from-overlay-dark to-background border border-primary-300'
                       : 'bg-gradient-to-b from-overlay-dark to-background border border-primary-300'
@@ -274,7 +274,7 @@ export default function GameChat({ gameId, gameName, playerList }: GameChatProps
                         #{getPlayerNumber(msg.sender)}
                       </div>
                     )}
-                    <div className="text-sm text-primary-700 break-all whitespace-pre-wrap">
+                    <div className="text-sm text-primary-700 break-word whitespace-pre-wrap">
                       {msg.content}
                     </div>
                     <div className="text-xs text-primary-400 mt-1">

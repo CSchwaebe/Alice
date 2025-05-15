@@ -82,6 +82,7 @@ const config: Config = {
         "grow": "grow 2s ease-in-out infinite",
         "interface-reveal": "interface-reveal 0.5s ease-out forwards",
         "text-shimmer": "text-shimmer 2s linear infinite",
+        "shimmer": "shimmer 2s linear infinite",
       },
       keyframes: {
         "glow-purple": {
@@ -111,6 +112,10 @@ const config: Config = {
         "text-shimmer": {
           "0%": { backgroundPosition: "0% 50%" },
           "100%": { backgroundPosition: "100% 50%" },
+        },
+        "shimmer": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
       },
       fontFamily: {
