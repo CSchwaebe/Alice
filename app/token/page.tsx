@@ -454,7 +454,7 @@ export default function Points() {
           <p>Earn ALICE and Sonic by playing games and referring users.</p>
             <p>50% of the ALICE supply will be distributed in Season 0.</p>
             <p>The token will launch when all 50,000,000 ALICE are distributed.</p>
-            
+            <p className="text-foreground/40 text-[10px] mt-2">SYSTEM NOTE: To earn referral bonuses on ALICE buys, register for a game with the code first.</p>
           </div>
         </div>
 
