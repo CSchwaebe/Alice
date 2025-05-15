@@ -281,6 +281,67 @@ export default function LandingPage() {
             </div>
 
             <div className="pt-24">
+              <ResponsiveContentBlock
+                imageUrl="/images/renders/landing_comms.png"
+                title={
+                  <div className="w-full font-mono">
+                    <div className="text-center text-lg">The Rewards</div>
+                    <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-primary-300 to-transparent my-6" />
+                    <div className="text-sm opacity-80 text-left space-y-8">
+                    
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Private Chat Rooms</div>
+                            <div className="text-sm opacity-80 mt-1">Each game and the Nexus has its own chat, accessible only to active players.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Wallet-Gated Access</div>
+                            <div className="text-sm opacity-80 mt-1">You must connect your wallet and be alive in the game to participate.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Anonymized Messaging</div>
+                            <div className="text-sm opacity-80 mt-1">All messages display only your player number — no usernames, no profile info.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">No Spectators</div>
+                            <div className="text-sm opacity-80 mt-1">Eliminated players lose access to chat immediately.</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div>
+                            <div className="font-bold">Strategic Communication</div>
+                            <div className="text-sm opacity-80 mt-1">Use the chat to coordinate, deceive, or stay silent. What you say — or don't — can change everything.</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+                desktopImageFirst={true}
+                mobileImageFirst={true}
+              />
+            </div>
+
+            <div className="pt-24">
               <CallToAction />
             </div>
 
