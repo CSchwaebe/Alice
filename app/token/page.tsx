@@ -10,6 +10,30 @@ import { useRouter } from 'next/navigation';
 import { parseEther, formatEther } from 'ethers';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 import DepositDrawer from '@/components/ui/DepositDrawer';
+import { addToast } from '@heroui/toast';
+
+// Copy to clipboard function
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+    addToast({
+      title: 'Copied!',
+      description: 'Text copied to clipboard',
+      color: 'success',
+      timeout: 1000,
+    });
+    return true;
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+    addToast({
+      title: 'Failed to copy',
+      description: 'Please try again',
+      color: 'danger',
+      timeout: 1000,
+    });
+    return false;
+  }
+};
 
 export default function Points() {
   const [referralAddressToCheck, setReferralAddressToCheck] = useState('');
@@ -396,15 +420,45 @@ export default function Points() {
                 
                 {currentReferralCode && (
                   <>
-                    <div className="flex justify-center items-center pb-4">
+                    <div className="flex justify-center items-center gap-2 pb-4">
                       <div className="text-2xl font-bold text-foreground tracking-wider">
                         {currentReferralCode}
                       </div>
+                      <button 
+                        onClick={async () => {
+                          const success = await copyToClipboard(currentReferralCode);
+                          if (success) {
+                            setGlitchEffect(true);
+                            setTimeout(() => setGlitchEffect(false), 200);
+                          }
+                        }}
+                        className="text-foreground hover:text-foreground/70 transition-colors p-1"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                        </svg>
+                      </button>
                     </div>
                     <div className="text-xs text-foreground/50 text-center">
                       <div className="mb-2">Your Referral Link:</div>
-                      <div className="font-mono bg-background/40 p-2 rounded break-all">
-                        {`${process.env.NEXT_PUBLIC_BASE_URL || 'https://alice-wonderland.com'}/?ref=${currentReferralCode}`}
+                      <div className="flex justify-center items-center gap-2">
+                        <div className="font-mono text-foreground/70 break-all">
+                          {`${process.env.NEXT_PUBLIC_BASE_URL || 'https://alice-wonderland.com'}/?ref=${currentReferralCode}`}
+                        </div>
+                        <button 
+                          onClick={async () => {
+                            const success = await copyToClipboard(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://alice-wonderland.com'}/?ref=${currentReferralCode}`);
+                            if (success) {
+                              setGlitchEffect(true);
+                              setTimeout(() => setGlitchEffect(false), 200);
+                            }
+                          }}
+                          className="text-foreground hover:text-foreground/70 transition-colors p-1 flex-shrink-0"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   </>
