@@ -451,13 +451,10 @@ export default function Points() {
           <div className="text-foreground/50 mb-3 uppercase tracking-wider">INFO:</div>
           
           <div className="space-y-3 leading-loose">
+          <p>Earn ALICE and Sonic by playing games and referring users.</p>
             <p>50% of the ALICE supply will be distributed in Season 0.</p>
             <p>The token will launch when all 50,000,000 ALICE are distributed.</p>
-            <p>Earn ALICE by playing games and referring users.</p>
-            <p></p>
-            <p className="text-foreground/40 text-[10px] mt-2">
-              SYSTEM NOTE: 
-            </p>
+            
           </div>
         </div>
 
