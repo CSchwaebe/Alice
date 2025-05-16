@@ -324,9 +324,9 @@ export default function LandingPage() {
                       <div className="space-y-2">
                         <div className="flex items-start">
                           <div>
-                            <div className="font-bold">Permanent Link</div>
+                            <div className="font-bold">Permanent Connection</div>
                             <div className="text-sm opacity-80 mt-1">
-                            Referral links are on-chain and permanent. Once someone registers with yours, it’s locked in for the entirety of Season 0.
+                            Referrals are on-chain and permanent. Once someone registers with yours, it’s locked in for the entirety of Season 0.
                               </div>
                           </div>
                         </div>
