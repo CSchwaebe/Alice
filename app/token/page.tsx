@@ -35,6 +35,12 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
+// Add truncateAddress helper function at the top level
+const truncateAddress = (address: string) => {
+  if (!address) return '';
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
 export default function Points() {
   const [referralAddressToCheck, setReferralAddressToCheck] = useState('');
   const [referralCode, setReferralCode] = useState('');
@@ -48,6 +54,9 @@ export default function Points() {
   const [txStatus, setTxStatus] = useState<'none' | 'pending' | 'success' | 'error'>('none');
   const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const PAGE_SIZE = 25;
 
   // Get total points issued
   const { data: totalPointsIssued, refetch: refetchTotalPoints } = useReadContract({
@@ -246,6 +255,33 @@ export default function Points() {
       }
     }
   };
+
+  // Get paginated addresses
+  const { data: paginatedData, refetch: refetchLeaderboard } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+    abi: PointsABI,
+    functionName: 'getAddressesPaginated',
+    args: [(currentPage - 1) * PAGE_SIZE, PAGE_SIZE],
+  }) as { data: [string[], bigint[], bigint[]] | undefined, refetch: () => void };
+
+  // Get total address count for pagination
+  const { data: totalAddresses } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+    abi: PointsABI,
+    functionName: 'getAddressCount',
+    args: [],
+  }) as { data: bigint | undefined };
+
+  // Find user's rank when connected
+  useEffect(() => {
+    if (!connectedAddress || !paginatedData) return;
+    
+    const [addresses, balances] = paginatedData;
+    const userIndex = addresses.findIndex(addr => addr.toLowerCase() === connectedAddress.toLowerCase());
+    if (userIndex !== -1) {
+      setUserRank((currentPage - 1) * PAGE_SIZE + userIndex + 1);
+    }
+  }, [connectedAddress, paginatedData, currentPage]);
 
   return (
     <div className="min-h-[100vh] flex flex-col items-center justify-center relative overflow-hidden" ref={containerRef}>
@@ -493,7 +529,7 @@ export default function Points() {
                       </div>
                     )}
                   </div>
-                )}
+                )} 
               </div>
             </>
           )}
@@ -510,6 +546,88 @@ export default function Points() {
             <p>The token will launch when all 50,000,000 ALICE are distributed.</p>
             <p className="text-foreground/40 text-[10px] mt-2">SYSTEM NOTE: To earn referral bonuses on ALICE buys, register for a game with the code first.</p>
           </div>
+        </div>
+
+        {/* Leaderboard Section */}
+        <div className="font-mono bg-background/40 border border-border
+                       px-3 py-4 text-foreground/90 mb-4 backdrop-blur-sm w-full">
+          <div className="text-foreground/50 mb-3 uppercase tracking-wider flex items-center">
+            <div className="h-px w-4 bg-content-3 mr-2"></div>
+            Leaderboard
+            <div className="h-px flex-grow bg-content-3 ml-2"></div>
+          </div>
+
+          {/* User's Position */}
+          {connectedAddress && userRank && (
+            <div className="mb-4 p-3 border border-content-3 bg-background/30">
+              <div className="text-sm text-foreground/50 mb-2">Your Position</div>
+              <div className="flex justify-between items-center text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-foreground/70">#{userRank}</span>
+                  <span className="text-foreground">{truncateAddress(connectedAddress)}</span>
+                </div>
+                <div className="text-foreground">
+                  {pointsData ? Number(pointsData[0]).toLocaleString() : '0'} ALICE
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Leaderboard Table */}
+          <div className="overflow-x-auto text-xs">
+            <table className="w-full">
+              <thead>
+                <tr className="text-foreground/50 text-xs uppercase">
+                  <th className="text-left py-2 px-3">#</th>
+                  <th className="text-left py-2 px-3">Address</th>
+                  <th className="text-right py-2 px-3">Total ALICE</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedData?.[0].map((address, index) => (
+                  <tr key={address} 
+                      className={`border-t border-content-3 
+                                ${address.toLowerCase() === connectedAddress?.toLowerCase() ? 
+                                'bg-foreground/5' : ''}`}>
+                    <td className="py-2 px-3 text-foreground/70">
+                      #{(currentPage - 1) * PAGE_SIZE + index + 1}
+                    </td>
+                    <td className="py-2 px-3 text-foreground">
+                      {truncateAddress(address)}
+                    </td>
+                    <td className="py-2 px-3 text-right text-foreground">
+                      {Number(paginatedData[1][index]).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalAddresses && (
+            <div className="mt-4 flex justify-between items-center text-sm">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1 border border-content-3 disabled:opacity-50
+                         disabled:cursor-not-allowed hover:bg-white/10"
+              >
+                Previous
+              </button>
+              <span className="text-foreground/70">
+                Page {currentPage} of {Math.ceil(Number(totalAddresses) / PAGE_SIZE)}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => p + 1)}
+                disabled={currentPage >= Math.ceil(Number(totalAddresses) / PAGE_SIZE)}
+                className="px-3 py-1 border border-content-3 disabled:opacity-50
+                         disabled:cursor-not-allowed hover:bg-white/10"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Home Button */}
