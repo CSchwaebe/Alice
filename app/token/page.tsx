@@ -56,7 +56,7 @@ export default function Points() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(1);
   const [userRank, setUserRank] = useState<number | null>(null);
-  const PAGE_SIZE = 25;
+  const PAGE_SIZE = 10;
 
   // Get total points issued
   const { data: totalPointsIssued, refetch: refetchTotalPoints } = useReadContract({
