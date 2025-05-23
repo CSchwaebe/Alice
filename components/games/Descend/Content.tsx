@@ -92,10 +92,7 @@ export function Content({
       {/* Round and Phase */}
       <div className="mb-4 flex justify-center items-center gap-4">
         <div className="text-2xl lg:text-3xl text-foreground font-bold tracking-wider">
-          Round {currentRound.toString()}
-        </div>
-        <div className="text-2xl lg:text-3xl text-foreground font-bold tracking-wider">
-          - {currentPhase === 1 ? 'Commit' : 'Reveal'}
+          {currentPhase === 1 ? 'Commit' : 'Reveal'}
         </div>
       </div>
 

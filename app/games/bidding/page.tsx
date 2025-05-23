@@ -83,11 +83,11 @@ function BiddingGame() {
   });
   
   // Handle timer expiration
-  const handleTimerExpired = useCallback(() => {
-    if (gameState !== 1 && gameState !== 4) {
+  const handleTimerExpired = () => {
+    if (roundEndTime > 0 && gameState !== 0 && gameState !== 1 && gameState !== 4) {
       setShowEndGameDialog(true);
     }
-  }, [gameState]);
+  };
 
   // Handle ending expired games
   const handleEndGames = async () => {

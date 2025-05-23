@@ -1,4 +1,4 @@
-export const ThreesABI =  [
+export const ThreesABI = [
   {
     "inputs": [],
     "stateMutability": "nonpayable",
@@ -655,6 +655,13 @@ export const ThreesABI =  [
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "registerMe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

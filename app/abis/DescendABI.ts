@@ -866,6 +866,13 @@ export const DescendABI = [
   },
   {
     "inputs": [],
+    "name": "registerMe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",

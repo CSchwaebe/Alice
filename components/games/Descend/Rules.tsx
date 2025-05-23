@@ -59,7 +59,7 @@ export default function Rules({ levelCapacities = {} }: RulesProps) {
     "",
     "Game Phases:",
     "• COMMIT (2 MINUTES): Lock in your secret move",
-    "• REVEAL (2 MINUTES): Show your chosen move",
+    "• REVEAL (1 MINUTE): Show your chosen move",
     "",
     "Warnings:",
     "• You must reveal the same move you committed to",
@@ -121,7 +121,7 @@ export default function Rules({ levelCapacities = {} }: RulesProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative max-w-4xl mx-auto mt-4"
+        className="relative max-w-4xl mx-auto"
       >
         <div 
           ref={containerRef}

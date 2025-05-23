@@ -50,9 +50,11 @@ export function Content({
   return (
     <div className="w-full">
       {/* Timer and round info display */}
-      <div className="flex justify-center mb-12">
-        <GameTimer endTime={roundEndTime} onExpired={onTimerExpired} />
-      </div>
+      {gameState !== 1 && (
+        <div className="flex justify-center mb-12">
+          <GameTimer endTime={roundEndTime} onExpired={onTimerExpired} />
+        </div>
+      )}
 
      
 

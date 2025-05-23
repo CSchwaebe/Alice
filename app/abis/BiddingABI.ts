@@ -700,6 +700,13 @@ export const BiddingABI = [
   },
   {
     "inputs": [],
+    "name": "registerMe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",

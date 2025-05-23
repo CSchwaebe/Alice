@@ -58,7 +58,8 @@ export function useBiddingGameData({ address, isConnected }: UseBiddingGameDataP
     functionName: 'getPlayerInfo',
     args: [address],
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      gcTime: 0
     }
   }) as { data: [string, bigint, boolean, number, bigint] | undefined };
 
@@ -86,7 +87,8 @@ export function useBiddingGameData({ address, isConnected }: UseBiddingGameDataP
     functionName: 'getGameInfo',
     args: [gameId],
     query: {
-      enabled: !!gameId
+      enabled: !!gameId,
+      gcTime: 0
     }
   }) as { data: GameInfo | undefined, refetch: () => void };
 
@@ -97,7 +99,8 @@ export function useBiddingGameData({ address, isConnected }: UseBiddingGameDataP
     functionName: 'getCurrentPhase',
     args: [gameId],
     query: {
-      enabled: !!gameId
+      enabled: !!gameId,
+      gcTime: 0
     }
   });
 
@@ -108,7 +111,8 @@ export function useBiddingGameData({ address, isConnected }: UseBiddingGameDataP
     functionName: 'getPlayerInfo',
     args: [gameId],
     query: {
-      enabled: !!gameId
+      enabled: !!gameId,
+      gcTime: 0
     }
   }) as { data: BiddingPlayerInfo[] | undefined, refetch: () => void };
 
