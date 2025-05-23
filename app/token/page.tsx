@@ -57,6 +57,7 @@ export default function Points() {
   const [currentPage, setCurrentPage] = useState(1);
   const [userRank, setUserRank] = useState<number | null>(null);
   const PAGE_SIZE = 10;
+  const MAX_LEADERBOARD_SIZE = 100;
 
   // Get total points issued
   const { data: totalPointsIssued, refetch: refetchTotalPoints } = useReadContract({
@@ -256,12 +257,12 @@ export default function Points() {
     }
   };
 
-  // Get paginated addresses
-  const { data: paginatedData, refetch: refetchLeaderboard } = useReadContract({
+  // Get leaderboard data (top 100)
+  const { data: leaderboardData, refetch: refetchLeaderboard } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
     abi: PointsABI,
-    functionName: 'getAddressesPaginated',
-    args: [(currentPage - 1) * PAGE_SIZE, PAGE_SIZE],
+    functionName: 'getLeaderboard',
+    args: [],
   }) as { data: [string[], bigint[], bigint[]] | undefined, refetch: () => void };
 
   // Get total address count for pagination
@@ -274,14 +275,14 @@ export default function Points() {
 
   // Find user's rank when connected
   useEffect(() => {
-    if (!connectedAddress || !paginatedData) return;
+    if (!connectedAddress || !leaderboardData) return;
     
-    const [addresses, balances] = paginatedData;
+    const [addresses, balances] = leaderboardData;
     const userIndex = addresses.findIndex(addr => addr.toLowerCase() === connectedAddress.toLowerCase());
     if (userIndex !== -1) {
-      setUserRank((currentPage - 1) * PAGE_SIZE + userIndex + 1);
+      setUserRank(userIndex + 1);
     }
-  }, [connectedAddress, paginatedData, currentPage]);
+  }, [connectedAddress, leaderboardData]);
 
   return (
     <div className="min-h-[100vh] flex flex-col items-center justify-center relative overflow-hidden" ref={containerRef}>
@@ -584,7 +585,7 @@ export default function Points() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedData?.[0].map((address, index) => (
+                {leaderboardData?.[0].slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE).map((address, index) => (
                   <tr key={address} 
                       className={`border-t border-content-3 
                                 ${address.toLowerCase() === connectedAddress?.toLowerCase() ? 
@@ -596,7 +597,7 @@ export default function Points() {
                       {truncateAddress(address)}
                     </td>
                     <td className="py-2 px-3 text-right text-foreground">
-                      {Number(paginatedData[1][index]).toLocaleString()}
+                      {Number(leaderboardData[1][index + ((currentPage - 1) * PAGE_SIZE)]).toLocaleString()}
                     </td>
                   </tr>
                 ))}
@@ -605,7 +606,7 @@ export default function Points() {
           </div>
 
           {/* Pagination Controls */}
-          {totalAddresses && (
+          {leaderboardData && (
             <div className="mt-4 flex justify-between items-center text-sm">
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -616,11 +617,11 @@ export default function Points() {
                 Previous
               </button>
               <span className="text-foreground/70">
-                Page {currentPage} of {Math.ceil(Number(totalAddresses) / PAGE_SIZE)}
+                Page {currentPage} of {Math.min(Math.ceil(leaderboardData[0].length / PAGE_SIZE), Math.ceil(MAX_LEADERBOARD_SIZE / PAGE_SIZE))}
               </span>
               <button
                 onClick={() => setCurrentPage(p => p + 1)}
-                disabled={currentPage >= Math.ceil(Number(totalAddresses) / PAGE_SIZE)}
+                disabled={currentPage >= Math.min(Math.ceil(leaderboardData[0].length / PAGE_SIZE), Math.ceil(MAX_LEADERBOARD_SIZE / PAGE_SIZE))}
                 className="px-3 py-1 border border-content-3 disabled:opacity-50
                          disabled:cursor-not-allowed hover:bg-white/10"
               >
