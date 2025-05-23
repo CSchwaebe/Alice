@@ -34,6 +34,7 @@ export default function Rules() {
     "Warnings:",
     "• If you do not commit or reveal in time, you will be eliminated",
     "• Your bid will be deducted from your total points after reveal",
+    "• You have 1000 points total, you will not get any more points",
     "• If you want to make it to the end, you must carefully ration your points",
     "",
     "The rules will not be repeated. Use the chat to coordinate or manipulate.",
