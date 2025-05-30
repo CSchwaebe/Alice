@@ -1,13 +1,26 @@
 import { useWriteContract, useWaitForTransactionReceipt, useAccount } from 'wagmi';
 import { ClimbABI } from '@/app/abis/ClimbABI';
 import { useCallback, useState, useEffect } from 'react';
-import { addToast } from '@heroui/toast';
 import { parseEther } from 'viem';
 
 const CLIMB_GAME_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDR_CASINO_CLIMB as `0x${string}`;
 
 export function useClimbGameTransactions() {
   const [error, setError] = useState<string | null>(null);
+  const [waitingForEvent, setWaitingForEvent] = useState<{
+    type: 'climbing' | 'cashingOut' | 'starting' | 'autoClimbing' | null;
+    message: string;
+    resultInfo?: {
+      type: 'success' | 'bust' | 'cashout' | null;
+      level?: number;
+      newLevel?: number;
+      payout?: string;
+      currency?: 'S' | 'ALICE';
+      aliceReward?: number;
+    };
+  }>({ type: null, message: '' });
+  const [currentAction, setCurrentAction] = useState<'climbing' | 'cashingOut' | 'starting' | 'autoClimbing' | null>(null);
+  
   const { address } = useAccount();
 
   // Contract write hook
@@ -21,28 +34,56 @@ export function useClimbGameTransactions() {
   // Handle transaction error notifications
   useEffect(() => {
     if (error) {
-      addToast({
-        title: 'Transaction Failed',
-        description: error,
-        color: 'danger'
-      });
+      // Clear waiting state when there's an error
+      setWaitingForEvent({ type: null, message: '' });
+      setCurrentAction(null);
     }
   }, [error]);
 
-  // Handle transaction success notifications
+  // Handle transaction success - set waiting state when transaction is confirmed
   useEffect(() => {
-    if (isTxSuccess && hash) {
-      addToast({
-        title: 'Transaction Successful',
-        description: 'Your transaction has been confirmed!',
-        color: 'success'
-      });
+    if (isTxSuccess && hash && currentAction) {
+      // Set waiting state based on the current action
+      switch (currentAction) {
+        case 'climbing':
+          setWaitingForEvent({ type: 'climbing', message: 'Climbing to the next level...' });
+          break;
+        case 'cashingOut':
+          setWaitingForEvent({ type: 'cashingOut', message: 'Processing your cash out...' });
+          break;
+        case 'autoClimbing':
+          setWaitingForEvent({ type: 'autoClimbing', message: 'Auto climbing to target level...' });
+          break;
+      }
     }
-  }, [isTxSuccess, hash]);
+  }, [isTxSuccess, hash, currentAction]);
+
+  // Functions to manage waiting states
+  const clearWaitingState = useCallback(() => {
+    setWaitingForEvent({ type: null, message: '' });
+    setCurrentAction(null);
+  }, []);
+
+  // Function to show result and auto-clear after 5 seconds
+  const showResult = useCallback((resultInfo: {
+    type: 'success' | 'bust' | 'cashout';
+    level?: number;
+    newLevel?: number;
+    payout?: string;
+    currency?: 'S' | 'ALICE';
+    aliceReward?: number;
+  }) => {
+    setWaitingForEvent(prev => ({
+      type: prev.type, // Preserve the waiting type so overlay stays visible
+      message: prev.message, // Keep original message
+      resultInfo
+    }));
+  }, []);
 
   const handleStartGame = useCallback(async (depositAmount: string) => {
     try {
       setError(null);
+      setCurrentAction('starting');
       if (!address) {
         throw new Error('Wallet not connected');
       }
@@ -61,12 +102,14 @@ export function useClimbGameTransactions() {
     } catch (err) {
       console.error('Start game error:', err);
       setError(err instanceof Error ? err.message : 'Failed to start game');
+      setCurrentAction(null);
     }
   }, [writeContract, address]);
 
   const handleClimb = useCallback(async () => {
     try {
       setError(null);
+      setCurrentAction('climbing');
       if (!address) {
         throw new Error('Wallet not connected');
       }
@@ -83,12 +126,14 @@ export function useClimbGameTransactions() {
     } catch (err) {
       console.error('Climb error:', err);
       setError(err instanceof Error ? err.message : 'Failed to climb');
+      setCurrentAction(null);
     }
   }, [writeContract, address]);
 
   const handleCashOut = useCallback(async () => {
     try {
       setError(null);
+      setCurrentAction('cashingOut');
       if (!address) {
         throw new Error('Wallet not connected');
       }
@@ -105,12 +150,14 @@ export function useClimbGameTransactions() {
     } catch (err) {
       console.error('Cash out error:', err);
       setError(err instanceof Error ? err.message : 'Failed to cash out');
+      setCurrentAction(null);
     }
   }, [writeContract, address]);
 
   const handleAutoClimb = useCallback(async (targetLevel: number) => {
     try {
       setError(null);
+      setCurrentAction('autoClimbing');
       if (!address) {
         throw new Error('Wallet not connected');
       }
@@ -127,6 +174,7 @@ export function useClimbGameTransactions() {
     } catch (err) {
       console.error('Auto climb error:', err);
       setError(err instanceof Error ? err.message : 'Failed to auto climb');
+      setCurrentAction(null);
     }
   }, [writeContract, address]);
 
@@ -163,6 +211,9 @@ export function useClimbGameTransactions() {
     isLoading: isWaitingTx,
     isSuccess: isTxSuccess,
     isPending,
-    error
+    error,
+    waitingForEvent,
+    clearWaitingState,
+    showResult
   };
 } 

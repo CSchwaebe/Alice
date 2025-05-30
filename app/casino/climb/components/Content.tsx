@@ -22,6 +22,10 @@ interface ClimbGameContentProps {
   isClimbing: boolean;
   isCashingOut: boolean;
   isStarting: boolean;
+  waitingForEvent?: {
+    type: 'climbing' | 'cashingOut' | 'starting' | 'autoClimbing' | null;
+    message: string;
+  };
   onStartGame: (depositAmount: string) => void;
   onClimb: () => void;
   onCashOut: () => void;
@@ -37,6 +41,7 @@ export function Content({
   isClimbing,
   isCashingOut,
   isStarting,
+  waitingForEvent,
   onStartGame,
   onClimb,
   onCashOut,
@@ -61,6 +66,7 @@ export function Content({
             isClimbing={isClimbing}
             isCashingOut={isCashingOut}
             isStarting={isStarting}
+            waitingForEvent={waitingForEvent}
             onStartGame={onStartGame}
             onClimb={onClimb}
             onCashOut={onCashOut}
@@ -83,6 +89,7 @@ export function Content({
         isClimbing={isClimbing}
         isCashingOut={isCashingOut}
         isStarting={isStarting}
+        waitingForEvent={waitingForEvent}
         onStartGame={onStartGame}
         onClimb={onClimb}
         onCashOut={onCashOut}

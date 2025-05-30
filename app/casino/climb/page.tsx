@@ -2,8 +2,6 @@
 
 import { useAccount } from 'wagmi';
 import { useState, useCallback, useEffect } from 'react';
-import { addToast } from '@heroui/toast';
-import type { GameNotification } from '@/lib/contract-events';
 import { formatEther } from 'viem';
 
 // Import custom hooks
@@ -14,6 +12,7 @@ import { useClimbGameTransactions } from '@/app/casino/climb/hooks/useClimbGameT
 // Import components
 import { Content } from '@/app/casino/climb/components/Content';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
+import { WaitingOverlay } from '@/app/casino/climb/components/WaitingOverlay';
 
 function ClimbGame() {
   const { address, isConnected } = useAccount();
@@ -49,14 +48,11 @@ function ClimbGame() {
     isLoading: isTxLoading,
     isPending: isTxPending,
     error,
-    isSuccess
+    isSuccess,
+    waitingForEvent,
+    clearWaitingState,
+    showResult
   } = useClimbGameTransactions();
-  
-  // Add notification handler
-  const handleNotification = (notification: GameNotification) => {
-    console.log('Climb: handleNotification called with:', notification);
-    addToast(notification);
-  };
   
   // Subscribe to game events
   useClimbGameEvents({
@@ -67,7 +63,8 @@ function ClimbGame() {
     refetchCanClimb,
     refetchCanCashOut,
     refetchAll,
-    onNotification: handleNotification
+    clearWaitingState,
+    showResult
   });
 
   // Handle transaction success/failure
@@ -119,6 +116,7 @@ function ClimbGame() {
               isClimbing={isTxPending}
               isCashingOut={isTxLoading}
               isStarting={isTxPending}
+              waitingForEvent={waitingForEvent}
               onStartGame={handleGameStart}
               onClimb={handleGameClimb}
               onCashOut={handleGameCashOut}
@@ -245,6 +243,14 @@ function ClimbGame() {
           )}
         </div>
       </div>
+      
+      {/* Waiting overlay */}
+      <WaitingOverlay 
+        isVisible={waitingForEvent.type !== null}
+        message={waitingForEvent.message}
+        resultInfo={waitingForEvent.resultInfo}
+        onTimeout={clearWaitingState}
+      />
     </div>
   );
 }

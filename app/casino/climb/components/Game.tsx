@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ClimbGameState } from '../hooks/useClimbGameData';
 import { formatEther } from 'viem';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
@@ -23,6 +23,10 @@ interface ClimbGameProps {
   isClimbing: boolean;
   isCashingOut: boolean;
   isStarting: boolean;
+  waitingForEvent?: {
+    type: 'climbing' | 'cashingOut' | 'starting' | 'autoClimbing' | null;
+    message: string;
+  };
   onStartGame: (depositAmount: string) => void;
   onClimb: () => void;
   onCashOut: () => void;
@@ -38,6 +42,7 @@ export default function Game({
   isClimbing,
   isCashingOut,
   isStarting,
+  waitingForEvent,
   onStartGame,
   onClimb,
   onCashOut,
@@ -46,6 +51,21 @@ export default function Game({
   const [depositAmount, setDepositAmount] = useState<string>('1');
   const [showCashOutDialog, setShowCashOutDialog] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
+
+  // Auto-increment selected level when current level matches what was selected
+  useEffect(() => {
+    if (gameState && selectedLevel && gameState.currentLevel === selectedLevel && allLevelInfo) {
+      // If we just climbed to the selected level, set the next level as selected
+      if (gameState.currentLevel < allLevelInfo.maxLevel) {
+        setSelectedLevel(gameState.currentLevel + 1);
+      } else {
+        setSelectedLevel(null); // Clear if at max level
+      }
+    }
+  }, [gameState?.currentLevel, selectedLevel, allLevelInfo]);
+
+  // Check if any waiting state is active
+  const isWaitingForEvent = waitingForEvent?.type !== null;
 
   // Format number with proper decimal handling
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,13 +188,13 @@ export default function Game({
           {/* Start button */}
           <button
             onClick={handleStartGame}
-            disabled={isStarting || !depositAmount || parseFloat(depositAmount) <= 0}
+            disabled={isStarting || !depositAmount || parseFloat(depositAmount) <= 0 || isWaitingForEvent}
             className="w-full bg-foreground text-background py-3 rounded-lg
                      font-mono tracking-widest text-lg
                      hover:bg-foreground transition-colors duration-200
                      disabled:bg-overlay-light disabled:text-primary-200"
           >
-            {isStarting ? "STARTING..." : "START CLIMB"}
+            {isStarting || (waitingForEvent?.type === 'starting') ? "STARTING..." : "START CLIMB"}
           </button>
         </div>
       </div>
@@ -297,24 +317,24 @@ export default function Game({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={handleCashOutClick}
-            disabled={!canCashOut || isCashingOut || gameState.pendingSequence > 0}
+            disabled={!canCashOut || isCashingOut || gameState.pendingSequence > 0 || isWaitingForEvent}
             className="bg-overlay-light text-primary-400 py-3 rounded-lg
                      font-mono tracking-widest text-lg border border-border
                      hover:bg-overlay-medium transition-colors duration-200
                      disabled:bg-overlay-light disabled:text-primary-200"
           >
-            {isCashingOut ? "CASHING OUT..." : "CASH OUT"}
+            {isCashingOut || (waitingForEvent?.type === 'cashingOut') ? "CASHING OUT..." : "CASH OUT"}
           </button>
           
           <button
             onClick={() => selectedLevel ? onAutoClimb(selectedLevel) : onClimb()}
-            disabled={!canClimb || isClimbing || gameState.pendingSequence > 0}
+            disabled={!canClimb || isClimbing || gameState.pendingSequence > 0 || isWaitingForEvent}
             className="bg-foreground text-background py-3 rounded-lg
                      font-mono tracking-widest text-lg
                      hover:bg-foreground transition-colors duration-200
                      disabled:bg-overlay-light disabled:text-primary-200"
           >
-            {isClimbing 
+            {isClimbing || (waitingForEvent?.type === 'climbing') || (waitingForEvent?.type === 'autoClimbing')
               ? "CLIMBING..." 
               : selectedLevel 
                 ? `CLIMB TO ${selectedLevel}` 
@@ -335,7 +355,7 @@ export default function Game({
         onClose={() => setShowCashOutDialog(false)}
         onConfirmClick={handleConfirmCashOut}
         title="Confirm Cash Out"
-        description={`You will receive ${sonicPayout.toFixed(4)} S or ${alicePayout.toFixed(0)} ALICE.`}
+        description={`You will receive ${sonicPayout.toFixed(2)} S or ${alicePayout.toFixed(0)} ALICE.`}
         confirmText={isCashingOut ? "CASHING OUT..." : "CONFIRM CASH OUT"}
         cancelText="Cancel"
       />

@@ -61,6 +61,7 @@ export type ContractEventType = {
 
     // Climb events
     | 'ClimbResult'
+    | 'AutoClimbCompleted'
     | 'PlayerCashedOut'
     | 'GameEnded'
     | 'EntropyReceived'
@@ -539,6 +540,14 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
             eventName: 'ClimbResult',
             onLogs: (logs) => {
               logs.forEach(log => processLog(log, climbAddress, 'Climb', 'ClimbResult'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'AutoClimbCompleted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'AutoClimbCompleted'));
             }
           }),
           publicClient.watchContractEvent({

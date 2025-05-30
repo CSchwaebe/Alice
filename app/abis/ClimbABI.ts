@@ -1,4 +1,4 @@
-export const ClimbABI = [
+export const ClimbABI =  [
     {
       "inputs": [
         {

@@ -1,5 +1,6 @@
 import { useContractEventSubscription, ContractEventType, createEventHandler } from '@/lib/contract-events';
 import { useRouter } from 'next/navigation';
+import { formatEther } from 'viem';
 
 interface UseClimbGameEventsProps {
   address: `0x${string}` | undefined;
@@ -9,14 +10,15 @@ interface UseClimbGameEventsProps {
   refetchCanClimb: () => void;
   refetchCanCashOut: () => void;
   refetchAll: () => void;
-  onNotification?: (notification: GameNotification) => void;
-}
-
-export interface GameNotification {
-  title: string;
-  description: string;
-  color: 'primary' | 'success' | 'danger';
-  timeout?: number;
+  clearWaitingState?: () => void;
+  showResult?: (resultInfo: {
+    type: 'success' | 'bust' | 'cashout';
+    level?: number;
+    newLevel?: number;
+    payout?: string;
+    currency?: 'S' | 'ALICE';
+    aliceReward?: number;
+  }) => void;
 }
 
 export function useClimbGameEvents({
@@ -27,7 +29,8 @@ export function useClimbGameEvents({
   refetchCanClimb,
   refetchCanCashOut,
   refetchAll,
-  onNotification
+  clearWaitingState,
+  showResult
 }: UseClimbGameEventsProps) {
   const router = useRouter();
 
@@ -35,6 +38,7 @@ export function useClimbGameEvents({
   const eventsToSubscribe: ContractEventType[] = [
     { contract: 'Climb', event: 'GameStarted' },
     { contract: 'Climb', event: 'ClimbResult' },
+    { contract: 'Climb', event: 'AutoClimbCompleted' },
     { contract: 'Climb', event: 'PlayerCashedOut' },
     { contract: 'Climb', event: 'GameEnded' },
     { contract: 'Climb', event: 'EntropyReceived' },
@@ -49,7 +53,6 @@ export function useClimbGameEvents({
     refetchPlayerStats,
     refetchCanClimb,
     refetchCanCashOut,
-    onNotification,
     router
   });
 
@@ -62,60 +65,83 @@ export function useClimbGameEvents({
       
       // Additional Climb-specific event handling
       if (event.type.event === 'GameStarted') {
-        const { player, depositAmount } = event.data?.args || {};
+        const eventArgs = event.data?.args?.args || event.data?.args || {};
+        const { player } = eventArgs;
+        
         if (player?.toLowerCase() === address?.toLowerCase()) {
-          onNotification?.({
-            title: 'Game Started',
-            description: `New climb game started with ${Number(depositAmount)} deposit!`,
-            color: 'success',
-            timeout: 3000,
-          });
+          // Game started - no notification needed, overlay will handle feedback
         }
         refetchAll();
       } else if (event.type.event === 'ClimbResult') {
-        const { player, fromLevel, newLevel, success, gameEnded } = event.data?.args || {};
+        const eventArgs = event.data?.args?.args || event.data?.args || {};
+        const { player, fromLevel, newLevel, success } = eventArgs;
+        
         if (player?.toLowerCase() === address?.toLowerCase()) {
           if (success) {
-            onNotification?.({
-              title: 'Climb Success!',
-              description: `Successfully climbed from level ${fromLevel} to level ${newLevel}!`,
-              color: 'success',
-              timeout: 3000,
+            showResult?.({
+              type: 'success',
+              level: fromLevel,
+              newLevel: newLevel
             });
           } else {
-            onNotification?.({
-              title: 'Climb Failed',
-              description: `Failed to climb from level ${fromLevel}. ${gameEnded ? 'Game ended.' : ''}`,
-              color: 'danger',
-              timeout: 3000,
+            showResult?.({
+              type: 'bust',
+              level: fromLevel,
+              aliceReward: 10
+            });
+          }
+        }
+        refetchAll();
+      } else if (event.type.event === 'AutoClimbCompleted') {
+        const eventArgs = event.data?.args?.args || event.data?.args || {};
+        const { player, startLevel, finalLevel, reachedTarget } = eventArgs;
+        
+        if (player?.toLowerCase() === address?.toLowerCase()) {
+          if (reachedTarget) {
+            showResult?.({
+              type: 'success',
+              level: startLevel,
+              newLevel: finalLevel
+            });
+          } else {
+            showResult?.({
+              type: 'bust',
+              level: finalLevel,
+              aliceReward: 10
             });
           }
         }
         refetchAll();
       } else if (event.type.event === 'PlayerCashedOut') {
-        const { player, level, payout, paidInPoints } = event.data?.args || {};
+        const eventArgs = event.data?.args?.args || event.data?.args || {};
+        const { player, level, payout, paidInPoints } = eventArgs;
+        
         if (player?.toLowerCase() === address?.toLowerCase()) {
-          onNotification?.({
-            title: 'Cashed Out!',
-            description: `Successfully cashed out at level ${level} for ${Number(payout).toLocaleString()} ${paidInPoints ? 'points' : 'S'}!`,
-            color: 'success',
-            timeout: 3000,
+          // Format payout based on currency type
+          const formattedPayout = paidInPoints 
+            ? Number(payout).toLocaleString() // ALICE as integer
+            : parseFloat(formatEther(BigInt(payout))).toFixed(2); // Sonic as ether with 4 decimals
+          
+          showResult?.({
+            type: 'cashout',
+            level: level,
+            payout: formattedPayout,
+            currency: paidInPoints ? 'ALICE' : 'S'
           });
         }
         refetchAll();
       } else if (event.type.event === 'GameEnded') {
-        const { player, finalLevel, success, endReason } = event.data?.args || {};
+        const eventArgs = event.data?.args?.args || event.data?.args || {};
+        const { player } = eventArgs;
+        
         if (player?.toLowerCase() === address?.toLowerCase()) {
-          onNotification?.({
-            title: 'Game Ended',
-            description: `Game ended: ${endReason}. Final level: ${finalLevel}`,
-            color: success ? 'success' : 'danger',
-            timeout: 5000,
-          });
+          // Game ended - no notification needed, overlay will handle feedback
         }
+        refetchAll();
+      } else {
         refetchAll();
       }
     },
-    [address, refetchAll, onNotification, router]
+    [address, refetchAll, clearWaitingState, showResult]
   );
 } 
