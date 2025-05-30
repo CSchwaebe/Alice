@@ -11,6 +11,7 @@ export type ClimbGameState = {
   startTime: bigint;
   depositAmount: bigint;
   gameId: bigint;
+  targetLevel: number;
 };
 
 // Type for completed game data
@@ -150,7 +151,8 @@ export function useClimbGameData({ address, isConnected }: UseClimbGameDataProps
         pendingType: Number(playerGame.pendingType),
         startTime: playerGame.startTime,
         depositAmount: playerGame.depositAmount,
-        gameId: playerGame.gameId
+        gameId: playerGame.gameId,
+        targetLevel: Number(playerGame.targetLevel)
       });
       setIsLoading(false);
     } else {

@@ -60,6 +60,49 @@ export const ClimbABI = [
         {
           "indexed": false,
           "internalType": "uint8",
+          "name": "startLevel",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "finalLevel",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "bool",
+          "name": "reachedTarget",
+          "type": "bool"
+        }
+      ],
+      "name": "AutoClimbCompleted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "gameId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
           "name": "fromLevel",
           "type": "uint8"
         },
@@ -482,6 +525,49 @@ export const ClimbABI = [
     {
       "inputs": [
         {
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "autoClimb",
+      "outputs": [
+        {
+          "internalType": "uint64",
+          "name": "",
+          "type": "uint64"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "canPlayerAutoClimb",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "player",
           "type": "address"
@@ -680,6 +766,74 @@ export const ClimbABI = [
           "internalType": "uint32[11]",
           "name": "",
           "type": "uint32[11]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "getAutoClimbPathDetails",
+      "outputs": [
+        {
+          "internalType": "uint8[]",
+          "name": "levels",
+          "type": "uint8[]"
+        },
+        {
+          "internalType": "uint16[]",
+          "name": "levelOdds",
+          "type": "uint16[]"
+        },
+        {
+          "internalType": "uint32[]",
+          "name": "sonicMultipliers",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "uint32[]",
+          "name": "pointMultipliers_",
+          "type": "uint32[]"
+        },
+        {
+          "internalType": "uint256",
+          "name": "overallSuccessProbability",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "player",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
+        }
+      ],
+      "name": "getAutoClimbSuccessProbability",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -911,6 +1065,11 @@ export const ClimbABI = [
               "internalType": "uint256",
               "name": "gameId",
               "type": "uint256"
+            },
+            {
+              "internalType": "uint8",
+              "name": "targetLevel",
+              "type": "uint8"
             }
           ],
           "internalType": "struct Climb.GameState",
@@ -1341,6 +1500,11 @@ export const ClimbABI = [
           "internalType": "uint256",
           "name": "gameId",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "targetLevel",
+          "type": "uint8"
         }
       ],
       "stateMutability": "view",

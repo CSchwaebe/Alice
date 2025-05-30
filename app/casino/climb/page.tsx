@@ -45,6 +45,7 @@ function ClimbGame() {
     handleStartGame,
     handleClimb,
     handleCashOut,
+    handleAutoClimb,
     isLoading: isTxLoading,
     isPending: isTxPending,
     error,
@@ -94,6 +95,10 @@ function ClimbGame() {
   const handleGameCashOut = () => {
     handleCashOut();
   };
+
+  const handleGameAutoClimb = (targetLevel: number) => {
+    handleAutoClimb(targetLevel);
+  };
   
   // Display loading screen until data is ready
   if (isLoading) {
@@ -117,6 +122,7 @@ function ClimbGame() {
               onStartGame={handleGameStart}
               onClimb={handleGameClimb}
               onCashOut={handleGameCashOut}
+              onAutoClimb={handleGameAutoClimb}
             />
           </div>
 
@@ -135,8 +141,8 @@ function ClimbGame() {
                     <div className="text-primary-700 font-mono text-xs">There are 10 levels - the higher you go, the more you win</div>
                   </div>
                   <div>
-                    <div className="text-primary-300 text-sm mb-1 font-mono">DECISION</div>
-                    <div className="text-primary-700 font-mono text-xs">On each level you are offered the option to continue or cash out</div>
+                    <div className="text-primary-300 text-sm mb-1 font-mono">DECISIONS</div>
+                    <div className="text-primary-700 font-mono text-xs">Climb one level at a time or click on a level to directly climb to that level</div>
                   </div>
                 </div>
                 <div className="space-y-3 text-xs">
@@ -146,7 +152,7 @@ function ClimbGame() {
                   </div>
                   <div>
                     <div className="text-primary-300 text-sm mb-1 font-mono">ODDS</div>
-                    <div className="text-primary-700 font-mono text-xs">Your odds of surviving each level are presented in the table below</div>
+                    <div className="text-primary-700 font-mono text-xs">You will be shown your odds before you place your bet. Per level odds can also be found in the table below.</div>
                   </div>
                   <div>
                     <div className="text-primary-300 text-sm mb-1 font-mono">FAIRNESS</div>

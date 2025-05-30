@@ -26,6 +26,7 @@ interface ClimbGameProps {
   onStartGame: (depositAmount: string) => void;
   onClimb: () => void;
   onCashOut: () => void;
+  onAutoClimb: (targetLevel: number) => void;
 }
 
 export default function Game({
@@ -39,10 +40,12 @@ export default function Game({
   isStarting,
   onStartGame,
   onClimb,
-  onCashOut
+  onCashOut,
+  onAutoClimb
 }: ClimbGameProps) {
   const [depositAmount, setDepositAmount] = useState<string>('1');
   const [showCashOutDialog, setShowCashOutDialog] = useState(false);
+  const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
 
   // Format number with proper decimal handling
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +88,32 @@ export default function Game({
   };
 
   const { sonicPayout, alicePayout } = calculatePayouts();
+
+  // Calculate data for selected level or next level
+  const calculateSelectedLevelData = () => {
+    if (!gameState || !allLevelInfo) return { targetLevel: 0, sonicPayout: 0, alicePayout: 0, cumulativeOdds: 0 };
+    
+    const depositAmountEth = parseFloat(formatEther(gameState.depositAmount));
+    const targetLevel = selectedLevel || (gameState.currentLevel + 1);
+    
+    // Get multipliers for target level
+    const sonicMultiplier = (allLevelInfo.allSonicMultipliers[targetLevel] || 0) / 100;
+    const aliceMultiplier = allLevelInfo.allPointMultipliers[targetLevel] || 0;
+    
+    const sonicPayout = depositAmountEth * sonicMultiplier;
+    const alicePayout = depositAmountEth * aliceMultiplier;
+    
+    // Calculate cumulative odds from current level + 1 to target level
+    let cumulativeOdds = 1;
+    for (let level = gameState.currentLevel + 1; level <= targetLevel; level++) {
+      const levelOdds = (allLevelInfo.allOdds[level] || 0) / 100;
+      cumulativeOdds *= levelOdds / 100; // Convert percentage to decimal
+    }
+    
+    return { targetLevel, sonicPayout, alicePayout, cumulativeOdds: cumulativeOdds * 100 }; // Convert back to percentage
+  };
+
+  const { targetLevel, sonicPayout: targetSonicPayout, alicePayout: targetAlicePayout, cumulativeOdds } = calculateSelectedLevelData();
 
   // If no game is active, show start game interface
   if (!gameState?.isActive) {
@@ -178,7 +207,7 @@ export default function Game({
         {/* Game info */}
         <div className="bg-overlay-light grid grid-cols-2 gap-4 mb-6">
           <div className="rounded p-4">
-            <div className="text-primary-400 text-sm mb-2">BALANCE</div>
+            <div className="text-primary-400 text-sm mb-2">YOUR BALANCE</div>
             <div className="text-foreground text-sm font-mono">
               <div>{sonicPayout.toFixed(2)} S</div>
               <div className="text-primary-400 text-xs mt-1">or {alicePayout.toFixed(0)} ALICE</div>
@@ -198,17 +227,30 @@ export default function Game({
         {/* Level progression */}
         {allLevelInfo && (
           <div className="mb-6">
-            <div className="text-primary-400 text-sm mb-3">LEVEL PROGRESSION</div>
+            <div className="text-primary-400 text-sm mb-3">SELECT LEVEL</div>
             <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
               {Array.from({ length: allLevelInfo.maxLevel }, (_, i) => i + 1).map((level) => (
                 <div
                   key={level}
-                  className={`p-2 rounded text-center text-xs font-mono border ${
-                    level <= gameState.currentLevel
-                      ? 'bg-foreground text-background border-foreground'
-                      : level === gameState.currentLevel + 1
+                  onClick={() => level !== gameState.currentLevel ? setSelectedLevel(level === selectedLevel ? null : level) : undefined}
+                  className={`p-2 rounded text-center text-xs font-mono border transition-all duration-200 ${
+                    selectedLevel === level
                       ? 'bg-primary-400 text-background border-primary-400'
+                      : level <= gameState.currentLevel
+                      ? 'bg-foreground text-background border-foreground'
                       : 'bg-overlay-light text-primary-400 border-border'
+                  } ${
+                    selectedLevel === level 
+                      ? 'ring-2 ring-foreground ring-offset-2 ring-offset-background' 
+                      : ''
+                  } ${
+                    level === gameState.currentLevel 
+                      ? 'ring-2 ring-foreground ring-offset-1 ring-offset-background' 
+                      : ''
+                  } ${
+                    level !== gameState.currentLevel 
+                      ? 'cursor-pointer hover:border-foreground' 
+                      : 'cursor-not-allowed'
                   }`}
                 >
                   {level}
@@ -223,32 +265,29 @@ export default function Game({
           <div className="mb-6 grid grid-cols-2 gap-4">
             {/* Balance change preview */}
             <div className="rounded p-4">
-              <div className="text-primary-400 text-sm mb-2">LEVEL {gameState.currentLevel + 1}</div>
+              <div className="text-primary-400 text-sm mb-2">
+                LEVEL {targetLevel} {selectedLevel ? 'PAYOUT' : 'PAYOUT'}
+              </div>
               <div className="text-left">
                 <div className="text-foreground font-mono text-lg">
-                  {(() => {
-                    const depositAmountEth = parseFloat(formatEther(gameState.depositAmount));
-                    const nextSonicMultiplier = (allLevelInfo.allSonicMultipliers[gameState.currentLevel + 1] || 0) / 100;
-                    const newSonicPayout = depositAmountEth * nextSonicMultiplier;
-                    return newSonicPayout.toFixed(2);
-                  })()} S
+                  {targetSonicPayout.toFixed(2)} S
                 </div>
                 <div className="text-primary-400 font-mono text-xs mt-1">
-                  or {(() => {
-                    const depositAmountEth = parseFloat(formatEther(gameState.depositAmount));
-                    const nextAliceMultiplier = allLevelInfo.allPointMultipliers[gameState.currentLevel + 1] || 0;
-                    const newAlicePayout = depositAmountEth * nextAliceMultiplier;
-                    return newAlicePayout.toFixed(0);
-                  })()} ALICE
+                  or {targetAlicePayout.toFixed(0)} ALICE
                 </div>
               </div>
             </div>
 
             {/* Success odds */}
             <div className="rounded p-4">
-              <div className="text-primary-400 text-sm mb-2 text-right">ODDS</div>
+              <div className="text-primary-400 text-sm mb-2 text-right">
+                {selectedLevel ? 'ODDS' : 'ODDS'}
+              </div>
               <div className="text-foreground font-mono text-lg text-right">
-                {((allLevelInfo.allOdds[gameState.currentLevel + 1] || 0) / 100).toFixed(2)}%
+                {selectedLevel 
+                  ? cumulativeOdds.toFixed(2)
+                  : ((allLevelInfo.allOdds[gameState.currentLevel + 1] || 0) / 100).toFixed(2)
+                }%
               </div>
             </div>
           </div>
@@ -268,14 +307,19 @@ export default function Game({
           </button>
           
           <button
-            onClick={onClimb}
+            onClick={() => selectedLevel ? onAutoClimb(selectedLevel) : onClimb()}
             disabled={!canClimb || isClimbing || gameState.pendingSequence > 0}
             className="bg-foreground text-background py-3 rounded-lg
                      font-mono tracking-widest text-lg
                      hover:bg-foreground transition-colors duration-200
                      disabled:bg-overlay-light disabled:text-primary-200"
           >
-            {isClimbing ? "CLIMBING..." : "CLIMB"}
+            {isClimbing 
+              ? "CLIMBING..." 
+              : selectedLevel 
+                ? `CLIMB TO ${selectedLevel}` 
+                : `CLIMB TO ${gameState.currentLevel + 1}`
+            }
           </button>
         </div>
         

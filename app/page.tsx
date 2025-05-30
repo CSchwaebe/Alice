@@ -66,7 +66,8 @@ export default function LandingPage() {
         {/* Navigation Buttons */}
         <div className="absolute top-[40%] left-0 right-0 z-50 flex items-center justify-center">
           <div className="text-center relative w-full max-w-sm md:max-w-md lg:max-w-4xl flex flex-col gap-4">
-            <NavButton href="/portal" text="Enter Game" />
+            <NavButton href="/portal" text="Squid Game" />
+            <NavButton href="/casino/climb" text="Casino" />
             <NavButton 
               href="/token" 
               text="Token"  
@@ -81,7 +82,7 @@ export default function LandingPage() {
       </div>
 
       {/* Content Grid Section */}
-      <div className="absolute top-[80%] sm:top-[75%] md:top-[65%] lg:top-[65%] xl:top-[60%] 2xl:top-[60%] left-0 right-0 mx-auto z-50 max-w-7xl w-full">
+      <div className="absolute top-[90%] sm:top-[75%] md:top-[70%] lg:top-[65%] xl:top-[60%] 2xl:top-[60%] left-0 right-0 mx-auto z-50 max-w-7xl w-full">
         <div className="container mx-auto">
           <ScrollSection className="mb-8 px-4">
             <h1 className={`text-2xl md:text-3xl lg:text-4xl text-white text-center font-mono ${saira.className}`}>

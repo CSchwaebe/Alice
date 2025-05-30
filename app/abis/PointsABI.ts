@@ -88,6 +88,25 @@ export const PointsABI = [
       {
         "indexed": true,
         "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "authorized",
+        "type": "bool"
+      }
+    ],
+    "name": "ContractAuthorizationChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
@@ -118,6 +137,31 @@ export const PointsABI = [
       }
     ],
     "name": "PointsAwarded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "authorizedContract",
+        "type": "address"
+      }
+    ],
+    "name": "PointsAwardedByContract",
     "type": "event"
   },
   {
@@ -324,6 +368,48 @@ export const PointsABI = [
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "authorizedContracts",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "recipient",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "pointsAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "isWithdrawable",
+        "type": "bool"
+      }
+    ],
+    "name": "awardPointsForPayout",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
@@ -506,6 +592,42 @@ export const PointsABI = [
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "code",
+        "type": "string"
+      }
+    ],
+    "name": "migrateReferralCode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "referralCode",
+        "type": "string"
+      }
+    ],
+    "name": "migrateUsedReferralCode",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "owner",
     "outputs": [
@@ -611,6 +733,24 @@ export const PointsABI = [
   {
     "inputs": [],
     "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "bool",
+        "name": "authorized",
+        "type": "bool"
+      }
+    ],
+    "name": "setContractAuthorization",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -7,8 +7,15 @@ import { ClimbABI } from '@/app/abis/ClimbABI';
 import { useState, useEffect } from 'react';
 import type { ReactElement } from 'react';
 import OwnerGuard from '@/components/auth/OwnerGuard';
-import { parseEther, formatEther } from 'viem';
+import { parseEther } from 'viem';
 import { useContractEventSubscription, ContractEventType, ContractEvent } from '@/lib/contract-events';
+
+// Import the new tab components
+import RegistrationTab from '@/app/game-master/components/tabs/RegistrationTab';
+import InitializationTab from '@/app/game-master/components/tabs/InitializationTab';
+import GameControlsTab from '@/app/game-master/components/tabs/GameControlsTab';
+import CasinoTab from '@/app/game-master/components/tabs/CasinoTab';
+import PointsTab from '@/app/game-master/components/tabs/PointsTab';
 
 // Add this type definition at the top of the file
 type GameInstanceInfo = {
@@ -289,6 +296,7 @@ function GameMasterDashboard(): ReactElement {
   const [activeFunction, setActiveFunction] = useState<string | null>(null);
   const [notification, setNotification] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [newRegistrationFee, setNewRegistrationFee] = useState('');
+  const [newMaxPlayers, setNewMaxPlayers] = useState('');
   
   // State for casino controls
   const [climbDepositAmount, setClimbDepositAmount] = useState('');
@@ -305,6 +313,9 @@ function GameMasterDashboard(): ReactElement {
   const [activePlayers, setActivePlayers] = useState<number>(0);
   const [eliminatedPlayers, setEliminatedPlayers] = useState<number>(0);
   
+  // State for points contract
+  const [pointsDepositAmount, setPointsDepositAmount] = useState('');
+
   // Get active players count from contract
   const { data: activePlayerCount } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
@@ -321,17 +332,6 @@ function GameMasterDashboard(): ReactElement {
     args: [],
   }) as { data: bigint | undefined };
 
-  // Update counts when they change
-  useEffect(() => {
-    if (activePlayerCount !== undefined && eliminatedPlayerCount !== undefined) {
-      const activeCount = Number(activePlayerCount);
-      const eliminatedCount = Number(eliminatedPlayerCount);
-      setActivePlayers(activeCount);
-      setEliminatedPlayers(eliminatedCount);
-      setRegisteredPlayers(activeCount + eliminatedCount);
-    }
-  }, [activePlayerCount, eliminatedPlayerCount]);
-  
   // Get registration status
   const { data: isRegistrationClosed } = useReadContract({
     address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
@@ -355,14 +355,6 @@ function GameMasterDashboard(): ReactElement {
     functionName: 'getPlayerCount',
     args: [],
   }) as { data: bigint | undefined, refetch: () => void };
-  
-  // Write contract function
-  const { writeContract, data: txHash, isPending, reset } = useWriteContract();
-  
-  // Wait for transaction
-  const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({
-    hash: txHash,
-  });
   
   // Get Climb contract balance
   const { data: climbContractBalance, refetch: refetchClimbBalance } = useReadContract({
@@ -401,6 +393,40 @@ function GameMasterDashboard(): ReactElement {
     args: [],
   }) as { data: string | undefined, refetch: () => void };
 
+  // Get gamesData for GameControlsTab
+  const { data: gamesData } = useReadContract({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
+    abi: GameMasterABI,
+    functionName: 'getGames',
+    args: [],
+  }) as { data: [string[], GameInstanceInfo[][]] | undefined };
+  
+  // Get points contract balance
+  const { data: contractBalanceData, refetch: refetchPointsBalance } = useBalance({
+    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+  });
+
+  const contractBalance = contractBalanceData?.value;
+
+  // Write contract function
+  const { writeContract, data: txHash, isPending, reset } = useWriteContract();
+  
+  // Wait for transaction
+  const { isLoading: txLoading, isSuccess: txSuccess } = useWaitForTransactionReceipt({
+    hash: txHash,
+  });
+
+  // Update counts when they change
+  useEffect(() => {
+    if (activePlayerCount !== undefined && eliminatedPlayerCount !== undefined) {
+      const activeCount = Number(activePlayerCount);
+      const eliminatedCount = Number(eliminatedPlayerCount);
+      setActivePlayers(activeCount);
+      setEliminatedPlayers(eliminatedCount);
+      setRegisteredPlayers(activeCount + eliminatedCount);
+    }
+  }, [activePlayerCount, eliminatedPlayerCount]);
+
   // Listen for transaction success and show notification
   useEffect(() => {
     if (txSuccess) {
@@ -412,6 +438,7 @@ function GameMasterDashboard(): ReactElement {
       refetchPointsContract();
       refetchPointsWithdrawable();
       refetchOwner();
+      refetchPointsBalance();
       
       // Clear form inputs
       setGameName('');
@@ -423,6 +450,7 @@ function GameMasterDashboard(): ReactElement {
       setNewMaxDeposit('');
       setNewPointsContract('');
       setNewOwner('');
+      setPointsDepositAmount('');
       setActiveFunction(null);
       
       // Clear notification after 5 seconds
@@ -433,7 +461,7 @@ function GameMasterDashboard(): ReactElement {
       
       return () => clearTimeout(timer);
     }
-  }, [txSuccess, refetchGames, refetchPlayerCount, refetchClimbBalance, refetchMaxDeposit, refetchPointsContract, refetchPointsWithdrawable, refetchOwner, reset]);
+  }, [txSuccess, refetchGames, refetchPlayerCount, refetchClimbBalance, refetchMaxDeposit, refetchPointsContract, refetchPointsWithdrawable, refetchOwner, reset, refetchPointsBalance]);
 
   // Subscribe to relevant events for the Game Master page
   const eventsToSubscribe: ContractEventType[] = [
@@ -610,8 +638,6 @@ function GameMasterDashboard(): ReactElement {
     }
   };
 
-  const [newMaxPlayers, setNewMaxPlayers] = useState('');
-
   const handleSetMaxPlayers = async () => {
     if (!newMaxPlayers) return;
     
@@ -650,22 +676,7 @@ function GameMasterDashboard(): ReactElement {
   const handleGameSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setGameName(e.target.value);
   };
-  
-  // Add this new contract read
-  const { data: gamesData } = useReadContract({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_GAMEMASTER as `0x${string}`,
-    abi: GameMasterABI,
-    functionName: 'getGames',
-    args: [],
-  }) as { data: [string[], GameInstanceInfo[][]] | undefined };
-  
-  // Get points contract balance
-  const { data: contractBalanceData } = useBalance({
-    address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
-  });
-
-  const contractBalance = contractBalanceData?.value;
-
+    
   // Function to withdraw from points contract
   const handlePointsWithdraw = async () => {
     try {
@@ -679,6 +690,26 @@ function GameMasterDashboard(): ReactElement {
     } catch (error) {
       console.error('Error withdrawing from points contract:', error);
       setNotification({ type: 'error', message: 'Failed to withdraw from points contract' });
+      setActiveFunction(null);
+    }
+  };
+
+  // Function to deposit to points contract for cashouts
+  const handlePointsDeposit = async () => {
+    if (!pointsDepositAmount) return;
+    
+    try {
+      setActiveFunction('depositPoints');
+      await writeContract({
+        address: process.env.NEXT_PUBLIC_CONTRACT_ADDR_POINTS as `0x${string}`,
+        abi: PointsABI,
+        functionName: 'depositForCashouts',
+        args: [],
+        value: parseEther(pointsDepositAmount),
+      });
+    } catch (error) {
+      console.error('Error depositing to points contract:', error);
+      setNotification({ type: 'error', message: 'Failed to deposit to points contract' });
       setActiveFunction(null);
     }
   };
@@ -895,656 +926,105 @@ function GameMasterDashboard(): ReactElement {
           </button>
         </div>
 
-        {/* Registration Tab */}
+        {/* Tab Content */}
         {activeTab === 'registration' && (
-          <>
-            {/* Registration Status */}
-            <div className="font-mono text-xs mb-6 flex items-center justify-between bg-black border border-white/20 p-4">
-              <div className="flex items-center">
-                <div className={`h-2 w-2 rounded-full mr-2 ${isRegistrationClosed ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                <span className="text-white/70 uppercase tracking-wider">Registration Status:</span>
-              </div>
-              <span className={`${isRegistrationClosed ? 'text-red-400' : 'text-green-400'}`}>
-                {isRegistrationClosed ? 'CLOSED' : 'OPEN'}
-              </span>
-            </div>
-            
-            {/* Player Registration Progress Bar */}
-            <RegistrationProgressBar registeredPlayers={registeredPlayers} />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Register Game */}
-              <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-                <div className="text-white/70 mb-3 uppercase tracking-wider">Register Game</div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-white/60 mb-1">Game Name</label>
-                    <input 
-                      type="text" 
-                      value={gameName} 
-                      onChange={(e) => setGameName(e.target.value)}
-                      className="w-full bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="e.g. ALICE"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white/60 mb-1">Game Address</label>
-                    <input 
-                      type="text" 
-                      value={gameAddress} 
-                      onChange={(e) => setGameAddress(e.target.value)}
-                      className="w-full bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="0x..."
-                    />
-                  </div>
-                  
-                  <button 
-                    onClick={handleRegisterGame}
-                    disabled={isPending || txLoading || activeFunction !== null}
-                    className={`
-                      w-full font-mono text-white bg-transparent 
-                      border border-white/50 py-2 px-3 text-center
-                      focus:outline-none hover:bg-white/10
-                      ${activeFunction === 'registerGame' ? 'bg-white/20' : ''}
-                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                    `}
-                  >
-                    {activeFunction === 'registerGame' ? 'Processing...' : 'Register Game'}
-                  </button>
-                </div>
-              </div>
-
-              {/* ALICE Controls */}
-              <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-                <div className="text-white/70 mb-3 uppercase tracking-wider">ALICE Controls</div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-white/60 mb-1">New Registration Fee (SONIC)</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="number"
-                        step="0.000000000000000001"
-                        value={newRegistrationFee}
-                        onChange={(e) => setNewRegistrationFee(e.target.value)}
-                        className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                        placeholder="0.1"
-                      />
-                      <button 
-                        onClick={handleSetRegistrationFee}
-                        disabled={isPending || txLoading || activeFunction !== null}
-                        className={`
-                          px-4 font-mono text-white bg-transparent 
-                          border border-white/50 text-center
-                          focus:outline-none hover:bg-white/10
-                          ${activeFunction === 'setRegistrationFee' ? 'bg-white/20' : ''}
-                          ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                        `}
-                      >
-                        {activeFunction === 'setRegistrationFee' ? '...' : 'Set'}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <button 
-                      onClick={handleCloseRegistration}
-                      disabled={isPending || txLoading || activeFunction !== null}
-                      className={`
-                        font-mono text-white bg-transparent 
-                        border border-white/50 py-2 px-3 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${activeFunction === 'toggleRegistration' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'toggleRegistration' ? 'Processing...' : 'Toggle Registration'}
-                    </button>
-
-                    <button 
-                      onClick={handleWithdraw}
-                      disabled={isPending || txLoading || activeFunction !== null}
-                      className={`
-                        font-mono text-white bg-transparent 
-                        border border-white/50 py-2 px-3 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${activeFunction === 'withdraw' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'withdraw' ? 'Processing...' : 'Withdraw Funds'}
-                    </button>
-                  </div>
-
-                  <div className="mt-4">
-                    <label className="block text-white/60 mb-1">Max Players</label>
-                    <div className="flex gap-2">
-                      <input 
-                        type="number"
-                        value={newMaxPlayers}
-                        onChange={(e) => setNewMaxPlayers(e.target.value)}
-                        className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                        placeholder="Enter max players..."
-                      />
-                      <button 
-                        onClick={handleSetMaxPlayers}
-                        disabled={!newMaxPlayers || isPending || txLoading || activeFunction !== null}
-                        className={`
-                          px-4 font-mono text-white bg-transparent 
-                          border border-white/50 text-center
-                          focus:outline-none hover:bg-white/10
-                          ${!newMaxPlayers ? 'opacity-50 cursor-not-allowed' : ''}
-                          ${activeFunction === 'setMaxPlayers' ? 'bg-white/20' : ''}
-                          ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                        `}
-                      >
-                        {activeFunction === 'setMaxPlayers' ? '...' : 'Set'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Instructions Panel */}
-                <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90 mt-6">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider">Registration Instructions</div>
-                  <ol className="list-decimal list-inside space-y-2 text-white/80">
-                    <li>Make sure all games are registered, should happen on contract deployment</li>
-                    <li>Manually close registration</li>
-                    <li>Register players with the game master contract</li>
-                    <li>Make sure to withdraw funds</li>
-                    <li>Make sure to clear firebase chats</li>
-                  </ol>
-                </div>
-              </div>
-            </div>
-          </>
+          <RegistrationTab
+            gameName={gameName}
+            setGameName={setGameName}
+            gameAddress={gameAddress}
+            setGameAddress={setGameAddress}
+            newRegistrationFee={newRegistrationFee}
+            setNewRegistrationFee={setNewRegistrationFee}
+            newMaxPlayers={newMaxPlayers}
+            setNewMaxPlayers={setNewMaxPlayers}
+            registeredPlayers={registeredPlayers}
+            isRegistrationClosed={!!isRegistrationClosed}
+            handleRegisterGame={handleRegisterGame}
+            handleSetRegistrationFee={handleSetRegistrationFee}
+            handleCloseRegistration={handleCloseRegistration}
+            handleWithdraw={handleWithdraw}
+            handleSetMaxPlayers={handleSetMaxPlayers}
+            isPending={isPending}
+            txLoading={txLoading}
+            activeFunction={activeFunction}
+          />
         )}
 
-        {/* Initialization Tab */}
         {activeTab === 'initialization' && (
-          <div className="grid grid-cols-1 gap-6">
-            {/* Player Status Bar */}
-            <PlayerStatusBar 
-              activePlayers={activePlayers}
-              eliminatedPlayers={eliminatedPlayers}
-            />
-            
-            {/* Games List */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/50 mb-3 uppercase tracking-wider">Registered Games</div>
-              
-              {games && games.length > 0 ? (
-                <div className="mb-4">
-                  <label className="block text-white/60 mb-2">Select Game</label>
-                  <select 
-                    value={gameName}
-                    onChange={handleGameSelect}
-                    className="w-full bg-black border border-white/30 px-3 py-2 text-white"
-                  >
-                    <option value="">Select a game...</option>
-                    {games.map((game: string, index: number) => (
-                      <option key={index} value={game}>{game}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div className="text-white/60 italic mb-4">No games registered yet</div>
-              )}
-            </div>
-      
-            {/* Initialize Game */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Initialize Game</div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 mb-1">Selected Game</label>
-                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
-                    {gameName || 'No game selected'}
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={handleInitializeGame}
-                  disabled={!gameName || isPending || txLoading || activeFunction !== null}
-                  className={`
-                    w-full font-mono text-white bg-transparent 
-                    border border-white/50 py-2 px-3 text-center
-                    focus:outline-none hover:bg-white/10
-                    ${!gameName ? 'opacity-50 cursor-not-allowed' : ''}
-                    ${activeFunction === 'initializeGame' ? 'bg-white/20' : ''}
-                    ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                  `}
-                >
-                  {activeFunction === 'initializeGame' ? 'Processing...' : 'Initialize Game'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <InitializationTab
+            games={games}
+            gameName={gameName}
+            setGameName={setGameName}
+            activePlayers={activePlayers}
+            eliminatedPlayers={eliminatedPlayers}
+            handleGameSelect={handleGameSelect}
+            handleInitializeGame={handleInitializeGame}
+            isPending={isPending}
+            txLoading={txLoading}
+            activeFunction={activeFunction}
+          />
         )}
 
-        {/* Game Controls Tab */}
         {activeTab === 'gamecontrols' && (
-          <div className="grid grid-cols-1 gap-6">
-            {/* Active Games Overview */}
-            {gamesData && (
-              <GameInstancesDisplay 
-                gameTypes={gamesData[0]} 
-                gameInstances={gamesData[1]} 
-              />
-            )}
-            
-            {/* Game Selection */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/50 mb-3 uppercase tracking-wider">Select Game to Control</div>
-              
-              {games && games.length > 0 ? (
-                <div className="mb-4">
-                  <label className="block text-white/60 mb-2">Select Game</label>
-                  <select 
-                    value={gameName}
-                    onChange={handleGameSelect}
-                    className="w-full bg-black border border-white/30 px-3 py-2 text-white"
-                  >
-                    <option value="">Select a game...</option>
-                    {games.map((game: string, index: number) => (
-                      <option key={index} value={game}>{game}</option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div className="text-white/60 italic mb-4">No games registered yet</div>
-              )}
-            </div>
-            
-            {/* Game Controls */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Game Controls</div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 mb-1">Selected Game</label>
-                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
-                    {gameName || 'No game selected'}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <button 
-                    onClick={handleStartGames}
-                    disabled={!gameName || isPending || txLoading || activeFunction !== null}
-                    className={`
-                      font-mono text-white bg-transparent 
-                      border border-white/50 py-2 px-3 text-center
-                      focus:outline-none hover:bg-white/10
-                      ${!gameName ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${activeFunction === 'startGames' ? 'bg-white/20' : ''}
-                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                    `}
-                  >
-                    {activeFunction === 'startGames' ? 'Processing...' : 'Start Games'}
-                  </button>
-                  
-                  <button 
-                    onClick={handleEndExpiredGames}
-                    disabled={!gameName || isPending || txLoading || activeFunction !== null}
-                    className={`
-                      font-mono text-white bg-transparent 
-                      border border-white/50 py-2 px-3 text-center
-                      focus:outline-none hover:bg-white/10
-                      ${!gameName ? 'opacity-50 cursor-not-allowed' : ''}
-                      ${activeFunction === 'endExpiredGames' ? 'bg-white/20' : ''}
-                      ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                    `}
-                  >
-                    {activeFunction === 'endExpiredGames' ? 'Processing...' : 'End Expired Games'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          <GameControlsTab
+            gamesData={gamesData}
+            games={games}
+            gameName={gameName}
+            setGameName={setGameName}
+            handleGameSelect={handleGameSelect}
+            handleStartGames={handleStartGames}
+            handleEndExpiredGames={handleEndExpiredGames}
+            isPending={isPending}
+            txLoading={txLoading}
+            activeFunction={activeFunction}
+          />
         )}
 
-        {/* Casino Tab */}
         {activeTab === 'casino' && (
-          <div className="grid grid-cols-1 gap-6">
-            {/* Climb Game Controls */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Climb Game</div>
-              
-              <div className="space-y-4">
-                {/* Contract Balance Display */}
-                <div>
-                  <label className="block text-white/60 mb-1">Contract Balance</label>
-                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
-                    {climbContractBalance ? formatEther(climbContractBalance) : '0'} SONIC
-                  </div>
-                </div>
-                
-                {/* Deposit Section */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Deposit Funds</div>
-                  <div className="flex gap-2">
-                    <input 
-                      type="number"
-                      step="0.000000000000000001"
-                      value={climbDepositAmount}
-                      onChange={(e) => setClimbDepositAmount(e.target.value)}
-                      className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="Amount in SONIC..."
-                    />
-                    <button 
-                      onClick={handleClimbDeposit}
-                      disabled={!climbDepositAmount || isPending || txLoading || activeFunction !== null}
-                      className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${!climbDepositAmount ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${activeFunction === 'depositClimb' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'depositClimb' ? 'Processing...' : 'Deposit'}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Withdraw Section */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Withdraw Funds</div>
-                  <div className="flex gap-2">
-                    <input 
-                      type="number"
-                      step="0.000000000000000001"
-                      value={climbWithdrawAmount}
-                      onChange={(e) => setClimbWithdrawAmount(e.target.value)}
-                      className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="Amount in SONIC..."
-                    />
-                    <button 
-                      onClick={handleClimbWithdraw}
-                      disabled={!climbWithdrawAmount || isPending || txLoading || activeFunction !== null}
-                      className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${!climbWithdrawAmount ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${activeFunction === 'withdrawClimb' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'withdrawClimb' ? 'Processing...' : 'Withdraw'}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Quick Actions */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Quick Actions</div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button 
-                      onClick={() => setClimbDepositAmount('1')}
-                      className="font-mono text-white bg-transparent border border-white/30 py-2 px-3 text-center
-                               focus:outline-none hover:bg-white/10"
-                    >
-                      Deposit 1 SONIC
-                    </button>
-                    <button 
-                      onClick={() => setClimbDepositAmount('10')}
-                      className="font-mono text-white bg-transparent border border-white/30 py-2 px-3 text-center
-                               focus:outline-none hover:bg-white/10"
-                    >
-                      Deposit 10 SONIC
-                    </button>
-                    <button 
-                      onClick={() => climbContractBalance && setClimbWithdrawAmount(formatEther(climbContractBalance))}
-                      className="font-mono text-white bg-transparent border border-white/30 py-2 px-3 text-center
-                               focus:outline-none hover:bg-white/10"
-                    >
-                      Withdraw All
-                    </button>
-                    <button 
-                      onClick={() => refetchClimbBalance()}
-                      className="font-mono text-white bg-transparent border border-white/30 py-2 px-3 text-center
-                               focus:outline-none hover:bg-white/10"
-                    >
-                      Refresh Balance
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Climb Contract Settings */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Contract Settings (Owner Only)</div>
-              
-              <div className="space-y-4">
-                {/* Current Settings Display */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs col-span-full">Current Settings</div>
-                  
-                  <div>
-                    <label className="block text-white/60 mb-1">Max Deposit</label>
-                    <div className="bg-black border border-white/30 px-3 py-2 text-white">
-                      {currentMaxDeposit ? formatEther(currentMaxDeposit) : '0'} SONIC
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white/60 mb-1">Points Contract</label>
-                    <div className="bg-black border border-white/30 px-3 py-2 text-white text-xs">
-                      {currentPointsContract || 'Not Set'}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white/60 mb-1">Points Withdrawable</label>
-                    <div className="bg-black border border-white/30 px-3 py-2 text-white">
-                      {currentPointsWithdrawable ? 'Yes' : 'No'}
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-white/60 mb-1">Contract Owner</label>
-                    <div className="bg-black border border-white/30 px-3 py-2 text-white text-xs">
-                      {currentOwner || 'Loading...'}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Set Max Deposit */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Set Max Deposit</div>
-                  <div className="flex gap-2">
-                    <input 
-                      type="number"
-                      step="0.000000000000000001"
-                      value={newMaxDeposit}
-                      onChange={(e) => setNewMaxDeposit(e.target.value)}
-                      className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="Max deposit in SONIC..."
-                    />
-                    <button 
-                      onClick={handleSetMaxDeposit}
-                      disabled={!newMaxDeposit || isPending || txLoading || activeFunction !== null}
-                      className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${!newMaxDeposit ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${activeFunction === 'setMaxDeposit' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'setMaxDeposit' ? 'Processing...' : 'Set Max Deposit'}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Set Points Contract */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Set Points Contract</div>
-                  <div className="flex gap-2">
-                    <input 
-                      type="text"
-                      value={newPointsContract}
-                      onChange={(e) => setNewPointsContract(e.target.value)}
-                      className="flex-1 bg-black border border-white/30 px-3 py-2 text-white"
-                      placeholder="0x... Points contract address"
-                    />
-                    <button 
-                      onClick={handleSetPointsContract}
-                      disabled={!newPointsContract || isPending || txLoading || activeFunction !== null}
-                      className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${!newPointsContract ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${activeFunction === 'setPointsContract' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'setPointsContract' ? 'Processing...' : 'Set Contract'}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Points Withdrawable Toggle */}
-                <div className="border border-white/10 p-4 bg-white/5">
-                  <div className="text-white/70 mb-3 uppercase tracking-wider text-xs">Points Withdrawable Setting</div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <input 
-                        type="checkbox"
-                        checked={pointsWithdrawable}
-                        onChange={(e) => setPointsWithdrawable(e.target.checked)}
-                        className="form-checkbox bg-black border-white/30 text-white rounded-sm"
-                      />
-                      <span className="text-white/80">Allow points withdrawals</span>
-                    </div>
-                    <button 
-                      onClick={handleSetPointsWithdrawable}
-                      disabled={isPending || txLoading || activeFunction !== null}
-                      className={`
-                        px-4 font-mono text-white bg-transparent 
-                        border border-white/50 py-2 text-center
-                        focus:outline-none hover:bg-white/10
-                        ${activeFunction === 'setPointsWithdrawable' ? 'bg-white/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'setPointsWithdrawable' ? 'Processing...' : 'Update Setting'}
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Ownership Functions */}
-                <div className="border border-red-500/30 p-4 bg-red-900/10">
-                  <div className="text-red-400 mb-3 uppercase tracking-wider text-xs">⚠️ Ownership Functions</div>
-                  
-                  {/* Transfer Ownership */}
-                  <div className="mb-4">
-                    <div className="text-white/70 mb-2 text-xs">Transfer Ownership</div>
-                    <div className="flex gap-2">
-                      <input 
-                        type="text"
-                        value={newOwner}
-                        onChange={(e) => setNewOwner(e.target.value)}
-                        className="flex-1 bg-black border border-red-500/30 px-3 py-2 text-white"
-                        placeholder="0x... New owner address"
-                      />
-                      <button 
-                        onClick={handleTransferOwnership}
-                        disabled={!newOwner || isPending || txLoading || activeFunction !== null}
-                        className={`
-                          px-4 font-mono text-white bg-transparent 
-                          border border-red-500 text-center
-                          focus:outline-none hover:bg-red-900/20
-                          ${!newOwner ? 'opacity-50 cursor-not-allowed' : ''}
-                          ${activeFunction === 'transferOwnership' ? 'bg-red-900/20' : ''}
-                          ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                        `}
-                      >
-                        {activeFunction === 'transferOwnership' ? 'Processing...' : 'Transfer'}
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Renounce Ownership */}
-                  <div>
-                    <div className="text-white/70 mb-2 text-xs">Renounce Ownership (Irreversible!)</div>
-                    <button 
-                      onClick={handleRenounceOwnership}
-                      disabled={isPending || txLoading || activeFunction !== null}
-                      className={`
-                        w-full font-mono text-white bg-transparent 
-                        border border-red-500 py-2 px-3 text-center
-                        focus:outline-none hover:bg-red-900/20
-                        ${activeFunction === 'renounceOwnership' ? 'bg-red-900/20' : ''}
-                        ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                      `}
-                    >
-                      {activeFunction === 'renounceOwnership' ? 'Processing...' : 'Renounce Ownership'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Casino Instructions */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Casino Management Instructions</div>
-              <ol className="list-decimal list-inside space-y-2 text-white/80">
-                <li>Monitor the Climb contract balance regularly</li>
-                <li>Deposit funds to ensure players can receive payouts</li>
-                <li>Withdraw excess funds to secure profits</li>
-                <li>Use quick actions for common deposit amounts</li>
-                <li>Always maintain sufficient balance for player withdrawals</li>
-                <li>Configure max deposit limits to control risk exposure</li>
-                <li>Update points contract address if needed</li>
-                <li>Toggle points withdrawability based on game economy needs</li>
-                <li>⚠️ Use ownership functions with extreme caution</li>
-              </ol>
-            </div>
-          </div>
+          <CasinoTab
+            climbContractBalance={climbContractBalance}
+            climbDepositAmount={climbDepositAmount}
+            setClimbDepositAmount={setClimbDepositAmount}
+            climbWithdrawAmount={climbWithdrawAmount}
+            setClimbWithdrawAmount={setClimbWithdrawAmount}
+            newMaxDeposit={newMaxDeposit}
+            setNewMaxDeposit={setNewMaxDeposit}
+            newPointsContract={newPointsContract}
+            setNewPointsContract={setNewPointsContract}
+            pointsWithdrawable={pointsWithdrawable}
+            setPointsWithdrawable={setPointsWithdrawable}
+            newOwner={newOwner}
+            setNewOwner={setNewOwner}
+            currentMaxDeposit={currentMaxDeposit}
+            currentPointsContract={currentPointsContract}
+            currentPointsWithdrawable={currentPointsWithdrawable}
+            currentOwner={currentOwner}
+            handleClimbDeposit={handleClimbDeposit}
+            handleClimbWithdraw={handleClimbWithdraw}
+            handleSetMaxDeposit={handleSetMaxDeposit}
+            handleSetPointsContract={handleSetPointsContract}
+            handleSetPointsWithdrawable={handleSetPointsWithdrawable}
+            handleTransferOwnership={handleTransferOwnership}
+            handleRenounceOwnership={handleRenounceOwnership}
+            refetchClimbBalance={refetchClimbBalance}
+            isPending={isPending}
+            txLoading={txLoading}
+            activeFunction={activeFunction}
+          />
         )}
 
-        {/* Points Tab */}
         {activeTab === 'points' && (
-          <div className="grid grid-cols-1 gap-6">
-            {/* Points Contract Balance */}
-            <div className="font-mono text-xs bg-black border border-white/20 p-4 text-white/90">
-              <div className="text-white/70 mb-3 uppercase tracking-wider">Points Contract</div>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-white/60 mb-1">Contract Balance</label>
-                  <div className="w-full bg-black border border-white/30 px-3 py-2 text-white">
-                    {/* We'll add the balance display here */}
-                    {contractBalance ? formatEther(contractBalance) : '0'} SONIC
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={handlePointsWithdraw}
-                  disabled={isPending || txLoading || activeFunction !== null}
-                  className={`
-                    w-full font-mono text-white bg-transparent 
-                    border border-white/50 py-2 px-3 text-center
-                    focus:outline-none hover:bg-white/10
-                    ${activeFunction === 'withdrawPoints' ? 'bg-white/20' : ''}
-                    ${(isPending || txLoading) ? 'animate-pulse' : ''}
-                  `}
-                >
-                  {activeFunction === 'withdrawPoints' ? 'Processing...' : 'Withdraw Points Balance'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <PointsTab
+            contractBalance={contractBalance}
+            pointsDepositAmount={pointsDepositAmount}
+            setPointsDepositAmount={setPointsDepositAmount}
+            handlePointsDeposit={handlePointsDeposit}
+            handlePointsWithdraw={handlePointsWithdraw}
+            refetchPointsBalance={refetchPointsBalance}
+            isPending={isPending}
+            txLoading={txLoading}
+            activeFunction={activeFunction}
+          />
         )}
       </div>
     </div>

@@ -108,6 +108,28 @@ export function useClimbGameTransactions() {
     }
   }, [writeContract, address]);
 
+  const handleAutoClimb = useCallback(async (targetLevel: number) => {
+    try {
+      setError(null);
+      if (!address) {
+        throw new Error('Wallet not connected');
+      }
+
+      const config = {
+        address: CLIMB_GAME_ADDRESS,
+        abi: ClimbABI,
+        functionName: 'autoClimb',
+        args: [targetLevel],
+        value: parseEther('0.05'), // Required 0.05 ETH payment
+      } as const;
+
+      writeContract(config);
+    } catch (err) {
+      console.error('Auto climb error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to auto climb');
+    }
+  }, [writeContract, address]);
+
   const handleDepositFunds = useCallback(async (amount: string) => {
     try {
       setError(null);
@@ -136,6 +158,7 @@ export function useClimbGameTransactions() {
     handleStartGame,
     handleClimb,
     handleCashOut,
+    handleAutoClimb,
     handleDepositFunds,
     isLoading: isWaitingTx,
     isSuccess: isTxSuccess,

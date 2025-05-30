@@ -25,6 +25,7 @@ interface ClimbGameContentProps {
   onStartGame: (depositAmount: string) => void;
   onClimb: () => void;
   onCashOut: () => void;
+  onAutoClimb: (targetLevel: number) => void;
 }
 
 export function Content({
@@ -38,7 +39,8 @@ export function Content({
   isStarting,
   onStartGame,
   onClimb,
-  onCashOut
+  onCashOut,
+  onAutoClimb
 }: ClimbGameContentProps) {
   // Only scroll to top once on initial mount
   useEffect(() => {
@@ -49,7 +51,7 @@ export function Content({
   if (!gameState?.isActive) {
     return (
       <div className="w-full">
-        <div className="mt-8">
+        <div>
           <Game
             gameState={gameState}
             allLevelInfo={allLevelInfo}
@@ -62,6 +64,7 @@ export function Content({
             onStartGame={onStartGame}
             onClimb={onClimb}
             onCashOut={onCashOut}
+            onAutoClimb={onAutoClimb}
           />
         </div>
       </div>
@@ -83,6 +86,7 @@ export function Content({
         onStartGame={onStartGame}
         onClimb={onClimb}
         onCashOut={onCashOut}
+        onAutoClimb={onAutoClimb}
       />
     </div>
   );
