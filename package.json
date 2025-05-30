@@ -14,8 +14,6 @@
     "@heroui/toast": "^2.0.6",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@react-spring/web": "^9.7.5",
-    "@react-three/drei": "^10.0.8",
-    "@react-three/fiber": "^9.1.2",
     "@reown/appkit": "^1.6.9",
     "@reown/appkit-adapter-wagmi": "^1.6.9",
     "@reown/appkit-siwx": "^1.6.9",
@@ -32,7 +30,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^3.0.2",
-    "three": "^0.176.0",
     "viem": "^2.23.6",
     "wagmi": "^2.14.12"
   },
