@@ -8,14 +8,14 @@ import type { GameNotification } from '@/lib/contract-events';
 import { useEffect } from 'react';
 
 // Import custom hooks
-import { useDoorsGameData } from '@/hooks/Doors/useDoorsGameData';
-import { useDoorsGameEvents } from '@/hooks/Doors/useDoorsGameEvents';
-import { useDoorsGameTransactions } from '@/hooks/Doors/useDoorsGameTransactions';
+import { useDoorsGameData } from '@/app/games/doors/hooks/useDoorsGameData';
+import { useDoorsGameEvents } from '@/app/games/doors/hooks/useDoorsGameEvents';
+import { useDoorsGameTransactions } from '@/app/games/doors/hooks/useDoorsGameTransactions';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 
 // Import components
-import Content from '@/components/games/Doors/Content';
-import PlayerList from '@/components/games/Doors/PlayerList';
+import Content from '@/app/games/doors/components/Content';
+import PlayerList from '@/app/games/doors/components/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
 

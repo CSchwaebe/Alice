@@ -10,13 +10,13 @@ import type { GameNotification } from '@/lib/contract-events';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 
 // Import custom hooks
-import { useBiddingGameData } from '@/hooks/Bidding/useBiddingGameData';
-import { useBiddingGameEvents } from '@/hooks/Bidding/useBiddingGameEvents';
-import { useBiddingGameTransactions } from '@/hooks/Bidding/useBiddingGameTransactions';
+import { useBiddingGameData } from '@/app/games/bidding/hooks/useBiddingGameData';
+import { useBiddingGameEvents } from '@/app/games/bidding/hooks/useBiddingGameEvents';
+import { useBiddingGameTransactions } from '@/app/games/bidding/hooks/useBiddingGameTransactions';
 
 // Import components
-import { Content } from '@/components/games/Bidding/Content';
-import PlayerList from '@/components/games/Bidding/PlayerList';
+import { Content } from '@/app/games/bidding/components/Content';
+import PlayerList from '@/app/games/bidding/components/PlayerList';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
 

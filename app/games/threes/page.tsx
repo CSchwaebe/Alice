@@ -2,20 +2,20 @@
 
 import { useAccount } from 'wagmi';
 import { useRouter } from 'next/navigation';
-import { useThreesGameData } from '@/hooks/Threes/useThreesGameData';
-import { useThreesGameEvents } from '@/hooks/Threes/useThreesGameEvents';
-import { useThreesGameTransactions } from '@/hooks/Threes/useThreesGameTransactions';
+import { useThreesGameData } from '@/app/games/threes/hooks/useThreesGameData';
+import { useThreesGameEvents } from '@/app/games/threes/hooks/useThreesGameEvents';
+import { useThreesGameTransactions } from '@/app/games/threes/hooks/useThreesGameTransactions';
 import GameChat from "@/components/chat/GameChat";
 import MobileChat from "@/components/chat/MobileChat";
-import { PlayerList } from "@/components/games/Threes/PlayerList";
+import { PlayerList } from "@/app/games/threes/components/PlayerList";
 import { LoadingScreen } from "@/components/games/LoadingScreen";
-import { Content } from "@/components/games/Threes/Content";
+import { Content } from "@/app/games/threes/components/Content";
 import { GameCompletionScreen } from "@/components/games/GameCompletionScreen";
 import { Silkscreen } from 'next/font/google';
 import GameStateRedirect from '@/components/auth/GameStateRedirect';
 import { useEffect, useState } from 'react';
 import { addToast } from "@heroui/toast";
-import type { GameNotification } from '@/hooks/Threes/useThreesGameEvents';
+import type { GameNotification } from '@/app/games/threes/hooks/useThreesGameEvents';
 
 const silkscreen = Silkscreen({ 
   weight: '400',

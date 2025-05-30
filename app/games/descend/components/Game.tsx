@@ -1,6 +1,6 @@
 "use client";
 
-import { FormattedPlayerInfo } from '@/hooks/Descend/useDescendGameData';
+import { FormattedPlayerInfo } from '@/app/games/descend/hooks/useDescendGameData';
 import { useEffect } from 'react';
 
 interface GameProps {

@@ -1,4 +1,4 @@
-import { FormattedPlayerInfo } from '@/hooks/Descend/useDescendGameData';
+import { FormattedPlayerInfo } from '@/app/games/descend/hooks/useDescendGameData';
 
 interface PlayerListProps {
   players: FormattedPlayerInfo[];

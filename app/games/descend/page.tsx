@@ -10,12 +10,12 @@ import type { GameNotification } from '@/lib/contract-events';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 
 // Import custom hooks
-import { useDescendGameData } from '@/hooks/Descend/useDescendGameData';
-import { useDescendGameEvents } from '@/hooks/Descend/useDescendGameEvents';
-import { useDescendGameTransactions } from '@/hooks/Descend/useDescendGameTransactions';
+import { useDescendGameData } from '@/app/games/descend/hooks/useDescendGameData';
+import { useDescendGameEvents } from '@/app/games/descend/hooks/useDescendGameEvents';
+import { useDescendGameTransactions } from '@/app/games/descend/hooks/useDescendGameTransactions';
 
 // Import components
-import { Content } from '@/components/games/Descend/Content';
+import { Content } from '@/app/games/descend/components/Content';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { GameCompletionScreen } from '@/components/games/GameCompletionScreen';
 

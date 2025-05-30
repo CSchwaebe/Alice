@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { GameTimer } from '@/components/ui/GameTimer';
 import Game from './Game';
 import Rules from './Rules';
-import { FormattedPlayerInfo } from '@/hooks/Descend/useDescendGameData';
+import { FormattedPlayerInfo } from '@/app/games/descend/hooks/useDescendGameData';
 import ViewportDrawer from '@/components/ui/ViewportDrawer';
 
 interface ContentProps {

@@ -9,12 +9,12 @@ import { addToast } from "@heroui/toast";
 import type { GameNotification } from "@/lib/contract-events";
 
 // Import custom hooks
-import { useEquilibriumGameData } from "@/hooks/Equilibrium/useEquilibriumGameData";
-import { useEquilibriumGameEvents } from "@/hooks/Equilibrium/useEquilibriumGameEvents";
-import { useEquilibriumGameTransactions } from "@/hooks/Equilibrium/useEquilibriumGameTransactions";
+import { useEquilibriumGameData } from "@/app/games/equilibrium/hooks/useEquilibriumGameData";
+import { useEquilibriumGameEvents } from "@/app/games/equilibrium/hooks/useEquilibriumGameEvents";
+import { useEquilibriumGameTransactions } from "@/app/games/equilibrium/hooks/useEquilibriumGameTransactions";
 
 // Import components
-import Content from "@/components/games/Equilibrium/Content";
+import Content from "@/app/games/equilibrium/components/Content";
 import { LoadingScreen } from "@/components/games/LoadingScreen";
 import { GameCompletionScreen } from "@/components/games/GameCompletionScreen";
 

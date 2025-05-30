@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
-import { FormattedPlayerInfo } from '@/hooks/Bidding/useBiddingGameData';
+import { FormattedPlayerInfo } from '@/app/games/bidding/hooks/useBiddingGameData';
 
 export interface PlayerListProps {
   players: FormattedPlayerInfo[];

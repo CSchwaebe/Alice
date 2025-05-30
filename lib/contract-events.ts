@@ -8,10 +8,11 @@ import { ThreesABI } from '@/app/abis/ThreesABI';
 import { BiddingABI } from '@/app/abis/BiddingABI';
 import { DescendABI } from '@/app/abis/DescendABI';
 import { EquilibriumABI } from '@/app/abis/EquilibriumABI';
+import { ClimbABI } from '@/app/abis/ClimbABI';
 import { Log, decodeEventLog } from 'viem';
 
 // Define contract names
-export type ContractName = 'GameMaster' | 'Doors' | 'Threes' | 'Bidding' | 'Descend' | 'Equilibrium';
+export type ContractName = 'GameMaster' | 'Doors' | 'Threes' | 'Bidding' | 'Descend' | 'Equilibrium' | 'Climb';
 
 // Define all the possible event types we'll handle
 export type ContractEventType = {
@@ -56,7 +57,14 @@ export type ContractEventType = {
     | 'PlayerEliminated'
     | 'PlayerSwitchedTeam'
     | 'TeamEliminated'
-    | 'GameCompleted';
+    | 'GameCompleted'
+
+    // Climb events
+    | 'ClimbResult'
+    | 'PlayerCashedOut'
+    | 'GameEnded'
+    | 'EntropyReceived'
+    | 'RequestAttempted';
 };
 
 // Event data structure
@@ -69,11 +77,16 @@ export interface ContractEvent {
 
 // Add these types at the top with other type definitions
 export interface EventHandlerConfig {
-  gameId: bigint | null;
+  gameId?: bigint | null;
   address: `0x${string}` | undefined;
   onNotification?: (notification: GameNotification) => void;
   refetchGameInfo?: () => void;
   refetchPlayerInfo?: () => void;
+  refetchPlayerGame?: () => void;
+  refetchLevelData?: () => void;
+  refetchPlayerStats?: () => void;
+  refetchCanClimb?: () => void;
+  refetchCanCashOut?: () => void;
   setCurrentRound?: (round: bigint) => void;
   setRoundEndTime?: (time: number) => void;
   setTxStatus?: (status: 'success' | 'error' | 'none' | 'pending') => void;
@@ -116,7 +129,8 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
                   contractType === 'Threes' ? ThreesABI :
                   contractType === 'Bidding' ? BiddingABI :
                   contractType === 'Descend' ? DescendABI :
-                  contractType === 'Equilibrium' ? EquilibriumABI : null;
+                  contractType === 'Equilibrium' ? EquilibriumABI :
+                  contractType === 'Climb' ? ClimbABI : null;
       
       if (!abi) {
         console.error('Unknown contract type:', contractType);
@@ -508,8 +522,61 @@ export function ContractEventsProvider({ children }: { children: React.ReactNode
           })
         ]);
 
+        // Subscribe to Climb events
+        const climbAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDR_CASINO_CLIMB as `0x${string}`;
+        const climbUnsubscribes = await Promise.all([
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'GameStarted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'GameStarted'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'ClimbResult',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'ClimbResult'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'PlayerCashedOut',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'PlayerCashedOut'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'GameEnded',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'GameEnded'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'EntropyReceived',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'EntropyReceived'));
+            }
+          }),
+          publicClient.watchContractEvent({
+            address: climbAddress,
+            abi: ClimbABI,
+            eventName: 'RequestAttempted',
+            onLogs: (logs) => {
+              logs.forEach(log => processLog(log, climbAddress, 'Climb', 'RequestAttempted'));
+            }
+          })
+        ]);
+
         // Store unsubscribe functions
-        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes, ...threesUnsubscribes, ...biddingUnsubscribes, ...descendUnsubscribes, ...equilibriumUnsubscribes];
+        unsubscribeRef.current = [...gameMasterUnsubscribes, ...doorsUnsubscribes, ...threesUnsubscribes, ...biddingUnsubscribes, ...descendUnsubscribes, ...equilibriumUnsubscribes, ...climbUnsubscribes];
       } catch (error) {
         console.error('Error setting up event subscriptions:', error);
       }

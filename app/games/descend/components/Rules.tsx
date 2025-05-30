@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useDescendGameData } from '@/hooks/Descend/useDescendGameData';
+import { useDescendGameData } from '@/app/games/descend/hooks/useDescendGameData';
 
 interface RulesProps {
   levelCapacities?: Record<number, number>;

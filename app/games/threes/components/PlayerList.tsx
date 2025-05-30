@@ -1,4 +1,4 @@
-import { FormattedPlayerInfo } from '@/hooks/Threes/useThreesGameData';
+import { FormattedPlayerInfo } from '@/app/games/threes/hooks/useThreesGameData';
 
 interface PlayerListProps {
   players: FormattedPlayerInfo[];
