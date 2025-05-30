@@ -44,6 +44,7 @@ interface UseClimbGameDataProps {
 
 export function useClimbGameData({ address, isConnected }: UseClimbGameDataProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasInitialData, setHasInitialData] = useState(false);
   const [gameState, setGameState] = useState<ClimbGameState | null>(null);
   const [allLevelInfo, setAllLevelInfo] = useState<{
     allOdds: number[];
@@ -143,23 +144,29 @@ export function useClimbGameData({ address, isConnected }: UseClimbGameDataProps
 
   // Update game state when data is fetched
   useEffect(() => {
-    if (playerGame) {
-      setGameState({
-        currentLevel: Number(playerGame.currentLevel),
-        isActive: playerGame.isActive,
-        pendingSequence: playerGame.pendingSequence,
-        pendingType: Number(playerGame.pendingType),
-        startTime: playerGame.startTime,
-        depositAmount: playerGame.depositAmount,
-        gameId: playerGame.gameId,
-        targetLevel: Number(playerGame.targetLevel)
-      });
-      setIsLoading(false);
-    } else {
-      setGameState(null);
-      setIsLoading(false);
+    if (playerGame !== undefined) {
+      if (playerGame) {
+        setGameState({
+          currentLevel: Number(playerGame.currentLevel),
+          isActive: playerGame.isActive,
+          pendingSequence: playerGame.pendingSequence,
+          pendingType: Number(playerGame.pendingType),
+          startTime: playerGame.startTime,
+          depositAmount: playerGame.depositAmount,
+          gameId: playerGame.gameId,
+          targetLevel: Number(playerGame.targetLevel)
+        });
+      } else {
+        setGameState(null);
+      }
+      
+      // Only set loading to false once we have initial data
+      if (!hasInitialData) {
+        setHasInitialData(true);
+        setIsLoading(false);
+      }
     }
-  }, [playerGame]);
+  }, [playerGame, hasInitialData]);
 
   // Update level info when data is fetched
   useEffect(() => {

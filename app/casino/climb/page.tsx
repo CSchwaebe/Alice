@@ -10,7 +10,7 @@ import { useClimbGameEvents } from '@/app/casino/climb/hooks/useClimbGameEvents'
 import { useClimbGameTransactions } from '@/app/casino/climb/hooks/useClimbGameTransactions';
 
 // Import components
-import { Content } from '@/app/casino/climb/components/Content';
+import Game from '@/app/casino/climb/components/Game';
 import { LoadingScreen } from '@/components/games/LoadingScreen';
 import { WaitingOverlay } from '@/app/casino/climb/components/WaitingOverlay';
 
@@ -49,7 +49,7 @@ function ClimbGame() {
     isPending: isTxPending,
     error,
     isSuccess,
-    waitingForEvent,
+    waitingState,
     clearWaitingState,
     showResult
   } = useClimbGameTransactions();
@@ -107,20 +107,25 @@ function ClimbGame() {
       <div className="relative z-10 w-full h-full p-4 max-w-[1440px] mx-auto">
         <div className="w-full flex flex-col items-center">
           <div className="mb-8 w-full">
-            <Content 
+            <Game
               gameState={gameState}
               allLevelInfo={allLevelInfo}
               depositLimits={depositLimits}
-              canClimb={canClimb}
-              canCashOut={canCashOut}
-              isClimbing={isTxPending}
-              isCashingOut={isTxLoading}
-              isStarting={isTxPending}
-              waitingForEvent={waitingForEvent}
-              onStartGame={handleGameStart}
-              onClimb={handleGameClimb}
-              onCashOut={handleGameCashOut}
-              onAutoClimb={handleGameAutoClimb}
+              status={{
+                canClimb,
+                canCashOut,
+                isClimbing: isTxPending,
+                isCashingOut: isTxLoading,
+                isStarting: isTxPending,
+                waitingForEvent: waitingState
+              }}
+              actions={{
+                onStartGame: handleGameStart,
+                onClimb: handleGameClimb,
+                onCashOut: handleGameCashOut,
+                onAutoClimb: handleGameAutoClimb
+              }}
+              isConnected={isConnected}
             />
           </div>
 
@@ -246,9 +251,9 @@ function ClimbGame() {
       
       {/* Waiting overlay */}
       <WaitingOverlay 
-        isVisible={waitingForEvent.type !== null}
-        message={waitingForEvent.message}
-        resultInfo={waitingForEvent.resultInfo}
+        isVisible={waitingState.type !== null}
+        message={waitingState.message}
+        resultInfo={waitingState.resultInfo}
         onTimeout={clearWaitingState}
       />
     </div>

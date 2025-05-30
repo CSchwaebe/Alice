@@ -115,7 +115,7 @@ export function WaitingOverlay({ isVisible, message, resultInfo, onTimeout }: Wa
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
       
       {/* Content */}
-      <div className="relative z-10 bg-overlay-medium border border-border rounded-lg p-8 mx-4 max-w-md w-full">
+      <div className="relative z-10 bg-overlay-dark border border-border rounded-lg p-8 mx-4 max-w-md w-full">
         <div className="text-center">
           {/* Icon/Animation */}
           <div className="mb-6 flex justify-center">
