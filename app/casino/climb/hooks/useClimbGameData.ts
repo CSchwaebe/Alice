@@ -142,6 +142,17 @@ export function useClimbGameData({ address, isConnected }: UseClimbGameDataProps
     }
   }) as { data: bigint | undefined, refetch: () => void };
 
+  // Handle disconnected wallet case
+  useEffect(() => {
+    if (!isConnected) {
+      setGameState(null);
+      if (!hasInitialData) {
+        setHasInitialData(true);
+        setIsLoading(false);
+      }
+    }
+  }, [isConnected, hasInitialData]);
+
   // Update game state when data is fetched
   useEffect(() => {
     if (playerGame !== undefined) {
