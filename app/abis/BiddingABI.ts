@@ -1,4 +1,4 @@
-export const BiddingABI = [
+export const BiddingABI =[
   {
     "inputs": [],
     "stateMutability": "nonpayable",

@@ -605,6 +605,13 @@ export const DoorsABI = [
   },
   {
     "inputs": [],
+    "name": "registerMe",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
