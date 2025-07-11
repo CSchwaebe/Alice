@@ -36,7 +36,7 @@ export default function GameContent({
       {/* Round Counter */}
       <div className="mb-8 flex justify-center">
         <div className="text-2xl md:text-3xl text-foreground font-bold tracking-wider">
-          Round {currentRound.toString()}/10
+          Round {currentRound.toString()}/3
         </div>
       </div>
 

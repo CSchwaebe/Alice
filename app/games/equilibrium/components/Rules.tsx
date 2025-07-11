@@ -25,7 +25,7 @@ export default function Rules() {
     "• When time expires, the team with the most players is eliminated and the game ends",
     "• In a tie for largest team, a random tied team is eliminated",
     "",
-    "Everyone can survive if you work together",
+    //"Everyone can survive if you work together",
     "",
     "The rules will not be repeated. Use the chat to coordinate with or deceive your opponents.",
   ];

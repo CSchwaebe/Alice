@@ -24,7 +24,7 @@ export default function GameRules() {
     "",
     "• If no one opens a door, the whole team will be eliminated.",
     "",
-    "• The game consists of 10 rounds.",
+    "• The game consists of 3 rounds.",
     "",
     "The rules will not be repeated. Use the chat to coordinate with your team.",
   ];
